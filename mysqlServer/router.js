@@ -1,13 +1,12 @@
 let express = require('express')
 let router = express.Router()
-let user= require('./API/user')
-let info = require('./API/list')
+let user = require('./API/list')
 
-router.get('/user', user.get)
-router.get('/list/all', info.all)
-router.get('/list/get', info.get)
-router.get('/list/add', info.add)
-router.get('/list/update', info.update)
-router.get('/list/del', info.del)
+
+router.get('/list/all', user.all)
+router.get('/list/get', user.get)
+router.get('/list/add', user.add)
+router.get('/list/update', user.update)
+router.get('/list/del', user.del)
 
 module.exports = router

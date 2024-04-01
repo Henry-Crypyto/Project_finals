@@ -1,7 +1,7 @@
 let db = require('../db/index')
 
 exports.all = (req, res) => {        //获取info表全部数据
-    var sql = 'select * from info'
+    var sql = 'select * from user'
     db.query(sql, (err, data) => {
         if(err) {
             return res.send('错误：' + err.message)
@@ -10,7 +10,7 @@ exports.all = (req, res) => {        //获取info表全部数据
     })
 }
 exports.get = (req, res) => {        //通过id查询数据
-    var sql = 'select * from info where id = ?'    //？用于占位
+    var sql = 'select * from user where id = ?'    //？用于占位
     db.query(sql, [req.query.id], (err, data) => {
         if(err) {
             return res.send('错误：' + err.message)
@@ -20,7 +20,7 @@ exports.get = (req, res) => {        //通过id查询数据
 }
 
 exports.del = (req, res) => {        //通过id删除数据
-    var sql = 'delete from info where id = ?'
+    var sql = 'delete from user where id = ?'
     db.query(sql, [req.query.id], (err, data) => {
         if(err) {
             return res.send('错误：' + err.message)
@@ -40,7 +40,7 @@ exports.del = (req, res) => {        //通过id删除数据
 }
 
 exports.add = (req, res) => {        //向info表添加数据
-    var sql = 'insert into info (id,name,address,tel) values (?,?,?,?)'
+    var sql = 'insert into user (id,name,address,tel) values (?,?,?,?)'
     db.query(sql, [req.query.id, req.query.name, req.query.address, req.query.tel], (err, data) => {
         if(err) {
             return res.send('错误：' + err.message)
@@ -60,7 +60,7 @@ exports.add = (req, res) => {        //向info表添加数据
 }
 
 exports.update = (req, res) => {        //通过id更新数据
-    var sql = 'update info set name = ?, address = ?, tel = ? where id = ?'
+    var sql = 'update user set name = ?, address = ?, tel = ? where id = ?'
     db.query(sql, [req.query.name, req.query.address, req.query.tel, req.query.id], (err, data) => {
         if(err) {
             return res.send('错误：' + err.message)
