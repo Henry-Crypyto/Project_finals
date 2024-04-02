@@ -64,22 +64,25 @@ exports.add = (req, res) => {// 打印请求体内容以调试
 
 
 
-exports.update = (req, res) => {        //通过id更新数据
-    var sql = 'update user set name = ?, address = ?, tel = ? where id = ?'
-    db.query(sql, [req.query.name, req.query.address, req.query.tel, req.query.id], (err, data) => {
-        if(err) {
-            return res.send('错误：' + err.message)
+exports.update = (req, res) => {
+    var sql = 'UPDATE user SET name = ?, address = ?, tel = ? WHERE id = ?';
+    // 使用 req.body 替代 req.query 来获取请求体中的数据
+    const { name, address, tel ,id} = req.body;
+    db.query(sql, [name, address, tel, id], (err, data) => {
+        if (err) {
+            console.error(err); // 在生产环境中，避免直接向客户端发送错误细节
+            return res.status(500).send({ status: 'error', message: 'Internal Server Error' });
         }
-        if(data.changedRows > 0) {
-          res.send({
-            status: 200,
-            message: 'success'
-          })
-        }else{
-          res.send({
-            status: 202,
-            message: 'error'
-          })
+        if (data.changedRows > 0) {
+            res.send({
+                status: 200,
+                message: 'User updated successfully'
+            });
+        } else {
+            res.status(404).send({ // 如果没有行被改变，可能是因为找不到指定的用户
+                status: 'error',
+                message: 'User not found'
+            });
         }
-    })
-}
+    });
+};
