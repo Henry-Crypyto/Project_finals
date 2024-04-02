@@ -20,18 +20,24 @@
             <!-- "编辑" 按钮，点击时发射 editUser 事件并传递当前用户信息 -->
             <el-button type="primary" size="small" @click="editUser(user)">Edit</el-button>
           </td>
+          <td>
+            <DeleteUser :userId="user.id" @deleted="fetchData"/>
+          </td>
         </tr>
       </tbody>
     </table>
-
     <el-button type="primary" @click="listClicked">LIST ALL</el-button>
   </div>
 </template>
 
 <script>
 import axios from 'axios';
+import DeleteUser from './DeleteUser.vue';
 
 export default {
+  components: {
+    DeleteUser
+  },
   data() {
     return {
       users: [],

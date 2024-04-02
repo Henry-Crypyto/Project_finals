@@ -20,25 +20,29 @@ exports.get = (req, res) => {        //通过id查询数据
     })
 }
 
-exports.del = (req, res) => {        //通过id删除数据
-    var sql = 'delete from user where id = ?'
-    db.query(sql, [req.query.id], (err, data) => {
+exports.del = (req, res) => {
+    var sql = 'DELETE FROM user WHERE id = ?';
+    // 假设你使用的是路由参数
+    db.query(sql, [req.params.id], (err, data) => {
         if(err) {
-            return res.send('错误：' + err.message)
+            console.error('Error:', err.message); // 仅在服务器日志中记录详细错误
+            return res.status(500).json({ status: 'error', message: 'Internal Server Error' });
         }
         if(data.affectedRows > 0) {
-            res.send({
-              status: 200,
+            res.status(200).json({
+              status: 'success',
               message: '删除成功'
-            })
-        }else{
-            res.send({
-              status: 202,
-              message: '删除失败'
-            })
+            });
+        } else {
+            // 如果没有删除任何记录，可能是因为找不到ID对应的用户
+            res.status(404).json({
+              status: 'error',
+              message: '未找到用户，删除失败'
+            });
         }
-    })
-}
+    });
+};
+
 
 exports.add = (req, res) => {// 打印请求体内容以调试
     var sql = 'INSERT INTO user (name, address, tel) VALUES (?, ?, ?)';
