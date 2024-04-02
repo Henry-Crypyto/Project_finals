@@ -50,6 +50,7 @@ export default {
   },
   methods: {
     updateUser() {
+      console.log(this.userData.id);
       axios.put(`http://127.0.0.1/list/update/${this.userData.id}`, this.userData)
         .then(response => {
           if (response.data.status === 200) {

@@ -1,6 +1,7 @@
 let db = require('../db/index')
 
-exports.all = (req, res) => {        //获取info表全部数据
+exports.all = (req, res) => {    
+   //获取info表全部数据
     var sql = 'select * from user'
     db.query(sql, (err, data) => {
         if(err) {
@@ -67,6 +68,7 @@ exports.add = (req, res) => {// 打印请求体内容以调试
 exports.update = (req, res) => {
     var sql = 'UPDATE user SET name = ?, address = ?, tel = ? WHERE id = ?';
     // 使用 req.body 替代 req.query 来获取请求体中的数据
+    console.log(req.body);
     const { name, address, tel ,id} = req.body;
     db.query(sql, [name, address, tel, id], (err, data) => {
         if (err) {

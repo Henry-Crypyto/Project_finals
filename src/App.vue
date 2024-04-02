@@ -9,7 +9,7 @@
 
 <script>
 import AddUser from './components/AddUser.vue';
-import ListAll from './components/ListAll.vue';
+import ListAll from './components/ListAllUser.vue';
 import UpdateUser from './components/UpdateUser.vue';
 
 export default {
