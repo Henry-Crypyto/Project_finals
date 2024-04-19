@@ -14,7 +14,7 @@ export default {
     loadGoogleMapsScript() {
       if (!window.google) {
         const script = document.createElement('script');
-        script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyCeJ8E53l0kwudQIP-1u20-9mdYWLVrOqw&callback=initMap&libraries=places,marker&v=weekly';
+        script.src = 'https://maps.googleapis.com/maps/api/js?key=myapi&callback=initMap&libraries=places,marker&v=weekly';
         script.async = true;
         script.defer = true;
         document.head.appendChild(script);
