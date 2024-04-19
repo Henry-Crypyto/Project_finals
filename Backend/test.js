@@ -24,6 +24,7 @@ db.connect(err => {
     }
     console.log('Connected to database');
 });
+// const bcrypt = require('bcrypt');
 
 // 获取数据
 app.get('/all', (req, res) => {
@@ -81,6 +82,34 @@ app.put('/update/:id', (req, res) => {
         }
         console.log('Data updated in the database: ', results);
         res.send('Data updated');
+    });
+});
+
+app.post('/login', (req, res) => {
+    const { username, password } = req.body;
+    const loginQuery = `SELECT * FROM ${tableName} WHERE username = ?`;
+
+    // 應該先確認 username 和 password 是否存在
+    if (!username || !password) {
+        return res.status(400).send('Username and password are required');
+    }
+
+    db.query(loginQuery, [username], async (err, results) => {
+        if (err) {
+            console.error('Login error: ', err);
+            return res.status(500).send('Error during login');
+        }
+        // 檢查是否有結果且密碼是否正確
+        
+            // 直接比較明文密碼
+            if (password === results[0].password&&results.length > 0) {
+                console.log('Login successful: ', results);
+                return res.status(200).send('Login successful');
+            } else {
+                console.log('Invalid login credentials');
+                return res.status(401).send('Invalid credentials');
+            }
+       
     });
 });
 

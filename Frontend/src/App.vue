@@ -1,46 +1,28 @@
 <template>
   <div id="app">
-    <AddUser @userAdded="onUserAdded" />
-    <ListAllUser ref="ListAll" @listClicked="onListClicked" @editUser="onEditUser" />
-    <!-- Conditionally render UpdateUser if there's a currentUser -->
-    <UpdateUser v-if="currentUser" :user="currentUser" @userUpdated="onUserUpdated" />
+    <ShowNearByCoupons/>
   </div>
 </template>
 
 <script>
-import AddUser from './components/AddUser.vue';
-import ListAllUser from './components/ListAllUser.vue';
-import UpdateUser from './components/UpdateUser.vue';
-
+// import Login from './components/LoginUser.vue' // 假設你的 Login.vue 位於 components 文件夾中
+// import ShowNearByCoupons from './components/ShowNearByCoupon.vue' 
 export default {
+  name: 'App',
   components: {
-    AddUser,
-    ListAllUser,
-    UpdateUser
-  },
-  data() {
-    return {
-      shouldFetchAfterAdd: false,
-      currentUser: null,
-    };
-  },
-  methods: {
-    onUserAdded() {
-      if (this.shouldFetchAfterAdd) {
-        this.$refs.ListAll.fetchData();
-        this.shouldFetchAfterAdd = false;
-      }
-    },
-    onListClicked() {
-      this.shouldFetchAfterAdd = true;
-    },
-    onEditUser(user) {
-      this.currentUser = user; // 设置当前要编辑的用户
-    },
-    onUserUpdated() {
-      this.$refs.ListAll.fetchData(); // 更新完成后刷新用户列表
-      this.currentUser = null; // 清空当前编辑的用户
-    }
+    // Login,
+    // ShowNearByCoupons
   }
-};
+}
 </script>
+
+<style>
+#app {
+  font-family: 'Avenir', Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-align: center;
+  color: #2c3e50;
+  margin-top: 60px;
+}
+</style>
