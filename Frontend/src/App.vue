@@ -5,13 +5,14 @@
 </template>
 
 <script>
+
 // import Login from './components/LoginUser.vue' // 假設你的 Login.vue 位於 components 文件夾中
-// import ShowNearByCoupons from './components/ShowNearByCoupon.vue' 
+import ShowNearByCoupons from './components/ShowNearByCoupon.vue' 
 export default {
   name: 'App',
   components: {
     // Login,
-    // ShowNearByCoupons
+    ShowNearByCoupons
   }
 }
 </script>
