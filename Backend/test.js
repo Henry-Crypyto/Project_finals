@@ -2,6 +2,7 @@ const express = require('express');
 const mysql = require('mysql');
 const cors = require('cors');
 
+console.log("Hi"+process.env.DB_HOST);
 const app = express();
 app.use(cors());
 app.use(express.json()); // 用于解析JSON格式的请求体
