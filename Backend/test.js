@@ -2,7 +2,6 @@ const express = require('express');
 const mysql = require('mysql');
 const cors = require('cors');
 
-console.log("Hi"+process.env.DB_HOST);
 const app = express();
 app.use(cors());
 app.use(express.json()); // 用于解析JSON格式的请求体
@@ -11,16 +10,15 @@ app.use(express.json()); // 用于解析JSON格式的请求体
 const tableName = 'user';
 
 const db = mysql.createConnection({
-    host:  process.env.DB_HOST,
-    user:  process.env.DB_USER,
-    password:  process.env.DB_PASS,
-    database:  process.env.DB_NAME,
-    port:  process.env.DB_PORT // MAMP MySQL端口，根据实际情况更改
+    host:  '91.208.207.108',
+    user:  'uy1htyndkxbgfcii',
+    password:  'sL56JKG7Qxrz7HjzR2Nc',
+    database:  'bwtmfanwvrr8ldjeigtl',
+    port:  3306 // MAMP MySQL端口，根据实际情况更改
 });
 
 db.connect(err => {
     if (err) {
-        console.log(process.env.DB_HOST);
         console.error('Error connecting to the database: ', err);
         return;
     }
