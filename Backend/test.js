@@ -10,11 +10,11 @@ app.use(express.json()); // 用于解析JSON格式的请求体
 const tableName = 'user';
 
 const db = mysql.createConnection({
-    host: '127.0.0.1',
-    user: 'root',
-    password: 'root',
-    database: 'mydb',
-    port: 8889 // MAMP MySQL端口，根据实际情况更改
+    host:  process.env.DB_HOST,
+    user:  process.env.DB_USER,
+    password:  process.env.DB_PASS,
+    database:  process.env.DB_NAME,
+    port:  process.env.DB_PORT // MAMP MySQL端口，根据实际情况更改
 });
 
 db.connect(err => {
