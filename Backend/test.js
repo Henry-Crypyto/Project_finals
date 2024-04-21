@@ -14,7 +14,7 @@ const db = mysql.createConnection({
     user:  'uy1htyndkxbgfcii',
     password:  'sL56JKG7Qxrz7HjzR2Nc',
     database:  'bwtmfanwvrr8ldjeigtl',
-    port:  3306 // MAMP MySQL端口，根据实际情况更改
+    // port:  3306 // MAMP MySQL端口，根据实际情况更改
 });
 
 db.connect(err => {
