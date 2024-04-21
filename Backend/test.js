@@ -3,6 +3,7 @@ const mysql = require('mysql');
 const cors = require('cors');
 
 const app = express();
+
 app.use(cors());
 app.use(express.json()); // 用于解析JSON格式的请求体
 
@@ -10,11 +11,11 @@ app.use(express.json()); // 用于解析JSON格式的请求体
 const tableName = 'user';
 
 const db = mysql.createConnection({
-    host:  '91.208.207.108',
-    user:  'uy1htyndkxbgfcii',
-    password:  'sL56JKG7Qxrz7HjzR2Nc',
-    database:  'bwtmfanwvrr8ldjeigtl',
-    // port:  3306 // MAMP MySQL端口，根据实际情况更改
+    host: '127.0.0.1',
+    user: 'root',
+    password: 'root',
+    database: 'mydb',
+    port: 8889 // MAMP MySQL端口，根据实际情况更改
 });
 
 db.connect(err => {
@@ -113,7 +114,7 @@ app.post('/login', (req, res) => {
     });
 });
 
-const PORT = 5000;
+const PORT = 3000;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });

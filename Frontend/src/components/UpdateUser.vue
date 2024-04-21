@@ -50,7 +50,7 @@ export default {
   },
   methods: {
     updateUser() {
-      axios.put(`http://localhost:3000/update/${this.userData.id}`, this.userData)
+      axios.put(`https://terrier-apt-honestly.ngrok-free.app/api/update/${this.userData.id}`, this.userData)
         .then(response => {
           if (response.status === 200) {
             alert('User updated successfully');

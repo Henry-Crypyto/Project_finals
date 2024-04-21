@@ -1,18 +1,21 @@
 <template>
   <div id="app">
-    <ShowNearByCoupons/>
+    <!-- <ListAllUser/> -->
+    <Login/>
   </div>
 </template>
 
 <script>
 
-// import Login from './components/LoginUser.vue' // 假設你的 Login.vue 位於 components 文件夾中
-import ShowNearByCoupons from './components/ShowNearByCoupon.vue' 
+// import ListAllUser from './components/ListAllUser.vue';
+import Login from './components/LoginUser.vue' // 假設你的 Login.vue 位於 components 文件夾中
+// import ShowNearByCoupons from './components/ShowNearByCoupon.vue' 
 export default {
   name: 'App',
   components: {
-    // Login,
-    ShowNearByCoupons
+    Login,
+    // ShowNearByCoupons,
+    // ListAllUser
   }
 }
 </script>

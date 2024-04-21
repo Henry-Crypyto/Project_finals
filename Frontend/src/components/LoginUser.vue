@@ -26,7 +26,7 @@ export default {
   methods: {
     async login() {
       try {
-        const response = await axios.post('http://localhost:3000/login', {
+        const response = await axios.post('https://terrier-apt-honestly.ngrok-free.app/api/login', {
           username: this.username,
           password: this.password
         });

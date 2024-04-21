@@ -24,7 +24,7 @@
         }
   
         // 发送删除请求
-        axios.delete(`http://localhost:3000/delete/${this.userId}`)
+        axios.delete(`https://terrier-apt-honestly.ngrok-free.app/api/delete/${this.userId}`)
           .then(response => {
             if (response.status === 200) {
               alert("User deleted successfully");

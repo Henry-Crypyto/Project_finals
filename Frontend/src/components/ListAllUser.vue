@@ -45,7 +45,7 @@ export default {
   },
   methods: {
     fetchData() {
-      axios.get('http://localhost:3000/all')
+      axios.get('https://terrier-apt-honestly.ngrok-free.app/api/all')
         .then(response => {
           this.users = response.data;
         })

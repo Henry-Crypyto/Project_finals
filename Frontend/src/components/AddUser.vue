@@ -36,7 +36,7 @@
     // },
     methods: {
       addUser() {
-        axios.post('http://localhost:3000/add', this.newUser)
+        axios.post('https://terrier-apt-honestly.ngrok-free.app/api/add', this.newUser)
           .then(response => {
             if (response.status === 201) {
               this.$emit('userAdded'); // 通知父组件用户已添加
