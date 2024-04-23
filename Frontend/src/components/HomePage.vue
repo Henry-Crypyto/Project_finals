@@ -2,7 +2,7 @@
   <div class="container mt-5">
     <div class="row justify-content-center">
       <!-- 品牌选择菜单 -->
-      <div class="col-md-4 mb-4">
+      <div class="col-md-3 mb-3">
         <div class="form-group">
           <label for="brand-select" class="form-label">品牌:</label>
           <select id="brand-select" class="form-control" v-model="selectedBrand" @change="fetchCoupons">
@@ -14,7 +14,7 @@
         </div>
       </div>
       <!-- 价格筛选菜单 -->
-      <div class="col-md-4 mb-4">
+      <div class="col-md-3 mb-3">
         <div class="form-group">
           <label for="price-select" class="form-label">价格:</label>
           <select id="price-select" class="form-control" v-model="selectedPrice" @change="fetchCoupons">
@@ -28,24 +28,22 @@
         </div>
       </div>
       <!-- 日期范围选择 -->
-      <div class="col-md-8 mb-4">
-        <div class="form-row">
-          <div class="col-md-6">
-            <div class="form-group">
-              <label for="startDate" class="form-label">开始日期:</label>
-              <input type="date" id="startDate" class="form-control" v-model="startDate" @change="fetchCoupons">
-            </div>
-          </div>
-          <div class="col-md-6">
-            <div class="form-group">
-              <label for="endDate" class="form-label">结束日期:</label>
-              <input type="date" id="endDate" class="form-control" v-model="endDate" :min="minEndDate" @change="fetchCoupons">
-            </div>
-          </div>
+      <div class="col-md-3 mb-3">
+        <div class="form-group">
+          <label for="startDate" class="form-label">开始日期:</label>
+          <input type="date" id="startDate" class="form-control" v-model="startDate" @change="fetchCoupons">
         </div>
       </div>
-      <!-- 显示选定品牌、价格和日期范围的折扣券信息 -->
-      <div class="col-md-8" v-if="selectedCoupons.length > 0">
+      <div class="col-md-3 mb-3">
+        <div class="form-group">
+          <label for="endDate" class="form-label">结束日期:</label>
+          <input type="date" id="endDate" class="form-control" v-model="endDate" :min="minEndDate" @change="fetchCoupons">
+        </div>
+      </div>
+    </div>
+    <!-- 显示选定品牌、价格和日期范围的折扣券信息 -->
+    <div class="row">
+      <div class="col-12" v-if="selectedCoupons.length > 0">
         <h3 class="mb-3">折扣券信息</h3>
         <div v-for="coupon in selectedCoupons" :key="coupon.coupon_ID" class="card mb-3">
           <div class="card-body">
@@ -62,6 +60,7 @@
     </div>
   </div>
 </template>
+
 
 <script>
 import axios from 'axios';
@@ -144,6 +143,13 @@ watch: {
 
 
 <style scoped>
+.form-group {
+  margin-bottom: 10px;  /* 调整底部间距 */
+}
+
+.form-control {
+  height: auto;  /* 如果需要，可以调整输入框的高度 */
+}
 .container {
   max-width: 960px; /* 限制最大宽度，使内容在大屏幕上居中显示 */
   margin: auto;
