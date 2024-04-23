@@ -6,7 +6,7 @@
         <div class="form-group">
           <label for="brand-select" class="form-label">品牌:</label>
           <select id="brand-select" class="form-control" v-model="selectedBrand" @change="fetchCoupons">
-            <option disabled value="">请选择一个品牌</option>
+            <option value="">所有品牌</option> <!-- 添加这个选项 -->
             <option v-for="brand in brandOptions" :key="brand.brand_ID" :value="brand.brand_name">
               {{ brand.brand_name }}
             </option>
@@ -64,7 +64,7 @@
 
 <script>
 import axios from 'axios';
-
+import { getFullApiUrl } from '../../config.js';
 export default {
   data: () => ({
     brandOptions: [],
@@ -81,7 +81,8 @@ export default {
   },
   methods: {
   fetchBrandOptions() {
-    axios.get('http://localhost:3000/brand_append')
+    const url = getFullApiUrl('/brand_append');
+    axios.get(url)
       .then(response => {
         this.brandOptions = response.data;
         this.isLoaded = true;
