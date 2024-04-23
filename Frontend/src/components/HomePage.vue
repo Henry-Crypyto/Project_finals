@@ -93,7 +93,8 @@ export default {
       });
   },
   fetchCoupons() {
-    axios.get(`http://localhost:3000/all_coupon`)
+    const url = getFullApiUrl('/all_coupon');
+    axios.get(url)
       .then(response => {
         let allCoupons = response.data;
         let filteredCoupons = allCoupons.filter(coupon => {
