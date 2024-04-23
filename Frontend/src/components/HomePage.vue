@@ -78,61 +78,65 @@ export default {
   }),
   created() {
     this.fetchBrandOptions();
+    this.fetchCoupons();
   },
   methods: {
-    fetchBrandOptions() {
-      axios.get('http://localhost:3000/brand_append')
-        .then(response => {
-          this.brandOptions = response.data;
-          this.isLoaded = true;
-        })
-        .catch(error => {
-          console.error('Error fetching brands:', error);
-          this.isLoaded = true;
+  fetchBrandOptions() {
+    axios.get('http://localhost:3000/brand_append')
+      .then(response => {
+        this.brandOptions = response.data;
+        this.isLoaded = true;
+      })
+      .catch(error => {
+        console.error('Error fetching brands:', error);
+        this.isLoaded = true;
+      });
+  },
+  fetchCoupons() {
+    axios.get(`http://localhost:3000/all_coupon`)
+      .then(response => {
+        let allCoupons = response.data;
+        let filteredCoupons = allCoupons.filter(coupon => {
+          const matchesPrice = this.selectedPrice ? this.matchesPriceCondition(coupon.discount_price) : true;
+          const matchesDate = this.startDate || this.endDate ? this.matchesDateCondition(coupon.expire_date) : true;
+          const matchesBrand = this.selectedBrand ? coupon.brand_name === this.selectedBrand : true;
+          return matchesPrice && matchesDate && matchesBrand;
         });
-    },
-    fetchCoupons() {
-      if (this.selectedBrand || this.selectedPrice || this.startDate || this.endDate) {
-        axios.get(`http://localhost:3000/all_coupon`)
-          .then(response => {
-            let coupons = response.data.filter(coupon => {
-              return this.matchesPriceCondition(coupon.discount_price) &&
-                     this.matchesDateCondition(coupon.expire_date) &&
-                     (!this.selectedBrand || coupon.brand_name === this.selectedBrand);
-            });
-            this.selectedCoupons = coupons;
-          })
-          .catch(error => {
-            console.error('Error fetching coupons:', error);
-            this.selectedCoupons = [];
-          });
-      }
-    },
-    matchesPriceCondition(price) {
-      const ranges = {
-        "0-300": price <= 300,
-        "301-600": price > 300 && price <= 600,
-        "601-900": price > 600 && price <= 900,
-        "901-1200": price > 900 && price <= 1200,
-        "1201": price > 1200
-      };
-      return this.selectedPrice ? ranges[this.selectedPrice] : true;
-    },
-    matchesDateCondition(expireDate) {
-      const startDate = this.startDate ? new Date(this.startDate) : null;
-      const endDate = this.endDate ? new Date(this.endDate) : new Date('2099-12-31');
-      const expiration = new Date(expireDate);
-      return (!startDate || expiration >= startDate) && (!endDate || expiration <= endDate);
-    },
-    watch: {
+        this.selectedCoupons = filteredCoupons;
+      })
+      .catch(error => {
+        console.error('Error fetching coupons:', error);
+        this.selectedCoupons = [];
+      });
+  },
+  matchesPriceCondition(price) {
+    const ranges = {
+      "0-300": price <= 300,
+      "301-600": price > 300 && price <= 600,
+      "601-900": price > 600 && price <= 900,
+      "901-1200": price > 900 && price <= 1200,
+      "1201": price > 1200
+    };
+    return this.selectedPrice ? ranges[this.selectedPrice] : true;
+  },
+  matchesDateCondition(expireDate) {
+    const startDate = this.startDate ? new Date(this.startDate) : null;
+    const endDate = this.endDate ? new Date(this.endDate) : new Date('2099-12-31');
+    const expiration = new Date(expireDate);
+    return (!startDate || expiration >= startDate) && (!endDate || expiration <= endDate);
+  }
+},
+watch: {
     startDate(newVal) {
-      this.minEndDate = newVal; // 更新最小结束日期为开始日期
-      if (new Date(this.endDate) < new Date(newVal)) {
-        this.endDate = ''; // 如果当前结束日期小于新的开始日期，则清空结束日期
+      if (newVal) {
+        this.minEndDate = newVal;  // 设置最小结束日期为新的开始日期
+        if (this.endDate && new Date(this.endDate) < new Date(newVal)) {
+          this.endDate = '';  // 如果当前结束日期小于新的开始日期，则清空结束日期
+        }
       }
     }
-  }
-  }
+  },
+
 }
 </script>
 
