@@ -2,11 +2,11 @@
   <div class="container mt-5">
     <div class="row justify-content-center">
       <!-- 品牌选择菜单 -->
-      <div class="col-md-3 mb-3">
+      <div class="col-md-2 mb-3">
         <div class="form-group">
           <label for="brand-select" class="form-label">品牌:</label>
           <select id="brand-select" class="form-control" v-model="selectedBrand" @change="fetchCoupons">
-            <option value="">所有品牌</option> <!-- 添加这个选项 -->
+            <option value="">所有品牌</option>
             <option v-for="brand in brandOptions" :key="brand.brand_ID" :value="brand.brand_name">
               {{ brand.brand_name }}
             </option>
@@ -14,7 +14,7 @@
         </div>
       </div>
       <!-- 价格筛选菜单 -->
-      <div class="col-md-3 mb-3">
+      <div class="col-md-2 mb-3">
         <div class="form-group">
           <label for="price-select" class="form-label">价格:</label>
           <select id="price-select" class="form-control" v-model="selectedPrice" @change="fetchCoupons">
@@ -23,7 +23,7 @@
             <option value="301-600">301~600元</option>
             <option value="601-900">601~900元</option>
             <option value="901-1200">901~1200元</option>
-            <option value="1201">1200元以上</option>
+            <option value="1201+">1201元以上</option>
           </select>
         </div>
       </div>
@@ -31,13 +31,19 @@
       <div class="col-md-3 mb-3">
         <div class="form-group">
           <label for="startDate" class="form-label">开始日期:</label>
-          <input type="date" id="startDate" class="form-control" v-model="startDate" @change="fetchCoupons">
+          <div class="input-group">
+  <input type="date" id="startDate" class="form-control" v-model="startDate" @change="fetchCoupons">
+  <button class="btn btn-outline-secondary" type="button" @click="clearDate('start')">清空</button>
+</div>
         </div>
       </div>
       <div class="col-md-3 mb-3">
         <div class="form-group">
           <label for="endDate" class="form-label">结束日期:</label>
+          <div class="input-group">
           <input type="date" id="endDate" class="form-control" v-model="endDate" :min="minEndDate" @change="fetchCoupons">
+           <button class="btn btn-outline-secondary" type="button" @click="clearDate('end')">清空</button>
+          </div>
         </div>
       </div>
     </div>
@@ -60,6 +66,7 @@
     </div>
   </div>
 </template>
+
 
 
 <script>
@@ -96,19 +103,29 @@ export default {
     const url = getFullApiUrl('/all_coupon');
     axios.get(url)
       .then(response => {
-        let allCoupons = response.data;
-        let filteredCoupons = allCoupons.filter(coupon => {
-          const matchesPrice = this.selectedPrice ? this.matchesPriceCondition(coupon.discount_price) : true;
-          const matchesDate = this.startDate || this.endDate ? this.matchesDateCondition(coupon.expire_date) : true;
-          const matchesBrand = this.selectedBrand ? coupon.brand_name === this.selectedBrand : true;
-          return matchesPrice && matchesDate && matchesBrand;
-        });
-        this.selectedCoupons = filteredCoupons;
+        this.filterCoupons(response.data);
       })
       .catch(error => {
         console.error('Error fetching coupons:', error);
         this.selectedCoupons = [];
       });
+  },
+  clearDate(type) {
+    if (type === 'start') {
+      this.startDate = '';
+    } else if (type === 'end') {
+      this.endDate = '';
+    }
+    this.fetchCoupons();
+  },
+  filterCoupons(allCoupons) {
+    let filteredCoupons = allCoupons.filter(coupon => {
+      const matchesPrice = this.selectedPrice ? this.matchesPriceCondition(coupon.discount_price) : true;
+      const matchesDate = this.startDate || this.endDate ? this.matchesDateCondition(coupon.expire_date) : true;
+      const matchesBrand = this.selectedBrand ? coupon.brand_name === this.selectedBrand : true;
+      return matchesPrice && matchesDate && matchesBrand;
+    });
+    this.selectedCoupons = filteredCoupons;
   },
   matchesPriceCondition(price) {
     const ranges = {
