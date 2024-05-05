@@ -56,10 +56,19 @@
             <h5 class="card-title">{{ coupon.coupon_name }}</h5>
             <p class="card-text">{{ coupon.coupon_content }}</p>
             <p class="card-text">
-              原价: {{ coupon.original_price }}, 折扣价: {{ coupon.discount_price }}
-              <br>
-              到期日期: {{ new Date(coupon.expire_date).toLocaleDateString() }}
+              开始日期: {{ new Date(coupon.start_date).toLocaleDateString() }}<br>
+              原价: {{ coupon.original_price }}, 折扣价: {{ coupon.discount_price }}<br>
+              到期日期: {{ new Date(coupon.expire_date).toLocaleDateString() }}<br>
+              使用限制: {{ coupon.use_restriction || '无特别限制' }}
             </p>
+            <div v-if="coupon.items && coupon.items.length">
+              <h6>內容:</h6>
+              <ul>
+                <li v-for="item in coupon.items" :key="item.ItemName">
+                  {{ item.ItemName }} x {{ item.Quantity }}
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
       </div>
@@ -75,76 +84,88 @@ import { getFullApiUrl } from '../../config.js';
 export default {
   data: () => ({
     brandOptions: [],
-    isLoaded: false,
     selectedBrand: '',
     selectedCoupons: [],
     selectedPrice: '',
     startDate: '',
-    endDate: ''
+    endDate: '',
+    minEndDate: ''  // 用于存储最小结束日期
   }),
   created() {
     this.fetchBrandOptions();
     this.fetchCoupons();
   },
   methods: {
-  fetchBrandOptions() {
-    const url = getFullApiUrl('/brand_append');
-    axios.get(url)
-      .then(response => {
-        this.brandOptions = response.data;
-        this.isLoaded = true;
-      })
-      .catch(error => {
-        console.error('Error fetching brands:', error);
-        this.isLoaded = true;
-      });
-  },
-  fetchCoupons() {
-    const url = getFullApiUrl('/all_coupon');
-    axios.get(url)
-      .then(response => {
-        this.filterCoupons(response.data);
-      })
-      .catch(error => {
-        console.error('Error fetching coupons:', error);
-        this.selectedCoupons = [];
-      });
-  },
-  clearDate(type) {
-    if (type === 'start') {
-      this.startDate = '';
-    } else if (type === 'end') {
-      this.endDate = '';
-    }
-    this.fetchCoupons();
-  },
-  filterCoupons(allCoupons) {
-    let filteredCoupons = allCoupons.filter(coupon => {
-      const matchesPrice = this.selectedPrice ? this.matchesPriceCondition(coupon.discount_price) : true;
-      const matchesDate = this.startDate || this.endDate ? this.matchesDateCondition(coupon.expire_date) : true;
-      const matchesBrand = this.selectedBrand ? coupon.brand_name === this.selectedBrand : true;
-      return matchesPrice && matchesDate && matchesBrand;
+    fetchBrandOptions() {
+      const url = getFullApiUrl('/brand_append');
+      axios.get(url)
+        .then(response => {
+          this.brandOptions = response.data;
+          this.isLoaded = true;
+        })
+        .catch(error => {
+          console.error('Error fetching brands:', error);
+          this.isLoaded = true;
+        });
+    },
+    fetchCoupons() {
+  const url = getFullApiUrl('/all_coupons_with_items');
+  axios.get(url)
+    .then(response => {
+      let allCoupons = response.data.map(coupon => ({
+        ...coupon,
+        items: [].concat(
+          coupon.main_courses.map(course => ({ ItemType: 'Main_course', ItemName: course.split(' x ')[0], Quantity: parseInt(course.split(' x ')[1]) })),
+          coupon.beverages.map(beverage => ({ ItemType: 'Beverage', ItemName: beverage.split(' x ')[0], Quantity: parseInt(beverage.split(' x ')[1]) })),
+          coupon.snacks.map(snack => ({ ItemType: 'Snack', ItemName: snack.split(' x ')[0], Quantity: parseInt(snack.split(' x ')[1]) }))
+        )
+      }));
+
+      // Apply filters based on selections
+      allCoupons = this.filterCoupons(allCoupons);
+      this.selectedCoupons = allCoupons;
+    })
+    .catch(error => {
+      console.error('Error fetching coupons:', error);
+      this.selectedCoupons = [];
     });
-    this.selectedCoupons = filteredCoupons;
-  },
-  matchesPriceCondition(price) {
-    const ranges = {
-      "0-300": price <= 300,
-      "301-600": price > 300 && price <= 600,
-      "601-900": price > 600 && price <= 900,
-      "901-1200": price > 900 && price <= 1200,
-      "1201": price > 1200
-    };
-    return this.selectedPrice ? ranges[this.selectedPrice] : true;
-  },
-  matchesDateCondition(expireDate) {
-    const startDate = this.startDate ? new Date(this.startDate) : null;
-    const endDate = this.endDate ? new Date(this.endDate) : new Date('2099-12-31');
-    const expiration = new Date(expireDate);
-    return (!startDate || expiration >= startDate) && (!endDate || expiration <= endDate);
-  }
 },
-watch: {
+
+    clearDate(type) {
+      if (type === 'start') {
+        this.startDate = '';
+      } else if (type === 'end') {
+        this.endDate = '';
+      }
+      this.fetchCoupons();
+    },
+    filterCoupons(allCoupons) {
+  return allCoupons.filter(coupon => {
+    const matchesBrand = this.selectedBrand ? coupon.brand_name === this.selectedBrand : true;
+    const matchesPrice = this.selectedPrice ? this.matchesPriceCondition(coupon.discount_price) : true;
+    const matchesDate = this.matchesDateCondition(coupon.expire_date, coupon.start_date);
+    return matchesBrand && matchesPrice && matchesDate;
+  });
+},
+    matchesPriceCondition(price) {
+      const ranges = {
+        "0-300": price <= 300,
+        "301-600": price > 300 && price <= 600,
+        "601-900": price > 600 && price <= 900,
+        "901-1200": price > 900 && price <= 1200,
+        "1201+": price > 1200
+      };
+      return this.selectedPrice ? ranges[this.selectedPrice] : true;
+    },
+    matchesDateCondition(expireDate, startDate) {
+      const filterStartDate = this.startDate ? new Date(this.startDate) : null;
+      const filterEndDate = this.endDate ? new Date(this.endDate) : new Date('2099-12-31');
+      const expiration = new Date(expireDate);
+      const start = new Date(startDate);
+      return (!filterStartDate || start >= filterStartDate) && (!filterEndDate || expiration <= filterEndDate);
+    }
+  },
+  watch: {
     startDate(newVal) {
       if (newVal) {
         this.minEndDate = newVal;  // 设置最小结束日期为新的开始日期
@@ -153,10 +174,10 @@ watch: {
         }
       }
     }
-  },
-
+  }
 }
 </script>
+
 
 
 
