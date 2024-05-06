@@ -5,6 +5,7 @@
         <li v-for="beverage in beverages" :key="beverage.beverage_id" class="beverage-item card">
           <div class="card-body">
             <h3 class="card-title">{{ beverage.beverage_name.trim() }}</h3>
+            <p class="card-text">原價: {{ beverage.beverage_price }}</p>
             <p class="card-text">容量: {{ beverage.beverage_size }}</p>
             <p class="card-text">類型: {{ beverage.iced_hot_name }}</p>
             <p class="card-text">品牌: {{ beverage.all_brand_name }}</p>

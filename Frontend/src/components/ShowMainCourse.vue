@@ -1,108 +1,133 @@
 <template>
-    <div class="main-course-container">
-      <h1>主菜選單</h1>
-      <ul class="main-course-list" v-if="mainCourses.length > 0">
-        <li v-for="course in mainCourses" :key="course.main_course_id" class="main-course-item">
-          <div class="card">
-            <div class="card-body">
-              <h3 class="card-title">{{ course.main_course_name }}</h3>
-              <p class="card-text">肉類類型: {{ course.meat_type_name || '不詳' }}</p>
-              <p class="card-text">品牌: {{ course.brand_name }}</p>
-            </div>
+  <div class="main-course-container">
+    <h1 class="text-center">主菜選單</h1>
+    <ul class="main-course-list" v-if="filteredMainCourses.length > 0">
+      <li v-for="course in filteredMainCourses" :key="course.main_course_id" class="main-course-item">
+        <h3>{{ course.main_course_name }}</h3>
+        <p>原價: {{ course.main_course_price}}</p>
+        <p>肉類類型: {{ course.meat_type_name || '不詳' }}</p>
+        <p>品牌: {{ course.brand_name }}</p>
+        <div class="input-group mb-3">
+          <input type="number" class="form-control" v-model="course.quantity" min="1" placeholder="數量">
+          <div class="input-group-append">
+            <button class="btn btn-primary" type="button" @click="addToCart(course)">加入購物車</button>
           </div>
-        </li>
-      </ul>
-      <div v-else>
-        <p>正在加載數據或沒有數據顯示...</p>
-      </div>
+        </div>
+      </li>
+    </ul>
+    <div v-else>
+      <p>正在加載數據或沒有數據顯示...</p>
     </div>
-  </template>
-  
-  <script>
-  import axios from 'axios';
-  
-  export default {
-    data() {
-      return {
-        mainCourses: []
-      };
+  </div>
+</template>
+
+<script>
+import axios from 'axios';
+import { emitter } from './eventBus';
+
+export default {
+  data() {
+    return {
+      mainCourses: []
+    };
+  },
+  created() {
+    this.fetchMainCourses();
+  },
+  computed: {
+    filteredMainCourses() {
+      if (this.$root.brandSelect === 'all') {
+        return this.mainCourses;
+      } else {
+        return this.mainCourses.filter(course => course.brand_name === this.$root.brandSelect);
+      }
+    }
+  },
+  methods: {
+    fetchMainCourses() {
+      axios.get('/api/all_main_course')
+        .then(response => {
+          this.mainCourses = response.data.map(course => ({
+            ...course,
+            quantity: 1
+          }));
+        })
+        .catch(error => {
+          console.error('Error fetching main courses:', error);
+        });
     },
-    created() {
-      this.fetchMainCourses();
+    addToCart(course) {
+      console.log(this.$root.brandSelect);
+      if (this.$root.brandSelect === 'all' && this.mainCourses.length > 0) {
+        this.showAlertForBrand(course.brand_name);
+      } else {
+        this.$root.brandSelect = course.brand_name; // 將品牌設置為所選品牌
+      }
+      emitter.emit('add-to-cart', {
+        name: course.main_course_name,
+        quantity: course.quantity,
+        price: course.main_course_price || 10,
+        id: course.main_course_id
+      });
     },
-    methods: {
-      fetchMainCourses() {
-        axios.get('/api/all_main_course') // 確保 URL 正確並根據您的配置進行調整
-          .then(response => {
-            this.mainCourses = response.data;
-          })
-          .catch(error => {
-            console.error('Error fetching main courses:', error);
-          });
+    showAlertForBrand(brandName) {
+      if (confirm(`是否要選擇 ${brandName} 品牌的商品？`)) {
+        this.$root.brandSelect = brandName;
       }
     }
   }
-  </script>
-  
-  <style scoped>
-  .main-course-container {
-    width: 100%;
-    padding: 20px;
-    background-color: #f4f4f4;
-    text-align: center;
-  }
-  
-  .main-course-list {
-    display: flex;
-    flex-wrap: wrap;
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-  
+}
+</script>
+
+
+
+
+
+
+
+<style scoped>
+.main-course-container {
+  width: 100%;
+  padding: 20px;
+  background-color: #f4f4f4;
+  text-align: center;
+}
+
+.main-course-list {
+  display: flex;
+  flex-wrap: wrap;
+  list-style: none;
+  padding: 0;
+  justify-content: space-around;
+}
+
+.main-course-item {
+  background-color: white;
+  padding: 15px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  width: calc(33.333% - 20px);
+  border-radius: 10px;
+  transition: transform 0.3s;
+}
+
+.main-course-item:hover {
+  transform: translateY(-5px);
+}
+
+.input-group {
+  width: 100%;
+}
+
+@media (max-width: 768px) {
   .main-course-item {
-    width: calc(25% - 20px);
-    margin: 10px;
+    width: calc(50% - 20px);
   }
-  
-  .card {
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-    transition: all 0.3s;
+}
+
+@media (max-width: 480px) {
+  .main-course-item {
+    width: 100%;
   }
-  
-  .card:hover {
-    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-  }
-  
-  .card-body {
-    padding: 15px;
-    text-align: center;
-  }
-  
-  .card-title {
-    font-size: 1.25rem;
-    color: #076b92;
-  }
-  
-  .card-text {
-    color: #666;
-    font-size: 1rem;
-    margin-top: 5px;
-  }
-  
-  @media (max-width: 768px) {
-    .main-course-item {
-      width: calc(50% - 20px);
-    }
-  }
-  
-  @media (max-width: 480px) {
-    .main-course-item {
-      width: 100%;
-      margin: 10px 0;
-    }
-  }
-  </style>
-  
+}
+</style>

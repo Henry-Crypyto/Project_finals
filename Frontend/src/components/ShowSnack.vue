@@ -6,6 +6,7 @@
           <div class="card-body">
             <h3 class="card-title">{{ snack.snack_name.trim() }}</h3>
             <p class="card-text" v-if="snack.snack_size">大小: {{ snack.snack_size }}</p>
+            <p class="card-text">原價: {{ snack.snack_price }}</p>
             <p class="card-text">風味: {{ snack.flavor_name }}</p>
             <p class="card-text">品牌: {{ snack.all_brand_name }}</p>
           </div>

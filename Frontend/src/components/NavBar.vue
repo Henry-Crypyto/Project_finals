@@ -15,6 +15,9 @@
             <li class="nav-item">
               <a class="nav-link" @click="emitChange('snack')">點心</a>
             </li>
+            <li class="nav-item">
+              <a class="nav-link" @click="emitChange('shoppingCart')">購物車車</a>
+            </li>
           </ul>
         </div>
       </div>
@@ -48,6 +51,7 @@
     font-weight: 500; /* 字體加粗 */
     color: #ffffff; /* 文字顏色為白色 */
     transition: color 0.3s, transform 0.3s; /* 平滑過渡效果 */
+    cursor: pointer;
   }
   
   .nav-link:hover, .nav-link:focus {
