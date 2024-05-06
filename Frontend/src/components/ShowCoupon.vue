@@ -1,6 +1,7 @@
 <template>
   <div class="container mt-5">
     <div class="row justify-content-center">
+      
       <!-- 品牌选择菜单 -->
       <div class="col-md-2 mb-3">
         <div class="form-group">
@@ -32,17 +33,17 @@
         <div class="form-group">
           <label for="startDate" class="form-label">开始日期:</label>
           <div class="input-group">
-  <input type="date" id="startDate" class="form-control" v-model="startDate" @change="fetchCoupons">
-  <button class="btn btn-outline-secondary" type="button" @click="clearDate('start')">清空</button>
-</div>
+            <input type="date" id="startDate" class="form-control" v-model="startDate" @change="fetchCoupons">
+            <button class="btn btn-outline-secondary" type="button" @click="clearDate('start')">清空</button>
+          </div>
         </div>
       </div>
       <div class="col-md-3 mb-3">
         <div class="form-group">
-          <label for="endDate" class="form-label">结束日期:</label>
+          <label for="endDate" the="form-label">结束日期:</label>
           <div class="input-group">
-          <input type="date" id="endDate" class="form-control" v-model="endDate" :min="minEndDate" @change="fetchCoupons">
-           <button class="btn btn-outline-secondary" type="button" @click="clearDate('end')">清空</button>
+            <input type="date" id="endDate" class="form-control" v-model="endDate" :min="minEndDate" @change="fetchCoupons">
+            <button class="btn btn-outline-secondary" type="button" @click="clearDate('end')">清空</button>
           </div>
         </div>
       </div>
@@ -53,15 +54,17 @@
         <h3 class="mb-3">折扣券信息</h3>
         <div v-for="coupon in selectedCoupons" :key="coupon.coupon_ID" class="card mb-3">
           <div class="card-body">
-            <h5 class="card-title">{{ coupon.coupon_name }}</h5>
-            <p class="card-text">{{ coupon.coupon_content }}</p>
-            <p class="card-text">
+            <h5 class="card-title" @click="coupon.expanded = !coupon.expanded">
+              <span class="discount-price">$ {{ coupon.discount_price }}</span> {{ coupon.coupon_name }}
+            </h5>
+            <p v-if="coupon.expanded" class="card-text">
+              {{ coupon.coupon_content }}<br>
               开始日期: {{ new Date(coupon.start_date).toLocaleDateString() }}<br>
               原价: {{ coupon.original_price }}, 折扣价: {{ coupon.discount_price }}<br>
               到期日期: {{ new Date(coupon.expire_date).toLocaleDateString() }}<br>
               使用限制: {{ coupon.use_restriction || '无特别限制' }}
             </p>
-            <div v-if="coupon.items && coupon.items.length">
+            <div v-if="coupon.expanded && coupon.items && coupon.items.length">
               <h6>內容:</h6>
               <ul>
                 <li v-for="item in coupon.items" :key="item.ItemName">
@@ -75,6 +78,7 @@
     </div>
   </div>
 </template>
+
 
 
 
@@ -114,22 +118,21 @@ export default {
     .then(response => {
       let allCoupons = response.data.map(coupon => ({
         ...coupon,
+        expanded: false, // Track whether the coupon details are shown
         items: [].concat(
           coupon.main_courses.map(course => ({ ItemType: 'Main_course', ItemName: course.split(' x ')[0], Quantity: parseInt(course.split(' x ')[1]) })),
           coupon.beverages.map(beverage => ({ ItemType: 'Beverage', ItemName: beverage.split(' x ')[0], Quantity: parseInt(beverage.split(' x ')[1]) })),
           coupon.snacks.map(snack => ({ ItemType: 'Snack', ItemName: snack.split(' x ')[0], Quantity: parseInt(snack.split(' x ')[1]) }))
         )
       }));
-
-      // Apply filters based on selections
-      allCoupons = this.filterCoupons(allCoupons);
-      this.selectedCoupons = allCoupons;
+      this.selectedCoupons = this.filterCoupons(allCoupons);
     })
     .catch(error => {
       console.error('Error fetching coupons:', error);
       this.selectedCoupons = [];
     });
 },
+
 
     clearDate(type) {
       if (type === 'start') {
@@ -223,6 +226,7 @@ export default {
 }
 
 .card {
+  
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 添加卡片阴影 */
   transition: transform 0.3s ease-in-out; /* 鼠标悬浮时的变换效果 */
 }
@@ -236,11 +240,20 @@ export default {
 }
 
 .card-title {
+  cursor: pointer; 
   font-size: 1.25rem; /* 卡片标题字体大小 */
   color: #0056b3; /* 标题颜色 */
 }
 
 .card-text {
   color: #333; /* 正文颜色，提高可读性 */
+}
+.discount-price {
+  background-color: #e53935; /* 紅色背景 */
+  color: white; /* 白色文字 */
+  padding: 2px 6px; /* 填充 */
+  border-radius: 4px; /* 圆角 */
+  font-weight: bold; /* 加粗字体 */
+  margin-left: 10px; /* 左边距 */
 }
 </style>

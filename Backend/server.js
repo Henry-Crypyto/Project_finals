@@ -66,29 +66,27 @@ app.get('/all_coupon', (req, res) => {
 
 app.get('/all_coupons_with_items', (req, res) => {
     const query = `
-        SELECT 
-            c.coupon_id, 
-            c.brand_name,
-            c.coupon_name, 
-            c.original_price, 
-            c.discount_price, 
-            c.start_date, 
-            c.expire_date, 
-            c.use_restriction, 
-            GROUP_CONCAT(DISTINCT CONCAT(h.main_course_name, ' x ', mc.quantity) SEPARATOR ', ') AS main_courses, 
-            GROUP_CONCAT(DISTINCT CONCAT(b.beverage_name, ' x ', cb.quantity) SEPARATOR ', ') AS beverages, 
-            GROUP_CONCAT(DISTINCT CONCAT(s.snack_name, ' x ', cs.quantity) SEPARATOR ', ') AS snacks
-        FROM 
-            coupon c 
-            LEFT JOIN coupon_main_course mc ON mc.coupon_id = c.coupon_id
-            LEFT JOIN main_course h ON mc.main_course_id = h.main_course_id
-            LEFT JOIN coupon_beverage cb ON cb.coupon_id = c.coupon_id
-            LEFT JOIN beverage b ON cb.beverage_id = b.beverage_id
-            LEFT JOIN coupon_snack cs ON cs.coupon_id = c.coupon_id
-            LEFT JOIN snack s ON cs.snack_id = s.snack_id
-        GROUP BY 
-            c.coupon_id, c.coupon_name, c.original_price, c.discount_price, c.start_date, c.expire_date, c.use_restriction;
-    `;
+    SELECT c.coupon_id, 
+    c.brand_name,
+    c.coupon_name, 
+    c.original_price, 
+    c.discount_price, 
+    c.start_date, 
+    c.expire_date, 
+    c.use_restriction, 
+    GROUP_CONCAT(DISTINCT CONCAT(h.main_course_name, IFNULL(CONCAT(' (', h.flavor_name, ')'), ''), ' x ', cs.quantity) SEPARATOR ', ') AS main_courses, 
+    GROUP_CONCAT(DISTINCT CONCAT(b.beverage_name, ' (', b.beverage_size, ') (', b.iced_hot_name, ') x ', cb.quantity) SEPARATOR ', ') AS beverages, 
+    GROUP_CONCAT(DISTINCT CONCAT(s.snack_name, IFNULL(CONCAT(' (', s.snack_size, ')'), ''), ' x ', cs.quantity) SEPARATOR ', ') AS snacks
+FROM 
+    coupon c 
+    LEFT JOIN coupon_main_course mc ON mc.coupon_id = c.coupon_id
+    LEFT JOIN main_course h ON mc.main_course_id = h.main_course_id
+    LEFT JOIN coupon_beverage cb ON cb.coupon_id = c.coupon_id
+    LEFT JOIN beverage b ON cb.beverage_id = b.beverage_id
+    LEFT JOIN coupon_snack cs ON cs.coupon_id = c.coupon_id
+    LEFT JOIN snack s ON cs.snack_id = s.snack_id
+GROUP BY 
+    c.coupon_id, c.coupon_name, c.original_price, c.discount_price, c.start_date, c.expire_date, c.use_restriction;`;
 
     db.query(query, (err, results) => {
         if (err) {
@@ -113,6 +111,41 @@ app.get('/all_coupons_with_items', (req, res) => {
     });
 });
 
+app.get('/all_main_course', (req, res) => {
+    db.query(`SELECT * FROM ${mainCourseTableName}`, (err, results) => {
+        if (err) {
+            console.error('Error fetching data: ', err);
+            res.status(500).send('Error fetching data');
+            return;
+        }
+        console.log('Data retrieved from the database: ', results);
+        res.json(results);
+    });
+});
+
+app.get('/all_beverage', (req, res) => {
+    db.query(`SELECT * FROM ${beverageTableName}`, (err, results) => {
+        if (err) {
+            console.error('Error fetching data: ', err);
+            res.status(500).send('Error fetching data');
+            return;
+        }
+        console.log('Data retrieved from the database: ', results);
+        res.json(results);
+    });
+});
+
+app.get('/all_snack', (req, res) => {
+    db.query(`SELECT * FROM ${snackTableName}`, (err, results) => {
+        if (err) {
+            console.error('Error fetching data: ', err);
+            res.status(500).send('Error fetching data');
+            return;
+        }
+        console.log('Data retrieved from the database: ', results);
+        res.json(results);
+    });
+});
 
 
 
