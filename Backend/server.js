@@ -235,7 +235,19 @@ app.post('/add_coupon_items_relation', (req, res) => {
     }
 });
 
+app.delete('/delete_coupon/:couponId', (req, res) => {
+    const couponId = req.params.couponId;
 
+    db.query(`DELETE FROM ${couponTableName} WHERE coupon_ID = ?`, [couponId], (err, results) => {
+        if (err) {
+            console.error('Error deleting coupon:', err);
+            return res.status(500).send('Error deleting coupon: ' + err.message);
+        }
+        res.send('Coupon deleted successfully.');
+    });
+});
+
+  
 
 
 

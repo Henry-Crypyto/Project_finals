@@ -50,32 +50,36 @@
     </div>
     <!-- 显示选定品牌、价格和日期范围的折扣券信息 -->
     <div class="row">
-      <div class="col-12" v-if="selectedCoupons.length > 0">
-        <h3 class="mb-3">折扣券信息</h3>
-        <div v-for="coupon in selectedCoupons" :key="coupon.coupon_ID" class="card mb-3">
-          <div class="card-body">
-            <h5 class="card-title" @click="coupon.expanded = !coupon.expanded">
-              <span class="discount-price">$ {{ coupon.discount_price }}</span> {{ coupon.coupon_name }}
-            </h5>
-            <p v-if="coupon.expanded" class="card-text">
-              {{ coupon.coupon_content }}<br>
-              开始日期: {{ new Date(coupon.start_date).toLocaleDateString() }}<br>
-              原价: {{ coupon.original_price }}, 折扣价: {{ coupon.discount_price }}<br>
-              到期日期: {{ new Date(coupon.expire_date).toLocaleDateString() }}<br>
-              使用限制: {{ coupon.use_restriction || '无特别限制' }}
-            </p>
-            <div v-if="coupon.expanded && coupon.items && coupon.items.length">
-              <h6>內容:</h6>
-              <ul>
-                <li v-for="item in coupon.items" :key="item.ItemName">
-                  {{ item.ItemName }} x {{ item.Quantity }}
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
+  <div class="col-12" v-if="selectedCoupons.length > 0">
+    <h3 class="mb-3">折扣券信息</h3>
+    <div v-for="coupon in selectedCoupons" :key="coupon.coupon_ID" class="card mb-3">
+  <div class="card-body d-flex justify-content-between align-items-center">
+    <h5 class="card-title" @click="coupon.expanded = !coupon.expanded">
+      <span class="discount-price">$ {{ coupon.discount_price }}</span> {{ coupon.coupon_name }}
+    </h5>
+    <div>
+      <button class="btn btn-danger btn-sm" @click="deleteCoupon(coupon.coupon_id)">刪除</button>
     </div>
+  </div>
+  <div v-if="coupon.items && coupon.items.length">
+    <h6 class="pl-4">品項:</h6>
+    <ul>
+      <li v-for="item in coupon.items" :key="item.ItemName">
+        {{ item.ItemName }} x {{ item.Quantity }}
+      </li>
+    </ul>
+  </div>
+  <div class="card-text pl-8" v-if="coupon.expanded">
+    {{ coupon.coupon_content }}<br>
+    开始日期: {{ new Date(coupon.start_date).toLocaleDateString() }}<br>
+    原价: {{ coupon.original_price }}, 折扣价: {{ coupon.discount_price }}<br>
+    到期日期: {{ new Date(coupon.expire_date).toLocaleDateString() }}<br>
+    使用限制: {{ coupon.use_restriction || '无特别限制' }}
+  </div>
+</div>
+
+  </div>
+</div>
   </div>
 </template>
 
@@ -132,7 +136,24 @@ export default {
       this.selectedCoupons = [];
     });
 },
-
+deleteCoupon(couponId) {
+  // 提示用户确认删除
+  if (confirm("确定要删除此折扣券吗？")) {
+    const url = getFullApiUrl(`/delete_coupon/${couponId}`);
+    axios.delete(url)
+      .then(() => {
+        // 删除成功后重新获取折扣券信息
+        this.fetchCoupons();
+        // 显示删除成功的提示框
+        alert("折扣券删除成功！");
+      })
+      .catch(error => {
+        console.error('Error deleting coupon:', error);
+        // 处理删除失败的情况
+        alert("折扣券删除失败：" + error.message);
+      });
+  }
+},
 
     clearDate(type) {
       if (type === 'start') {
@@ -249,8 +270,8 @@ export default {
   color: #333; /* 正文颜色，提高可读性 */
 }
 .discount-price {
-  background-color: #e53935; /* 紅色背景 */
-  color: white; /* 白色文字 */
+  background-color: #200ebf99; /* 紅色背景 */
+  color: rgb(252, 251, 250); /* 白色文字 */
   padding: 2px 6px; /* 填充 */
   border-radius: 4px; /* 圆角 */
   font-weight: bold; /* 加粗字体 */
