@@ -34,7 +34,7 @@
         </div>
         <div class="form-row">
           <input type="text" v-model="newCoupon.use_restriction" placeholder="使用限制" class="full-width">
-          <input type="text" :value="nextCouponId" placeholder="折扣券ID" readonly style="background-color: #e0e0e0;">
+          <input type="text" :value="this.$root.nextCouponId" placeholder="折扣券ID" readonly style="background-color: #e0e0e0;">
         </div>
         <button type="submit" class="btn btn-success full-width">新增折扣券</button>
       </form>
@@ -48,8 +48,7 @@ import axios from 'axios';
 export default {
   data() {
     return {
-      cartItems: [],
-      nextCouponId: '', // 從後端拿到的下一個 coupon_id
+      cartItems: [], 
       newCoupon: {
         coupon_id: null,
         brand_name: '',
@@ -90,46 +89,32 @@ export default {
   removeFromCart(itemId) {
       this.cartItems = this.cartItems.filter(item => item.id !== itemId);
     },
-  submitCoupon() {
-      this.newCoupon.brand_name = this.brandSelect;
-      this.newCoupon.coupon_id = this.nextCouponId;
-      this.newCoupon.original_price=this.totalPrice;
+    submitCoupon() {
+  this.newCoupon.brand_name = this.brandSelect;
+  this.newCoupon.coupon_id = this.$root.nextCouponId;
+  this.newCoupon.original_price = this.totalPrice;
 
-      axios.post('/api/add_coupon', this.newCoupon)
-  .then(response => {
-    console.log('Coupon added successfully:', response);
-    // 在第一个请求成功后执行第二个请求
-    return axios.post('/api/add_coupon_items_relation', this.cartItems);
-  })
-  .then(response => {
-    console.log('Coupon items relation added successfully:', response);
-    alert('折扣券成功新增！');
-    this.fetchNextCouponId();
-  })
-  .catch(error => {
-    console.error('Error submitting coupon:', error);
-    alert('新增折扣券失败: ' + error.message);
-  });
-
-      this.resetForm();
-    },
-    fetchNextCouponId() {
-  axios.get('/api/next_coupon_id')
+  axios.post('/api/add_coupon', this.newCoupon)
     .then(response => {
-      this.nextCouponId = response.data[0] ? response.data[0].next_coupon_id : null;
-      // 获取当前日期
-      const today = new Date();
-      // 设置起始日期为今天
-      this.newCoupon.start_date = this.formatDate(today);
-      // 计算结束日期为起始日期的后一周
-      const endDate = new Date(today);
-      endDate.setDate(today.getDate() + 7);
-      // 设置结束日期为起始日期的后一周
-      this.newCoupon.expire_date = this.formatDate(endDate);
+      console.log('Coupon added successfully:', response);
+      // 在第一个请求成功后执行第二个请求
+      return axios.post('/api/add_coupon_items_relation', this.cartItems);
+    })
+    .then(response => {
+      console.log('Coupon items relation added successfully:', response);
+      alert('折扣券成功新增！');
+      this.updateNextCouponId();
+      this.resetForm();
+      this.cartItems = [];
     })
     .catch(error => {
-      console.error('Error fetching next coupon ID:', error);
+      console.error('Error submitting coupon:', error);
+      alert('新增折扣券失败: ' + error.message);
     });
+},
+
+    updateNextCouponId() {     
+      this.$root.nextCouponId+=1;
 },
 
 formatDate(date) {
@@ -154,8 +139,7 @@ formatDate(date) {
     }
   },
   mounted() {
-    emitter.on('add-to-cart', this.addToCart);
-    this.fetchNextCouponId(); // 获取下一个 coupon_id
+    emitter.on('add-to-cart', this.addToCart);// 获取下一个 coupon_id
   },
   beforeUnmount() {
     emitter.off('add-to-cart', this.addToCart);

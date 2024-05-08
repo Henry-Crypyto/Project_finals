@@ -30,13 +30,11 @@ export default {
   data() {
     return {
       mainCourses: [],
-      nextCouponId: '',
-      productType: 'mainCourse'  // 将 nextCouponId 作为数据属性
+      productType: 'mainCourse'  
     };
   },
   created() {
     this.fetchMainCourses();
-    this.fetchNextCouponId();  // 确保组件创建时就获取 nextCouponId
   },
   computed: {
     filteredMainCourses() {
@@ -60,15 +58,6 @@ export default {
           console.error('Error fetching main courses:', error);
         });
     },
-    fetchNextCouponId() {
-      axios.get('/api/next_coupon_id')
-        .then(response => {
-          this.nextCouponId = response.data[0] ? response.data[0].next_coupon_id : null;
-        })
-        .catch(error => {
-          console.error('Error fetching next coupon ID:', error);
-        });
-    },
     addToCart(course) {
       if (this.$root.brandSelect === 'all' && this.mainCourses.length > 0) {
         this.showAlertForBrand(course.brand_name);
@@ -76,7 +65,7 @@ export default {
         this.$root.brandSelect = course.brand_name; // 将品牌设置为所选品牌
       }
       emitter.emit('add-to-cart', {
-        nextCouponId: this.nextCouponId,  // 使用 this.nextCouponId 确保是响应式数据
+        nextCouponId: this.$root.nextCouponId,  // 使用 this.nextCouponId 确保是响应式数据
         id: course.main_course_id,
         name: course.main_course_name,
         productType: this.productType,  // 确保 productType 正确引用

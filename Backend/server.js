@@ -189,6 +189,8 @@ app.post('/add_coupon_items_relation', (req, res) => {
     const valuesBeverage = [];
     const valuesSnack = [];
 
+    let responseSent = false; // Variable to track if response has been sent
+
     items.forEach(item => {
         const value = [item.nextCouponId, item.id, item.quantity];
         switch (item.productType) {
@@ -209,9 +211,15 @@ app.post('/add_coupon_items_relation', (req, res) => {
         db.query(insertCouponQuery, [values], (err, results) => {
             if (err) {
                 console.error('Error adding coupon:', err);
-                return res.status(500).send('Error adding coupon: ' + err.message);
+                if (!responseSent) { // Check if response has already been sent
+                    responseSent = true; // Set responseSent to true
+                    return res.status(500).send('Error adding coupon: ' + err.message);
+                }
             }
-            res.send('Coupon items added successfully.');
+            if (!responseSent) { // Check if response has already been sent
+                responseSent = true; // Set responseSent to true
+                res.send('Coupon items added successfully.');
+            }
         });
     };
 
@@ -226,6 +234,7 @@ app.post('/add_coupon_items_relation', (req, res) => {
         executeQuery(couponSnackTableName, 'snack_id', valuesSnack);
     }
 });
+
 
 
 

@@ -26,6 +26,7 @@ import ShowCoupon from './components/ShowCoupon.vue';
 import ShowMainCourse from './components/ShowMainCourse.vue';
 import ShowBeverage from './components/ShowBeverage.vue';
 import ShowSnack from './components/ShowSnack.vue';
+import axios from 'axios';
 
 export default {
   components: {
@@ -39,6 +40,7 @@ export default {
   data() {
     return {
       brandSelect: 'all',
+      nextCouponId: '',
       currentView: 'ShowCoupon',  // 預設顯示 ShowCoupon
       cartItems: []  // 購物車項目
     };
@@ -73,10 +75,21 @@ export default {
       } else {
         this.cartItems.push({...item, quantity: 1});
       }
-    }
+    },
+    fetchNextCouponId() {
+      axios.get('/api/next_coupon_id')
+        .then(response => {
+          this.nextCouponId = response.data[0] ? response.data[0].next_coupon_id : null;
+        })
+        .catch(error => {
+          console.error('Error fetching next coupon ID:', error);
+        });
+    },
   },
+  
   created() {
     // 封裝 handleSectionChange 為防抖函數
+    this.fetchNextCouponId();
     this.handleSectionChange = this.debounce(this.handleSectionChange, 60);
   }
 }

@@ -33,13 +33,11 @@
     data() {
       return {
         snacks: [],
-        nextCouponId: '',
         productType: 'snack'
       };
     },
     created() {
       this.fetchSnacks();
-      this.fetchNextCouponId();
     },
     computed: {
       filteredSnacks() {
@@ -63,15 +61,6 @@
             console.error('Error fetching snacks:', error);
           });
       },
-      fetchNextCouponId() {
-      axios.get('/api/next_coupon_id')
-        .then(response => {
-          this.nextCouponId = response.data[0] ? response.data[0].next_coupon_id : null;
-        })
-        .catch(error => {
-          console.error('Error fetching next coupon ID:', error);
-        });
-     },
       addToCart(snack) {
         if (this.$root.brandSelect === 'all' && this.snacks.length > 0) {
           this.showAlertForBrand(snack.all_brand_name);
@@ -79,7 +68,7 @@
           this.$root.brandSelect = snack.all_brand_name;
         }
         emitter.emit('add-to-cart', {
-          nextCouponId: this.nextCouponId,
+          nextCouponId: this.$root.nextCouponId,
           id: snack.snack_id,
           name: snack.snack_name.trim(),
           productType:this.productType,

@@ -33,13 +33,12 @@
     data() {
       return {
         beverages: [],
-        nextCouponId: '',
         productType: 'beverage'
       };
     },
     created() {
       this.fetchBeverages();
-      this.fetchNextCouponId();
+      
     },
     computed: {
       filteredBeverages() {
@@ -64,15 +63,7 @@
           });
       },  
 
-      fetchNextCouponId() {
-      axios.get('/api/next_coupon_id')
-        .then(response => {
-          this.nextCouponId = response.data[0] ? response.data[0].next_coupon_id : null;
-        })
-        .catch(error => {
-          console.error('Error fetching next coupon ID:', error);
-        });
-    },
+      
       addToCart(beverage) {
         if (this.$root.brandSelect === 'all' && this.beverages.length > 0) {
           this.showAlertForBrand(beverage.all_brand_name);
@@ -80,7 +71,7 @@
           this.$root.brandSelect = beverage.all_brand_name;
         }
         emitter.emit('add-to-cart', {
-          nextCouponId: this.nextCouponId,
+          nextCouponId: this.$root.nextCouponId,
           id: beverage.beverage_id,
           name: beverage.beverage_name.trim(),
           productType:this.productType,
