@@ -44,6 +44,13 @@ export default {
     };
   },
   methods: {
+    debounce(func, wait) {
+      let timeout;
+      return function(...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+      };
+    },
     handleSectionChange(section) {
       switch (section) {
         case 'mainCourse':
@@ -67,10 +74,14 @@ export default {
         this.cartItems.push({...item, quantity: 1});
       }
     }
+  },
+  created() {
+    // 封裝 handleSectionChange 為防抖函數
+    this.handleSectionChange = this.debounce(this.handleSectionChange, 60);
   }
 }
 </script>
 
 <style>
-
+/* Add your styles here */
 </style>

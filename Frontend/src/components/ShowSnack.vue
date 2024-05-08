@@ -1,14 +1,20 @@
 <template>
     <div class="snack-container">
       <h1 class="text-center">小吃選單</h1>
-      <ul class="snack-list" v-if="snacks.length > 0">
-        <li v-for="snack in snacks" :key="snack.snack_id" class="snack-item card">
+      <ul class="snack-list" v-if="filteredSnacks.length > 0">
+        <li v-for="snack in filteredSnacks" :key="snack.snack_id" class="snack-item card">
           <div class="card-body">
             <h3 class="card-title">{{ snack.snack_name.trim() }}</h3>
             <p class="card-text" v-if="snack.snack_size">大小: {{ snack.snack_size }}</p>
             <p class="card-text">原價: {{ snack.snack_price }}</p>
             <p class="card-text">風味: {{ snack.flavor_name }}</p>
             <p class="card-text">品牌: {{ snack.all_brand_name }}</p>
+            <div class="input-group mb-3">
+              <input type="number" class="form-control" v-model="snack.quantity" min="1" placeholder="數量">
+              <div class="input-group-append">
+                <button class="btn btn-primary" @click="addToCart(snack)">加入購物車</button>
+              </div>
+            </div>
           </div>
         </li>
       </ul>
@@ -20,29 +26,76 @@
   
   <script>
   import axios from 'axios';
-  
+  import { emitter } from './eventBus';
+
+
   export default {
     data() {
       return {
-        snacks: []
+        snacks: [],
+        nextCouponId: '',
+        productType: 'snack'
       };
     },
     created() {
       this.fetchSnacks();
+      this.fetchNextCouponId();
+    },
+    computed: {
+      filteredSnacks() {
+        if (this.$root.brandSelect === 'all') {
+          return this.snacks;
+        } else {
+          return this.snacks.filter(snack => snack.all_brand_name === this.$root.brandSelect);
+        }
+      }
     },
     methods: {
       fetchSnacks() {
-        axios.get('/api/all_snack') // 確保 URL 正確並根據您的配置進行調整
+        axios.get('/api/all_snack')
           .then(response => {
-            this.snacks = response.data;
+            this.snacks = response.data.map(snack => ({
+              ...snack,
+              quantity: 1 // 將每個小吃的數量初始化為1
+            }));
           })
           .catch(error => {
             console.error('Error fetching snacks:', error);
           });
+      },
+      fetchNextCouponId() {
+      axios.get('/api/next_coupon_id')
+        .then(response => {
+          this.nextCouponId = response.data[0] ? response.data[0].next_coupon_id : null;
+        })
+        .catch(error => {
+          console.error('Error fetching next coupon ID:', error);
+        });
+     },
+      addToCart(snack) {
+        if (this.$root.brandSelect === 'all' && this.snacks.length > 0) {
+          this.showAlertForBrand(snack.all_brand_name);
+        } else {
+          this.$root.brandSelect = snack.all_brand_name;
+        }
+        emitter.emit('add-to-cart', {
+          nextCouponId: this.nextCouponId,
+          id: snack.snack_id,
+          name: snack.snack_name.trim(),
+          productType:this.productType,
+          quantity: snack.quantity,
+          price: snack.snack_price
+        });
+      },
+      showAlertForBrand(brandName) {
+        if (confirm(`是否要選擇 ${brandName} 品牌的商品？`)) {
+          this.$root.brandSelect = brandName;
+        }
       }
     }
   }
   </script>
+  
   
   <style scoped>
   .snack-container {

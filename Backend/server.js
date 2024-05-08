@@ -8,6 +8,7 @@ app.use(express.json()); // 用于解析JSON格式的请求体
 
 // 假设你的表名为 user，根据你真实的表名修改此处
 const userTableName = 'all_user';
+
 const brandTableName = 'all_brand_name';
 const mainCourseTableName='main_course';
 const beverageTableName='beverage';
@@ -50,8 +51,9 @@ app.get('/brand_append', (req, res) => {
     });
 });
 
-app.get('/all_coupon', (req, res) => {
-    db.query(`SELECT * FROM ${couponTableName}`, (err, results) => {
+
+app.get('/next_coupon_id', (req, res) => {
+    db.query(`SELECT MAX(coupon_id) + 1 AS next_coupon_id FROM ${couponTableName}`, (err, results) => {
         if (err) {
             console.error('Error fetching data: ', err);
             res.status(500).send('Error fetching data');
@@ -64,9 +66,11 @@ app.get('/all_coupon', (req, res) => {
 
 
 
+
 app.get('/all_coupons_with_items', (req, res) => {
     const query = `
-    SELECT c.coupon_id, 
+    SELECT 
+    c.coupon_id, 
     c.brand_name,
     c.coupon_name, 
     c.original_price, 
@@ -74,9 +78,9 @@ app.get('/all_coupons_with_items', (req, res) => {
     c.start_date, 
     c.expire_date, 
     c.use_restriction, 
-    GROUP_CONCAT(DISTINCT CONCAT(h.main_course_name, IFNULL(CONCAT(' (', h.flavor_name, ')'), ''), ' x ', cs.quantity) SEPARATOR ', ') AS main_courses, 
-    GROUP_CONCAT(DISTINCT CONCAT(b.beverage_name, ' (', b.beverage_size, ') (', b.iced_hot_name, ') x ', cb.quantity) SEPARATOR ', ') AS beverages, 
-    GROUP_CONCAT(DISTINCT CONCAT(s.snack_name, IFNULL(CONCAT(' (', s.snack_size, ')'), ''), ' x ', cs.quantity) SEPARATOR ', ') AS snacks
+    GROUP_CONCAT(DISTINCT CONCAT(h.main_course_name, COALESCE(CONCAT(' (', h.flavor_name, ')'), ''), ' x ', mc.quantity) ORDER BY h.main_course_name SEPARATOR ', ') AS main_courses, 
+    GROUP_CONCAT(DISTINCT CONCAT(b.beverage_name, ' (', b.beverage_size, ') (', b.iced_hot_name, ') x ', cb.quantity) ORDER BY b.beverage_name SEPARATOR ', ') AS beverages, 
+    GROUP_CONCAT(DISTINCT CONCAT(s.snack_name, COALESCE(CONCAT(' (', s.snack_size, ')'), ''), ' x ', cs.quantity) ORDER BY s.snack_name SEPARATOR ', ') AS snacks
 FROM 
     coupon c 
     LEFT JOIN coupon_main_course mc ON mc.coupon_id = c.coupon_id
@@ -86,7 +90,8 @@ FROM
     LEFT JOIN coupon_snack cs ON cs.coupon_id = c.coupon_id
     LEFT JOIN snack s ON cs.snack_id = s.snack_id
 GROUP BY 
-    c.coupon_id, c.coupon_name, c.original_price, c.discount_price, c.start_date, c.expire_date, c.use_restriction;`;
+    c.coupon_id, c.brand_name, c.coupon_name, c.original_price, c.discount_price, c.start_date, c.expire_date, c.use_restriction;
+`;
 
     db.query(query, (err, results) => {
         if (err) {
@@ -146,6 +151,83 @@ app.get('/all_snack', (req, res) => {
         res.json(results);
     });
 });
+
+app.post('/add_coupon', (req, res) => {
+    // Destructure and validate required fields from the request body
+    const {
+        coupon_id, brand_name, coupon_name, original_price, discount_price, start_date, expire_date, use_restriction
+    } = req.body;
+
+    // Check if all required fields are present and not null
+    if (!coupon_id || !brand_name || !coupon_name || original_price === null || discount_price === null || !start_date || !expire_date || !use_restriction) {
+        return res.status(400).send('All fields are required and must be valid.');
+    }
+
+    // Prepare the SQL query to insert the new coupon
+    const insertCouponQuery = `INSERT INTO ${couponTableName} (coupon_id, brand_name, coupon_name, original_price, discount_price, start_date, expire_date, use_restriction) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+
+    // Execute the query
+    db.query(insertCouponQuery, [coupon_id, brand_name, coupon_name, original_price, discount_price, start_date, expire_date, use_restriction], (err, couponResult) => {
+        if (err) {
+            console.error('Error adding coupon:', err);
+            return res.status(500).send('Error adding coupon: ' + err.message);
+        }
+
+        console.log('Coupon added to the database with ID:', coupon_id);
+
+        // Optionally, handle the addition of related items like main courses, beverages, and snacks here
+
+        // Send a success response
+        res.status(201).send('Coupon added successfully');
+    });
+});
+
+app.post('/add_coupon_items_relation', (req, res) => {
+    const items = Array.isArray(req.body) ? req.body : [req.body]; // Ensure items are always processed as an array
+
+    const valuesMainCourse = [];
+    const valuesBeverage = [];
+    const valuesSnack = [];
+
+    items.forEach(item => {
+        const value = [item.nextCouponId, item.id, item.quantity];
+        switch (item.productType) {
+            case 'mainCourse':
+                valuesMainCourse.push(value);
+                break;
+            case 'beverage':
+                valuesBeverage.push(value);
+                break;
+            case 'snack':
+                valuesSnack.push(value);
+                break;
+        }
+    });
+
+    const executeQuery = (tableName, columnName, values) => {
+        const insertCouponQuery = `INSERT INTO ${tableName} (coupon_id, ${columnName}, quantity) VALUES ?`;
+        db.query(insertCouponQuery, [values], (err, results) => {
+            if (err) {
+                console.error('Error adding coupon:', err);
+                return res.status(500).send('Error adding coupon: ' + err.message);
+            }
+            res.send('Coupon items added successfully.');
+        });
+    };
+
+    // Execute queries based on product type
+    if (valuesMainCourse.length > 0) {
+        executeQuery(couponMainCourseTableName, 'main_course_id', valuesMainCourse);
+    }
+    if (valuesBeverage.length > 0) {
+        executeQuery(couponBeverageTableName, 'beverage_id', valuesBeverage);
+    }
+    if (valuesSnack.length > 0) {
+        executeQuery(couponSnackTableName, 'snack_id', valuesSnack);
+    }
+});
+
+
 
 
 

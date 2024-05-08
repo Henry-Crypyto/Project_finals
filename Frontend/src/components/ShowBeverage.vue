@@ -1,14 +1,20 @@
 <template>
     <div class="beverage-container">
       <h1 class="text-center">飲料選單</h1>
-      <ul class="beverage-list" v-if="beverages.length > 0">
-        <li v-for="beverage in beverages" :key="beverage.beverage_id" class="beverage-item card">
+      <ul class="beverage-list" v-if="filteredBeverages.length > 0">
+        <li v-for="beverage in filteredBeverages" :key="beverage.beverage_id" class="beverage-item card">
           <div class="card-body">
             <h3 class="card-title">{{ beverage.beverage_name.trim() }}</h3>
             <p class="card-text">原價: {{ beverage.beverage_price }}</p>
             <p class="card-text">容量: {{ beverage.beverage_size }}</p>
             <p class="card-text">類型: {{ beverage.iced_hot_name }}</p>
             <p class="card-text">品牌: {{ beverage.all_brand_name }}</p>
+            <div class="input-group mb-3">
+              <input type="number" class="form-control" v-model="beverage.quantity" min="1" placeholder="數量">
+              <div class="input-group-append">
+                <button class="btn btn-primary" @click="addToCart(beverage)">加入購物車</button>
+              </div>
+            </div>
           </div>
         </li>
       </ul>
@@ -20,29 +26,77 @@
   
   <script>
   import axios from 'axios';
+  import { emitter } from './eventBus';
   
+
   export default {
     data() {
       return {
-        beverages: []
+        beverages: [],
+        nextCouponId: '',
+        productType: 'beverage'
       };
     },
     created() {
       this.fetchBeverages();
+      this.fetchNextCouponId();
+    },
+    computed: {
+      filteredBeverages() {
+        if (this.$root.brandSelect === 'all') {
+          return this.beverages;
+        } else {
+          return this.beverages.filter(beverage => beverage.all_brand_name === this.$root.brandSelect);
+        }
+      }
     },
     methods: {
       fetchBeverages() {
-        axios.get('/api/all_beverage') // 確保 URL 正確並根據您的配置進行調整
+        axios.get('/api/all_beverage')
           .then(response => {
-            this.beverages = response.data;
+            this.beverages = response.data.map(beverage => ({
+              ...beverage,
+              quantity: 1 // 將每個飲料的數量初始化為1
+            }));
           })
           .catch(error => {
             console.error('Error fetching beverages:', error);
           });
+      },  
+
+      fetchNextCouponId() {
+      axios.get('/api/next_coupon_id')
+        .then(response => {
+          this.nextCouponId = response.data[0] ? response.data[0].next_coupon_id : null;
+        })
+        .catch(error => {
+          console.error('Error fetching next coupon ID:', error);
+        });
+    },
+      addToCart(beverage) {
+        if (this.$root.brandSelect === 'all' && this.beverages.length > 0) {
+          this.showAlertForBrand(beverage.all_brand_name);
+        } else {
+          this.$root.brandSelect = beverage.all_brand_name;
+        }
+        emitter.emit('add-to-cart', {
+          nextCouponId: this.nextCouponId,
+          id: beverage.beverage_id,
+          name: beverage.beverage_name.trim(),
+          productType:this.productType,
+          quantity: beverage.quantity,
+          price: beverage.beverage_price
+        });
+      },
+      showAlertForBrand(brandName) {
+        if (confirm(`是否要選擇 ${brandName} 品牌的商品？`)) {
+          this.$root.brandSelect = brandName;
+        }
       }
     }
   }
   </script>
+  
   
   <style scoped>
   .beverage-container {
