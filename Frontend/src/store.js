@@ -28,8 +28,9 @@ export default createStore({
     },
     addToCart(state, payload) {
         const { product, productType } = payload;
-        const item = state.cartItems.find(item => item.id === product.id);
-        if (item) {
+        const item = state.cartItems.find(item => item.id === product.id 
+          && item.productType === productType);        
+          if (item) {
           item.quantity += product.quantity;
         } else {
           state.cartItems.push({
@@ -41,13 +42,15 @@ export default createStore({
             quantity: product.quantity
           });
         }
+        console.log("购物车内容:", state.cartItems.length);
       },
     setBrandSelect(state, newBrandSelect) {
         state.brandSelect = newBrandSelect;
         state.newCoupon.brand_name = newBrandSelect;  // 同步更新 newCoupon 中的 brand_name
       },
-    removeFromCart(state, itemId) {
-      state.cartItems = state.cartItems.filter(item => item.id !== itemId);
+      removeFromCart(state, payload) {
+        const { id, productType } = payload;
+        state.cartItems = state.cartItems.filter(item => !(item.id === id && item.productType === productType));
     },
     setNextCouponId(state, id) {
       state.nextCouponId = id;

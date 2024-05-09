@@ -27,6 +27,7 @@
   <script>
   import axios from 'axios';
   import { mapMutations } from 'vuex';
+  import { getFullApiUrl } from '../../config.js';
 
 
   export default {
@@ -52,7 +53,9 @@
       ...mapMutations(['addToCart','setBrandSelect']), // 引入 Vuex mutation
 
       fetchSnacks() {
-        axios.get('/api/all_snack')
+        const url = getFullApiUrl('/all_snack');
+
+        axios.get(url)
           .then(response => {
             this.snacks = response.data.map(snack => ({
               ...snack,

@@ -1,26 +1,25 @@
 <template>
-  <v-app>
-    <!-- 使用 Vuetify 的工具列组件 -->
-    <v-app-bar app color="indigo" dark>
-      <v-toolbar-title>CouponKing</v-toolbar-title>
-    </v-app-bar>
+  <div>
+    <!-- 標題列 -->
+    <header style="background-color: #3f51b5; color: #ffffff; padding: 16px;">
+      <h1 style="margin: 0;">CouponKing</h1>
+    </header>
 
-    <!-- 主內容區域，這裡根據選擇動態顯示 -->
-    <v-main>
+    <!-- 主內容區域 -->
+    <main>
       <NavBar @change-section="handleSectionChange"/>
       <ShoppingCart :items="cartItems" />
       <component :is="currentView" @add-to-cart="addToCart" />
-    </v-main>
+    </main>
 
     <!-- 底部 -->
-    <v-footer color="indigo" app>
-      <span class="white--text">&copy; 2024</span>
-    </v-footer>
-  </v-app>
+    <footer style="background-color: #3f51b5; color: #ffffff; padding: 16px;">
+      <span>&copy; 2024</span>
+    </footer>
+  </div>
 </template>
 
 <script>
-
 import NavBar from './components/NavBar.vue'; // 確保路徑正確
 import ShoppingCart from './components/ShoppingCart.vue';
 import ShowCoupon from './components/ShowCoupon.vue';
@@ -30,7 +29,7 @@ import ShowSnack from './components/ShowSnack.vue';
 
 export default {
   components: {
-    NavBar, // 確保這裡註冊了 NavBar
+    NavBar,
     ShoppingCart,
     ShowCoupon,
     ShowMainCourse,

@@ -10,7 +10,9 @@
             <p>单价: ${{ item.price }}</p>
             <p>小计: ${{ item.quantity * item.price }}</p>
           </div>
-          <button class="btn btn-danger" @click.prevent="removeFromCart(item.id)">移除</button>
+          <button class="btn btn-danger" @click.prevent="removeFromCart({ id: item.id, productType: item.productType })">
+             移除
+          </button>
         </li>
       </ul>
       <div v-if="cartItems.length === 0" class="empty-cart">

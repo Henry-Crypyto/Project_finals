@@ -24,6 +24,7 @@
 <script>
 import { mapMutations } from 'vuex';
 import axios from 'axios';
+import { getFullApiUrl } from '../../config.js';
 
 export default {
   data() {
@@ -46,7 +47,8 @@ export default {
   methods: {
     ...mapMutations(['addToCart','setBrandSelect']), // 引入 Vuex mutation
     fetchMainCourses() {
-      axios.get('/api/all_main_course')
+      const url = getFullApiUrl('/all_main_course');
+      axios.get(url)
         .then(response => {
           this.mainCourses = response.data.map(course => ({
             ...course,
