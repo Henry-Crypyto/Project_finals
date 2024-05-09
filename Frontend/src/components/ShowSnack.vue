@@ -2,17 +2,17 @@
     <div class="snack-container">
       <h1 class="text-center">小吃選單</h1>
       <ul class="snack-list" v-if="filteredSnacks.length > 0">
-        <li v-for="snack in filteredSnacks" :key="snack.snack_id" class="snack-item card">
+        <li v-for="snack in filteredSnacks" :key="snack.id" class="snack-item card">
           <div class="card-body">
-            <h3 class="card-title">{{ snack.snack_name.trim() }}</h3>
+            <h3 class="card-title">{{ snack.name.trim() }}</h3>
             <p class="card-text" v-if="snack.snack_size">大小: {{ snack.snack_size }}</p>
-            <p class="card-text">原價: {{ snack.snack_price }}</p>
+            <p class="card-text">原價: {{ snack.price }}</p>
             <p class="card-text">風味: {{ snack.flavor_name }}</p>
-            <p class="card-text">品牌: {{ snack.all_brand_name }}</p>
+            <p class="card-text">品牌: {{ snack.brand_name }}</p>
             <div class="input-group mb-3">
               <input type="number" class="form-control" v-model="snack.quantity" min="1" placeholder="數量">
               <div class="input-group-append">
-                <button class="btn btn-primary" @click="addToCart(snack)">加入購物車</button>
+                <button class="btn btn-primary" @click="handleAddToCart(snack)">加入購物車</button>
               </div>
             </div>
           </div>
@@ -26,7 +26,7 @@
   
   <script>
   import axios from 'axios';
-  import { emitter } from './eventBus';
+  import { mapMutations } from 'vuex';
 
 
   export default {
@@ -41,14 +41,16 @@
     },
     computed: {
       filteredSnacks() {
-        if (this.$root.brandSelect === 'all') {
+        if (this.$store.state.brandSelect === 'all') {
           return this.snacks;
         } else {
-          return this.snacks.filter(snack => snack.all_brand_name === this.$root.brandSelect);
+          return this.snacks.filter(snack => snack.brand_name === this.$store.state.brandSelect);
         }
       }
     },
     methods: {
+      ...mapMutations(['addToCart','setBrandSelect']), // 引入 Vuex mutation
+
       fetchSnacks() {
         axios.get('/api/all_snack')
           .then(response => {
@@ -61,21 +63,19 @@
             console.error('Error fetching snacks:', error);
           });
       },
-      addToCart(snack) {
-        if (this.$root.brandSelect === 'all' && this.snacks.length > 0) {
-          this.showAlertForBrand(snack.all_brand_name);
-        } else {
-          this.$root.brandSelect = snack.all_brand_name;
-        }
-        emitter.emit('add-to-cart', {
-          nextCouponId: this.$root.nextCouponId,
-          id: snack.snack_id,
-          name: snack.snack_name.trim(),
-          productType:this.productType,
-          quantity: snack.quantity,
-          price: snack.snack_price
-        });
-      },
+      handleAddToCart(snack) {
+  // 如果购物车为空，则询问用户是否要继续添加商品
+  if (this.$store.state.cartItems.length === 0) {
+    if (!confirm(`购物车当前为空。你确定要添加 ${snack.brand_name} 品牌的商品到购物车吗？`)) {
+      return; // 如果用户不确认，直接返回不执行添加操作
+    }
+  }
+  this.setBrandSelect(snack.brand_name);
+  this.addToCart({
+    product:snack,
+    productType: this.$store.state.productType[2]  // 假设你正在使用数组中的第一个产品类型
+  });
+},
       showAlertForBrand(brandName) {
         if (confirm(`是否要選擇 ${brandName} 品牌的商品？`)) {
           this.$root.brandSelect = brandName;

@@ -4,9 +4,11 @@ import vuetify from './plugins/vuetify'
 import { loadFonts } from './plugins/webfontloader'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import "bootstrap"
+import store from './store';
 
 loadFonts()
 
 createApp(App)
   .use(vuetify)
+  .use(store)
   .mount('#app')

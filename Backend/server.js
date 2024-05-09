@@ -78,17 +78,17 @@ app.get('/all_coupons_with_items', (req, res) => {
     c.start_date, 
     c.expire_date, 
     c.use_restriction, 
-    GROUP_CONCAT(DISTINCT CONCAT(h.main_course_name, COALESCE(CONCAT(' (', h.flavor_name, ')'), ''), ' x ', mc.quantity) ORDER BY h.main_course_name SEPARATOR ', ') AS main_courses, 
-    GROUP_CONCAT(DISTINCT CONCAT(b.beverage_name, ' (', b.beverage_size, ') (', b.iced_hot_name, ') x ', cb.quantity) ORDER BY b.beverage_name SEPARATOR ', ') AS beverages, 
-    GROUP_CONCAT(DISTINCT CONCAT(s.snack_name, COALESCE(CONCAT(' (', s.snack_size, ')'), ''), ' x ', cs.quantity) ORDER BY s.snack_name SEPARATOR ', ') AS snacks
+    GROUP_CONCAT(DISTINCT CONCAT(h.name, COALESCE(CONCAT(' (', h.flavor_name, ')'), ''), ' x ', mc.quantity) ORDER BY h.name SEPARATOR ', ') AS main_courses, 
+    GROUP_CONCAT(DISTINCT CONCAT(b.name, ' (', b.beverage_size, ') (', b.iced_hot_name, ') x ', cb.quantity) ORDER BY b.name SEPARATOR ', ') AS beverages, 
+    GROUP_CONCAT(DISTINCT CONCAT(s.name, COALESCE(CONCAT(' (', s.snack_size, ')'), ''), ' x ', cs.quantity) ORDER BY s.name SEPARATOR ', ') AS snacks
 FROM 
     coupon c 
     LEFT JOIN coupon_main_course mc ON mc.coupon_id = c.coupon_id
-    LEFT JOIN main_course h ON mc.main_course_id = h.main_course_id
+    LEFT JOIN main_course h ON mc.id = h.id
     LEFT JOIN coupon_beverage cb ON cb.coupon_id = c.coupon_id
-    LEFT JOIN beverage b ON cb.beverage_id = b.beverage_id
+    LEFT JOIN beverage b ON cb.id = b.id
     LEFT JOIN coupon_snack cs ON cs.coupon_id = c.coupon_id
-    LEFT JOIN snack s ON cs.snack_id = s.snack_id
+    LEFT JOIN snack s ON cs.id = s.id
 GROUP BY 
     c.coupon_id, c.brand_name, c.coupon_name, c.original_price, c.discount_price, c.start_date, c.expire_date, c.use_restriction;
 `;
@@ -225,13 +225,13 @@ app.post('/add_coupon_items_relation', (req, res) => {
 
     // Execute queries based on product type
     if (valuesMainCourse.length > 0) {
-        executeQuery(couponMainCourseTableName, 'main_course_id', valuesMainCourse);
+        executeQuery(couponMainCourseTableName, 'id', valuesMainCourse);
     }
     if (valuesBeverage.length > 0) {
-        executeQuery(couponBeverageTableName, 'beverage_id', valuesBeverage);
+        executeQuery(couponBeverageTableName, 'id', valuesBeverage);
     }
     if (valuesSnack.length > 0) {
-        executeQuery(couponSnackTableName, 'snack_id', valuesSnack);
+        executeQuery(couponSnackTableName, 'id', valuesSnack);
     }
 });
 

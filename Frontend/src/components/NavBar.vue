@@ -27,10 +27,10 @@
   <script>
   export default {
     methods: {
-      emitChange(section) {
-        this.$emit('change-section', section);
-      }
-    }
+    emitChange(section) {
+    this.$emit('change-section', section);
+  }
+}
   }
   </script>
   

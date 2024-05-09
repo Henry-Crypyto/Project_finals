@@ -2,15 +2,15 @@
   <div class="main-course-container">
     <h1 class="text-center">主菜選單</h1>
     <ul class="main-course-list" v-if="filteredMainCourses.length > 0">
-      <li v-for="course in filteredMainCourses" :key="course.main_course_id" class="main-course-item">
-        <h3>{{ course.main_course_name }}</h3>
-        <p>原價: {{ course.main_course_price}}</p>
+      <li v-for="course in filteredMainCourses" :key="course.id" class="main-course-item">
+        <h3>{{ course.name }}</h3>
+        <p>原價: {{ course.price}}</p>
         <p>肉類類型: {{ course.meat_type_name || '不詳' }}</p>
         <p>品牌: {{ course.brand_name }}</p>
         <div class="input-group mb-3">
           <input type="number" class="form-control" v-model="course.quantity" min="1" placeholder="數量">
           <div class="input-group-append">
-            <button class="btn btn-primary" type="button" @click="addToCart(course)">加入購物車</button>
+            <button class="btn btn-primary" type="button" @click="handleAddToCart(course)">加入購物車</button>
           </div>
         </div>
       </li>
@@ -22,15 +22,13 @@
 </template>
 
 <script>
+import { mapMutations } from 'vuex';
 import axios from 'axios';
-import { emitter } from './eventBus';
-
 
 export default {
   data() {
     return {
-      mainCourses: [],
-      productType: 'mainCourse'  
+      mainCourses: []
     };
   },
   created() {
@@ -38,50 +36,50 @@ export default {
   },
   computed: {
     filteredMainCourses() {
-      if (this.$root.brandSelect === 'all') {
+      if (this.$store.state.brandSelect === 'all') {
         return this.mainCourses;
       } else {
-        return this.mainCourses.filter(course => course.brand_name === this.$root.brandSelect);
+        return this.mainCourses.filter(course => course.brand_name === this.$store.state.brandSelect);
       }
     }
   },
   methods: {
+    ...mapMutations(['addToCart','setBrandSelect']), // 引入 Vuex mutation
     fetchMainCourses() {
       axios.get('/api/all_main_course')
         .then(response => {
           this.mainCourses = response.data.map(course => ({
             ...course,
-            quantity: 1
+            quantity: 1  // 初始化数量为 1
           }));
         })
         .catch(error => {
           console.error('Error fetching main courses:', error);
         });
     },
-    addToCart(course) {
-      if (this.$root.brandSelect === 'all' && this.mainCourses.length > 0) {
-        this.showAlertForBrand(course.brand_name);
-      } else {
-        this.$root.brandSelect = course.brand_name; // 将品牌设置为所选品牌
-      }
-      emitter.emit('add-to-cart', {
-        nextCouponId: this.$root.nextCouponId,  // 使用 this.nextCouponId 确保是响应式数据
-        id: course.main_course_id,
-        name: course.main_course_name,
-        productType: this.productType,  // 确保 productType 正确引用
-        quantity: course.quantity,
-        price: course.main_course_price || 10
-      });
-    },
+  handleAddToCart(course) {
+  // 如果购物车为空，则询问用户是否要继续添加商品
+  if (this.$store.state.cartItems.length === 0) {
+    if (!confirm(`购物车当前为空。你确定要添加 ${course.brand_name} 品牌的商品到购物车吗？`)) {
+      return; // 如果用户不确认，直接返回不执行添加操作
+    }
+  }
+  this.setBrandSelect(course.brand_name);
+  this.addToCart({
+    product:course,
+    productType: this.$store.state.productType[0]  // 假设你正在使用数组中的第一个产品类型
+  });
+},
+
     showAlertForBrand(brandName) {
       if (confirm(`是否要选择 ${brandName} 品牌的商品？`)) {
-        this.$root.brandSelect = brandName;
+        this.$store.commit('setBrandSelect', brandName);  // 更新品牌选择
       }
     }
   }
 }
-
 </script>
+
 
 
 

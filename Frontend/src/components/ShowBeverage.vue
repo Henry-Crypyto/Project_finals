@@ -2,17 +2,17 @@
     <div class="beverage-container">
       <h1 class="text-center">飲料選單</h1>
       <ul class="beverage-list" v-if="filteredBeverages.length > 0">
-        <li v-for="beverage in filteredBeverages" :key="beverage.beverage_id" class="beverage-item card">
+        <li v-for="beverage in filteredBeverages" :key="beverage.id" class="beverage-item card">
           <div class="card-body">
-            <h3 class="card-title">{{ beverage.beverage_name.trim() }}</h3>
-            <p class="card-text">原價: {{ beverage.beverage_price }}</p>
+            <h3 class="card-title">{{ beverage.name.trim() }}</h3>
+            <p class="card-text">原價: {{ beverage.price }}</p>
             <p class="card-text">容量: {{ beverage.beverage_size }}</p>
             <p class="card-text">類型: {{ beverage.iced_hot_name }}</p>
-            <p class="card-text">品牌: {{ beverage.all_brand_name }}</p>
+            <p class="card-text">品牌: {{ beverage.brand_name }}</p>
             <div class="input-group mb-3">
               <input type="number" class="form-control" v-model="beverage.quantity" min="1" placeholder="數量">
               <div class="input-group-append">
-                <button class="btn btn-primary" @click="addToCart(beverage)">加入購物車</button>
+                <button class="btn btn-primary" @click="handleAddToCart(beverage)">加入購物車</button>
               </div>
             </div>
           </div>
@@ -26,8 +26,7 @@
   
   <script>
   import axios from 'axios';
-  import { emitter } from './eventBus';
-  
+  import { mapMutations } from 'vuex';
 
   export default {
     data() {
@@ -42,14 +41,15 @@
     },
     computed: {
       filteredBeverages() {
-        if (this.$root.brandSelect === 'all') {
+        if (this.$store.state.brandSelect === 'all') {
           return this.beverages;
         } else {
-          return this.beverages.filter(beverage => beverage.all_brand_name === this.$root.brandSelect);
+          return this.beverages.filter(beverage => beverage.brand_name === this.$store.state.brandSelect);
         }
       }
     },
     methods: {
+        ...mapMutations(['addToCart','setBrandSelect']),
       fetchBeverages() {
         axios.get('/api/all_beverage')
           .then(response => {
@@ -64,26 +64,24 @@
       },  
 
       
-      addToCart(beverage) {
-        if (this.$root.brandSelect === 'all' && this.beverages.length > 0) {
-          this.showAlertForBrand(beverage.all_brand_name);
-        } else {
-          this.$root.brandSelect = beverage.all_brand_name;
-        }
-        emitter.emit('add-to-cart', {
-          nextCouponId: this.$root.nextCouponId,
-          id: beverage.beverage_id,
-          name: beverage.beverage_name.trim(),
-          productType:this.productType,
-          quantity: beverage.quantity,
-          price: beverage.beverage_price
-        });
-      },
-      showAlertForBrand(brandName) {
-        if (confirm(`是否要選擇 ${brandName} 品牌的商品？`)) {
-          this.$root.brandSelect = brandName;
-        }
+      handleAddToCart(beverage) {
+  // 如果购物车为空，则询问用户是否要继续添加商品
+  if (this.$store.state.cartItems.length === 0) {
+    if (!confirm(`购物车当前为空。你确定要添加 ${beverage.brand_name} 品牌的商品到购物车吗？`)) {
+      return; // 如果用户不确认，直接返回不执行添加操作
+    }
+  }
+  this.setBrandSelect(beverage.brand_name);
+  this.addToCart({
+    product:beverage,
+    productType: this.$store.state.productType[1]  // 假设你正在使用数组中的第一个产品类型
+  });
+},
+showAlertForBrand(brandName) {
+      if (confirm(`是否要选择 ${brandName} 品牌的商品？`)) {
+        this.$store.commit('setBrandSelect', brandName);  // 更新品牌选择
       }
+    }
     }
   }
   </script>
