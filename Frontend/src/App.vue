@@ -1,21 +1,18 @@
 <template>
   <div>
-    <!-- 標題列 -->
-    <header style="background-color: #3f51b5; color: #ffffff; padding: 16px;">
-      <h1 style="margin: 0;">CouponKing</h1>
-    </header>
+    <!-- 标题栏 -->
+    <b-navbar toggleable="lg" type="dark" variant="primary">
+      <b-navbar-brand href="#">CouponKing</b-navbar-brand>
+    </b-navbar>
 
-    <!-- 主內容區域 -->
-    <main>
-      <NavBar @change-section="handleSectionChange"/>
+    <!-- 主内容区域 -->
+    <b-container class="my-3">
+      <NavBar @change-section="handleSectionChange" />
       <ShoppingCart :items="cartItems" />
       <component :is="currentView" @add-to-cart="addToCart" />
-    </main>
+    </b-container>
 
     <!-- 底部 -->
-    <footer style="background-color: #3f51b5; color: #ffffff; padding: 16px;">
-      <span>&copy; 2024</span>
-    </footer>
   </div>
 </template>
 

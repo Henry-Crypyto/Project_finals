@@ -22,43 +22,25 @@
 </template>
 
 <script>
-import { mapMutations } from 'vuex';
-import axios from 'axios';
-import { getFullApiUrl } from '../../config.js';
+import { mapMutations,mapState } from 'vuex';
 
 export default {
-  data() {
-    return {
-      mainCourses: []
-    };
-  },
   created() {
-    this.fetchMainCourses();
+    this.$store.dispatch('fetchMainCourses');
   },
   computed: {
+    ...mapState(['mainCourses']),
     filteredMainCourses() {
-      if (this.$store.state.brandSelect === 'all') {
-        return this.mainCourses;
-      } else {
-        return this.mainCourses.filter(course => course.brand_name === this.$store.state.brandSelect);
-      }
+    if (this.$store.state.brandSelect === 'all') {
+      return this.mainCourses;
+    } else {
+      return this.mainCourses.filter(course => course.brand_name === this.$store.state.brandSelect);
     }
+  }
   },
   methods: {
     ...mapMutations(['addToCart','setBrandSelect']), // 引入 Vuex mutation
-    fetchMainCourses() {
-      const url = getFullApiUrl('/all_main_course');
-      axios.get(url)
-        .then(response => {
-          this.mainCourses = response.data.map(course => ({
-            ...course,
-            quantity: 1  // 初始化数量为 1
-          }));
-        })
-        .catch(error => {
-          console.error('Error fetching main courses:', error);
-        });
-    },
+
   handleAddToCart(course) {
   // 如果购物车为空，则询问用户是否要继续添加商品
   if (this.$store.state.cartItems.length === 0) {

@@ -25,22 +25,16 @@
   </template>
   
   <script>
-  import axios from 'axios';
-  import { mapMutations } from 'vuex';
-  import { getFullApiUrl } from '../../config.js';
+  import { mapMutations,mapState } from 'vuex';
+
 
 
   export default {
-    data() {
-      return {
-        snacks: [],
-        productType: 'snack'
-      };
-    },
     created() {
-      this.fetchSnacks();
-    },
+    this.$store.dispatch('fetchSnacks');
+  },
     computed: {
+      ...mapState(['snacks']),
       filteredSnacks() {
         if (this.$store.state.brandSelect === 'all') {
           return this.snacks;
@@ -52,20 +46,6 @@
     methods: {
       ...mapMutations(['addToCart','setBrandSelect']), // 引入 Vuex mutation
 
-      fetchSnacks() {
-        const url = getFullApiUrl('/all_snack');
-
-        axios.get(url)
-          .then(response => {
-            this.snacks = response.data.map(snack => ({
-              ...snack,
-              quantity: 1 // 將每個小吃的數量初始化為1
-            }));
-          })
-          .catch(error => {
-            console.error('Error fetching snacks:', error);
-          });
-      },
       handleAddToCart(snack) {
   // 如果购物车为空，则询问用户是否要继续添加商品
   if (this.$store.state.cartItems.length === 0) {

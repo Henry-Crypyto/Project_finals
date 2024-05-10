@@ -1,5 +1,6 @@
 import { createStore } from 'vuex';
 import axios from 'axios';
+import { getFullApiUrl } from '../config.js';
 
 export default createStore({
   state: {
@@ -17,7 +18,10 @@ export default createStore({
       start_date: '',
       expire_date: '',
       use_restriction: ''
-    }
+    },
+    mainCourses: [],
+    beverages:[],
+    snacks:[]
   },
   mutations: {
     setView(state, view) {
@@ -73,6 +77,15 @@ export default createStore({
       state.cartItems=[];
       state.brandSelect='all';
     },
+    setMainCourses(state, courses) {
+      state.mainCourses = courses;
+    },
+    setBeverages(state, beverages) {
+      state.beverages = beverages;
+    },
+    setSnacks(state, snacks) {
+      state.snacks = snacks;
+    }
   },
   actions: {
     fetchNextCouponId({ commit }) {
@@ -87,7 +100,8 @@ export default createStore({
           });
       },      
     submitCoupon({ state, commit,dispatch}) {
-      axios.post('/api/add_coupon', state.newCoupon)
+      const url = getFullApiUrl('/add_coupon');
+      axios.post(url, state.newCoupon)
         .then(response => {
           console.log('Coupon added successfully:', response);
           return axios.post('/api/add_coupon_items_relation', state.cartItems);
@@ -102,8 +116,45 @@ export default createStore({
           console.error('Error submitting coupon:', error);
           alert('新增折扣券失败: ' + error.message);
         });
-
-    }
-    
+      },
+      fetchMainCourses({ commit }) {
+        const url = getFullApiUrl('/all_main_course');
+        axios.get(url)
+          .then(response => {
+            commit('setMainCourses', response.data.map(course => ({
+              ...course,
+              quantity: 1  // 初始化数量为 1
+            })));
+          })
+          .catch(error => {
+            console.error('Error fetching main courses:', error);
+          });
+      },
+      fetchBeverages({ commit }) {
+        const url = getFullApiUrl('/all_beverage');
+        axios.get(url)
+          .then(response => {
+            commit('setBeverages', response.data.map(beverage => ({
+              ...beverage,
+              quantity: 1  // 初始化数量为 1
+            })));
+          })
+          .catch(error => {
+            console.error('Error fetching main beverages:', error);
+          });
+      },
+      fetchSnacks({ commit }) {
+        const url = getFullApiUrl('/all_snack');
+        axios.get(url)
+          .then(response => {
+            commit('setSnacks', response.data.map(snack => ({
+              ...snack,
+              quantity: 1  // 初始化数量为 1
+            })));
+          })
+          .catch(error => {
+            console.error('Error fetching main snacks:', error);
+          });
+      }
   }
 });

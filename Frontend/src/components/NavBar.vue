@@ -1,66 +1,61 @@
 <template>
-    <nav class="navbar navbar-expand-lg navbar-light custom-navbar">
-      <div class="container">
-        <div class="navbar-collapse justify-content-center" id="navbarNav">
-          <ul class="navbar-nav">
-            <li class="nav-item active">
-              <a class="nav-link" @click="emitChange('coupon')">折價券</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" @click="emitChange('mainCourse')">主食</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" @click="emitChange('beverage')">飲料</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" @click="emitChange('snack')">點心</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" @click="emitChange('shoppingCart')">購物車車</a>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </nav>
-  </template>
-  
-  <script>
-  export default {
-    methods: {
+  <b-navbar toggleable="lg" type="light" class="custom-navbar">
+    <b-container>
+      <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
+      <b-collapse id="nav-collapse" is-nav>
+        <b-navbar-nav class="mx-auto">
+          <b-nav-item @click="emitChange('coupon')">折價券</b-nav-item>
+          <b-nav-item @click="emitChange('mainCourse')">主食</b-nav-item>
+          <b-nav-item @click="emitChange('beverage')">飲料</b-nav-item>
+          <b-nav-item @click="emitChange('snack')">點心</b-nav-item>
+          <b-nav-item @click="emitChange('shoppingCart')">購物車</b-nav-item>
+        </b-navbar-nav>
+      </b-collapse>
+    </b-container>
+  </b-navbar>
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      activeSection: null // 将默认激活项设置为 null
+    };
+  },
+  methods: {
     emitChange(section) {
-    this.$emit('change-section', section);
+      this.activeSection = section; // 更新当前激活项
+      this.$emit('change-section', section);
+    }
   }
 }
-  }
-  </script>
-  
-  <style scoped>
-  .custom-navbar {
-    background-color: #004085; /* 更亮的藍色背景 */
-    padding: 0.5rem 0; /* 減少上下填充 */
-  }
-  
-  .navbar-nav {
-    align-items: center; /* 垂直居中導航項目 */
-  }
-  
-  .nav-link {
-    margin: 0 15px; /* 增加水平間隔 */
-    padding: 0.5rem 0.75rem; /* 調整按鈕填充 */
-    font-size: 1.5rem; /* 字體大小 */
-    font-weight: 500; /* 字體加粗 */
-    color: #ffffff; /* 文字顏色為白色 */
-    transition: color 0.3s, transform 0.3s; /* 平滑過渡效果 */
-    cursor: pointer;
-  }
-  
-  .nav-link:hover, .nav-link:focus {
-    color: #95abf2; /* 滑鼠懸停時變為淺藍色 */
-    transform: scale(1.05); /* 文字放大5% */
-  }
-  
-  .container {
-    width: 100%; /* 容器寬度為100% */
-  }
-  </style>
-  
+</script>
+
+<style scoped>
+.custom-navbar {
+  background-color: #0b79ef; /* 指定导航栏的背景颜色 */
+  padding: 0.5rem 0; /* 减少上下填充 */
+}
+
+.b-navbar-nav {
+  align-items: center; /* 垂直居中导航项目 */
+}
+
+.b-nav-item {
+  margin: 0 15px; /* 增加水平间隔 */
+  padding: 0.5rem 0.75rem; /* 调整按钮填充 */
+  font-size: 2rem; /* 字体大小 */
+  font-weight: 500; /* 字体加粗 */
+  color: #ffffff; /* 文字颜色为白色 */
+  cursor: pointer;
+}
+
+.b-nav-item:hover, .b-nav-item:focus {
+  color: #95abf2; /* 鼠标悬停时变为浅蓝色 */
+  transform: scale(1.1); /* 鼠标悬停时放大字体 */
+}
+
+.b-container {
+  width: 100%; /* 容器宽度为100% */
+}
+</style>

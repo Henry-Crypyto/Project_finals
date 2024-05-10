@@ -57,12 +57,13 @@
     <h5 class="card-title" @click="coupon.expanded = !coupon.expanded">
       <span class="discount-price">$ {{ coupon.discount_price }}</span> {{ coupon.coupon_name }}
     </h5>
-    <div>
-      <button class="btn btn-danger btn-sm" @click="deleteCoupon(coupon.coupon_id)">刪除</button>
-    </div>
+    <div class="d-flex flex-column">
+    <button class="btn btn-danger btn-sm mb-2" @click="deleteCoupon(coupon.coupon_id)">删除</button>
+    <button class="btn btn-primary btn-sm" @click="editCoupon(coupon.coupon_id)">编辑</button>
+  </div>
   </div>
   <div v-if="coupon.items && coupon.items.length">
-    <h6 class="pl-4">品項:</h6>
+    <h6 class="pl-6">品項:</h6>
     <ul>
       <li v-for="item in coupon.items" :key="item.ItemName">
         {{ item.ItemName }} x {{ item.Quantity }}
@@ -277,4 +278,7 @@ deleteCoupon(couponId) {
   font-weight: bold; /* 加粗字体 */
   margin-left: 10px; /* 左边距 */
 }
+.pl-6 { /* 自定义的类名，代表更大的左边距 */
+    padding-left: 2em; /* 约等于4个空格的宽度 */
+  }
 </style>
