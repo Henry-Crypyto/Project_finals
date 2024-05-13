@@ -23,9 +23,14 @@ export default createStore({
     selectedCoupons: [],
     mainCourses: [],
     beverages:[],
-    snacks:[]
+    snacks:[],
+    editOrAdd:0
   },
   mutations: {
+    setEditOrAdd(state, value) {
+      state.editOrUpdate = value;
+      // console.log(state.editOrUpdate);
+    },
     setView(state, view) {
       state.currentView = view;
     },

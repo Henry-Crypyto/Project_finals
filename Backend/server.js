@@ -7,7 +7,7 @@ app.use(cors());
 app.use(express.json()); // 用于解析JSON格式的请求体
 
 // 假设你的表名为 user，根据你真实的表名修改此处
-// const userTableName = 'all_user';
+const userTableName = 'all_user';
 
 const brandTableName = 'all_brand_name';
 const mainCourseTableName='main_course';
@@ -159,15 +159,15 @@ app.post('/add_coupon', (req, res) => {
     } = req.body;
 
     // Check if all required fields are present and not null
-    if (!coupon_id || !brand_name || !coupon_name || original_price === null || discount_price === null || !start_date || !expire_date || !use_restriction) {
-        return res.status(400).send('All fields are required and must be valid.');
+    if (!coupon_id || !brand_name || !coupon_name || original_price === null || discount_price === null || !start_date || !expire_date) {
+        return res.status(400).send('All fields except use_restriction are required and must be valid.');
     }
 
     // Prepare the SQL query to insert the new coupon
     const insertCouponQuery = `INSERT INTO ${couponTableName} (coupon_id, brand_name, coupon_name, original_price, discount_price, start_date, expire_date, use_restriction) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
 
     // Execute the query
-    db.query(insertCouponQuery, [coupon_id, brand_name, coupon_name, original_price, discount_price, start_date, expire_date, use_restriction], (err, couponResult) => {
+    db.query(insertCouponQuery, [coupon_id, brand_name, coupon_name, original_price, discount_price, start_date, expire_date, use_restriction || null], (err, couponResult) => {
         if (err) {
             console.error('Error adding coupon:', err);
             return res.status(500).send('Error adding coupon: ' + err.message);
@@ -234,51 +234,53 @@ app.post('/add_coupon_items_relation', (req, res) => {
         executeQuery(couponSnackTableName, 'id', valuesSnack);
     }
 });
-
-app.put('/update_coupon', (req, res) => {
+app.post('/update_coupon', (req, res) => {
     // Destructure and validate required fields from the request body
     const {
         coupon_id, brand_name, coupon_name, original_price, discount_price, start_date, expire_date, use_restriction
     } = req.body;
 
-    // Check if all required fields are present and not null
-    if (!coupon_id || !brand_name || !coupon_name || original_price === null || discount_price === null || !start_date || !expire_date || !use_restriction) {
-        return res.status(400).send('All fields are required and must be valid.');
+    // Check if all required fields are present and not null (except use_restriction which can be null)
+    if (!coupon_id || !brand_name || !coupon_name || original_price === null || discount_price === null || !start_date || !expire_date) {
+        return res.status(400).send('All fields except use_restriction are required and must be valid.');
     }
 
-    // Prepare the SQL query to insert the new coupon
+    // Prepare the SQL query to update the coupon
     const updateCouponQuery = `
     UPDATE ${couponTableName}
     SET brand_name = ?, coupon_name = ?, original_price = ?, discount_price = ?, start_date = ?, expire_date = ?, use_restriction = ?
     WHERE coupon_id = ?`;
-  
+
     // Execute the query
-    db.query(updateCouponQuery, [coupon_id, brand_name, coupon_name, original_price, discount_price, start_date, expire_date, use_restriction], (err, couponResult) => {
+    db.query(updateCouponQuery, [brand_name, coupon_name, original_price, discount_price, start_date, expire_date, use_restriction || null, coupon_id], (err, couponResult) => {
         if (err) {
             console.error('Error updating coupon:', err);
-            return res.status(500).send('Error adding coupon: ' + err.message);
+            return res.status(500).send('Error updating coupon: ' + err.message);
         }
 
-        console.log('Coupon added to the database with ID:', coupon_id);
+        console.log('Coupon updated in the database with ID:', coupon_id);
 
         // Optionally, handle the addition of related items like main courses, beverages, and snacks here
 
         // Send a success response
-        res.status(201).send('Coupon added successfully');
+        res.status(200).send('Coupon updated successfully');
     });
 });
 
-app.post('/update_coupon_items_relation', (req, res) => {
+
+const { promisify } = require('util');
+const dbQuery = promisify(db.query).bind(db); // Promisify the db.query method
+
+app.post('/update_coupon_items_relation', async (req, res) => {
     const items = Array.isArray(req.body) ? req.body : [req.body]; // Ensure items are always processed as an array
 
     const valuesMainCourse = [];
     const valuesBeverage = [];
     const valuesSnack = [];
-
-    let responseSent = false; // Variable to track if response has been sent
-
+    let couponId = '';
     items.forEach(item => {
         const value = [item.nextCouponId, item.id, item.quantity];
+        couponId=item.nextCouponId;
         switch (item.productType) {
             case 'mainCourse':
                 valuesMainCourse.push(value);
@@ -291,40 +293,47 @@ app.post('/update_coupon_items_relation', (req, res) => {
                 break;
         }
     });
+   
+    // Helper function to execute queries
+    const executeQuery = async (tableName, columnName, values, couponId) => {
+        try {
+            // Delete all entries with the specified coupon_id
+            const deleteQuery = `DELETE FROM ${tableName} WHERE coupon_id = ?`;
+            await dbQuery(deleteQuery, [couponId]);
 
-    const executeQuery = (tableName, columnName, values, couponId) => {
-        // Delete all entries with the specified coupon_id
-        const deleteQuery = `DELETE FROM ${tableName} WHERE coupon_id = ?`;
-        db.query(deleteQuery, [couponId], (deleteErr, deleteResults) => {
-            if (deleteErr) {
-                console.error('Error deleting entries:', deleteErr);
-                return res.status(500).send('Error deleting entries: ' + deleteErr.message);
-            }
-    
             // Execute the insert query after deleting entries
             const insertCouponQuery = `INSERT INTO ${tableName} (coupon_id, ${columnName}, quantity) VALUES ?`;
-            db.query(insertCouponQuery, [values], (insertErr, insertResults) => {
-                if (insertErr) {
-                    console.error('Error adding coupon items:', insertErr);
-                    return res.status(500).send('Error adding coupon items: ' + insertErr.message);
-                }
-                res.send('Coupon items added successfully.');
-            });
-        });
-    };
-    
+            await dbQuery(insertCouponQuery, [values]);
 
-    // Execute queries based on product type
-    if (valuesMainCourse.length > 0) {
-        executeQuery(couponMainCourseTableName, 'id', valuesMainCourse);
-    }
-    if (valuesBeverage.length > 0) {
-        executeQuery(couponBeverageTableName, 'id', valuesBeverage);
-    }
-    if (valuesSnack.length > 0) {
-        executeQuery(couponSnackTableName, 'id', valuesSnack);
+            return 'Coupon items added successfully.';
+        } catch (error) {
+            console.error('Error processing database operation:', error);
+            throw error; // Rethrow to handle error once outside
+        }
+    };
+
+    // Execute queries based on product type and manage responses properly
+    try {
+        const results = [];
+        if (valuesMainCourse.length > 0) {
+            results.push(executeQuery(couponMainCourseTableName, 'id', valuesMainCourse,couponId));
+        }
+        if (valuesBeverage.length > 0) {
+            results.push(executeQuery(couponBeverageTableName, 'id', valuesBeverage,couponId));
+        }
+        if (valuesSnack.length > 0) {
+            results.push(executeQuery(couponSnackTableName, 'id', valuesSnack,couponId));
+        }
+
+        // Wait for all queries to complete
+        const messages = await Promise.all(results);
+        res.send(messages.join('\n')); // Send a combined message
+    } catch (error) {
+        res.status(500).send('Error processing coupon items: ' + error.message);
     }
 });
+
+
 
 app.delete('/delete_coupon/:couponId', (req, res) => {
     const couponId = req.params.couponId;
@@ -337,6 +346,7 @@ app.delete('/delete_coupon/:couponId', (req, res) => {
         res.send('Coupon deleted successfully.');
     });
 });
+
 app.get('/get_coupon_main_course_relation/:couponId', (req, res) => {
     const couponId = req.params.couponId;
     db.query(`SELECT 
@@ -414,6 +424,9 @@ WHERE
         res.json(results);
     });
 });
+
+  
+
 
 
 

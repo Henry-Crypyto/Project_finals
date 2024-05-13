@@ -107,7 +107,7 @@ export default {
     this.fetchCoupons();
   },
   methods: {
-    ...mapMutations(['setBrandOptions','dulplicateInfoToNewCoupon']),
+    ...mapMutations(['setBrandOptions','dulplicateInfoToNewCoupon','setEditOrAdd']),
 
 
 
@@ -167,6 +167,7 @@ deleteCoupon(couponId) {
   });
 },
     editCoupon(coupon){
+      this.setEditOrAdd(1);
       this.$store.commit('dulplicateInfoToNewCoupon',coupon);
       this.$store.dispatch('fetchCouponMainCourseRelation',coupon.coupon_id);
       this.$store.dispatch('fetchCouponBeverageRelation',coupon.coupon_id);
@@ -192,7 +193,7 @@ deleteCoupon(couponId) {
     }
   },
   computed:{
-      ...mapState(['brandOptions','newCoupon','nextCouponId']),
+      ...mapState(['brandOptions','newCoupon','nextCouponId','editOrAdd']),
     },
   watch: {
     startDate(newVal) {

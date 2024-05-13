@@ -21,56 +21,60 @@
 
     <!-- 新增折扣券表单 -->
     <h2 class="form-title">新增折扣券</h2>
-    <form @submit.prevent="submitCoupon" class="coupon-form">
-      <div class="form-row">
-        <input type="text" v-model="brandSelect" readonly>
-        <input type="text" v-model="newCoupon.coupon_name" placeholder="折扣券名称" required>
-      </div>
-      <div class="form-row">
-        <input type="number" v-model="totalPrice" placeholder="原价" required readonly>
-        <input type="number" v-model="newCoupon.discount_price" placeholder="折扣价" required>
-      </div>
-      <div class="form-row">
-        <input type="date" v-model="newCoupon.start_date" placeholder="开始日期" required>
-        <input type="date" v-model="newCoupon.expire_date" placeholder="结束日期" required>
-      </div>
-      <div class="form-row">
-        <input type="text" v-model="newCoupon.use_restriction" placeholder="使用限制" class="full-width">
-        <input type="text" :value="nextCouponId" placeholder="折扣券ID" readonly style="background-color: #e0e0e0;">
-      </div>
-  <button @click="submitCoupon" class="btn btn-success" :disabled="cartItems.length === 0">新增折扣券</button>
-  <!-- <button @click="updateCoupon" class="btn btn-primary" :disabled="cartItems.length === 0">更新折價券</button> -->
-    </form>
+    <form class="coupon-form" @submit.prevent="submitCoupon">
+  <div class="form-row">
+    <input type="text" v-model="brandSelect" readonly>
+    <input type="text" v-model="newCoupon.coupon_name" placeholder="折扣券名称" required>
+  </div>
+  <div class="form-row">
+    <input type="number" v-model="totalPrice" placeholder="原价" required readonly>
+    <input type="number" v-model.number="newCoupon.discount_price" placeholder="折扣价" min="0" required>
+  </div>
+  <div class="form-row">
+    <input type="date" v-model="newCoupon.start_date" placeholder="开始日期" required>
+    <input type="date" v-model="newCoupon.expire_date" placeholder="结束日期" required>
+  </div>
+  <div class="form-row">
+    <input type="text" v-model="newCoupon.use_restriction" placeholder="使用限制" class="full-width">
+    <input type="text" :value="nextCouponId" placeholder="折扣券ID" readonly style="background-color: #e0e0e0;">
+  </div>
+  <button type="submit" class="btn btn-success" >新增折扣券</button>
+      <button type="button" @click="updateCoupon" class="btn btn-primary" >更新折扣券</button>
+</form>
+
   </div>
 </template>
 
+
   
-  <script>
-  import { mapState, mapMutations } from 'vuex';
-  
-  export default {
-    computed: {
-      ...mapState(['cartItems', 'brandSelect','newCoupon','nextCouponId']),
-      totalPrice() {
-        return this.cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
-      }
+<script>
+import { mapState, mapMutations } from 'vuex';
+
+export default {
+  computed: {
+    ...mapState(['cartItems', 'brandSelect', 'newCoupon', 'nextCouponId', 'editOrAdd']),
+    totalPrice() {
+      return this.cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+    }
+  },
+  methods: {
+    ...mapMutations(['removeFromCart', 'updateOriginalTotalPrice', 'setEditOrAdd']),
+    submitCoupon() {
+      this.$store.dispatch('submitCoupon');
     },
-    methods: {
-      ...mapMutations(['removeFromCart','updateOriginalTotalPrice']),
-      submitCoupon() {
-        this.$store.dispatch('submitCoupon');
-      },
-      updateCoupon(){
-        this.$store.dispatch('updateCoupon');
-      }
-    },
-    watch: {
+    updateCoupon() {
+  this.$store.dispatch('updateCoupon');
+}
+
+  },
+  watch: {
   totalPrice(newTotal) {
     this.$store.commit('updateOriginalTotalPrice', newTotal);
-    }
-   },
   }
-  </script>
+}
+}
+</script>
+
   
 
   
