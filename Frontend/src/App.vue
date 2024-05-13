@@ -1,9 +1,7 @@
 <template>
   <div>
     <!-- 标题栏 -->
-    <b-navbar toggleable="lg" type="dark" variant="primary">
-      <b-navbar-brand href="#">CouponKing</b-navbar-brand>
-    </b-navbar>
+    
 
     <!-- 主内容区域 -->
     <b-container class="my-3">

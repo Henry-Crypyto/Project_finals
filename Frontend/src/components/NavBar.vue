@@ -33,29 +33,33 @@ export default {
 
 <style scoped>
 .custom-navbar {
-  background-color: #0b79ef; /* 指定导航栏的背景颜色 */
-  padding: 0.5rem 0; /* 减少上下填充 */
+  background-color: #12111004; /* 更鲜明的蓝色 */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 添加阴影以增强深度感 */
+  padding: 0.5rem 0; /* 保持原有的填充设置 */
 }
 
 .b-navbar-nav {
-  align-items: center; /* 垂直居中导航项目 */
+  align-items: center; /* 确保导航项目垂直居中 */
 }
 
 .b-nav-item {
-  margin: 0 15px; /* 增加水平间隔 */
+  margin: 0 20px; /* 增加水平间距以提高可读性 */
   padding: 0.5rem 0.75rem; /* 调整按钮填充 */
-  font-size: 2rem; /* 字体大小 */
-  font-weight: 500; /* 字体加粗 */
-  color: #ffffff; /* 文字颜色为白色 */
-  cursor: pointer;
+  font-size: 5rem; /* 适当减小字体大小以适应更多屏幕 */
+  font-weight: 500; /* 字体加粗，保持500即可 */
+  color: #ffffff; /* 维持白色文字 */
+  cursor: pointer; /* 确保指针样式为光标 */
+  transition: color 0.3s ease, transform 0.3s ease; /* 平滑的颜色和变换过渡 */
 }
 
 .b-nav-item:hover, .b-nav-item:focus {
-  color: #95abf2; /* 鼠标悬停时变为浅蓝色 */
-  transform: scale(1.1); /* 鼠标悬停时放大字体 */
+  color: #FFD700; /* 鼠标悬停时变为金色 */
+  transform: translateY(-3px); /* 轻微上移，增加交互感 */
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.5); /* 添加文本阴影增强可读性 */
 }
 
 .b-container {
-  width: 100%; /* 容器宽度为100% */
+  width: 100%; /* 确保容器宽度为100%，这在原样式中已设定 */
 }
 </style>
+

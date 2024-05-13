@@ -4,7 +4,7 @@ import { getFullApiUrl } from '../config.js';
 
 export default createStore({
   state: {
-    currentView: 'ShowCoupon',
+    currentView: 'ShowMainCourse',
     brandSelect: 'all',
     brandOptions: [],
     cartItems: [],
@@ -28,8 +28,8 @@ export default createStore({
   },
   mutations: {
     setEditOrAdd(state, value) {
-      state.editOrUpdate = value;
-      // console.log(state.editOrUpdate);
+      state.editOrAdd= value;
+      console.log(state.editOrAdd);
     },
     setView(state, view) {
       state.currentView = view;

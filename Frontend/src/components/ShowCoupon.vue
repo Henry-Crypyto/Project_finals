@@ -59,7 +59,7 @@
     </h5>
     <div class="d-flex flex-column">
     <button class="btn btn-danger btn-sm mb-2" @click="deleteCoupon(coupon.coupon_id)">删除</button>
-    <button class="btn btn-primary btn-sm" @click="editCoupon(coupon)">编辑</button>
+    <button class="btn btn-primary btn-sm" @click="editCoupon(coupon)" :disabled="this.editOrAdd===1">编辑</button>
   </div>
   </div>
   <div v-if="coupon.items && coupon.items.length">
@@ -167,7 +167,7 @@ deleteCoupon(couponId) {
   });
 },
     editCoupon(coupon){
-      this.setEditOrAdd(1);
+      this.$store.commit('setEditOrAdd',25);
       this.$store.commit('dulplicateInfoToNewCoupon',coupon);
       this.$store.dispatch('fetchCouponMainCourseRelation',coupon.coupon_id);
       this.$store.dispatch('fetchCouponBeverageRelation',coupon.coupon_id);
@@ -202,6 +202,11 @@ deleteCoupon(couponId) {
         if (this.endDate && new Date(this.endDate) < new Date(newVal)) {
           this.endDate = '';  // 如果当前结束日期小于新的开始日期，则清空结束日期
         }
+      }
+    },
+    editOrAdd(newVal){
+      if (newVal===1) {
+        console.log("This is update");
       }
     }
   }
