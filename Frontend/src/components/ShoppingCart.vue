@@ -1,47 +1,49 @@
 <template>
-    <div class="shopping-cart-container">
-      <h1 class="text-center">購物車</h1>
-      <!-- 购物车列表 -->
-      <ul class="cart-items-list">
-        <li v-for="item in cartItems" :key="item.id" class="cart-item">
-          <div class="item-details">
-            <h3>{{ item.name }}</h3>
-            <p>数量: {{ item.quantity }}</p>
-            <p>单价: ${{ item.price }}</p>
-            <p>小计: ${{ item.quantity * item.price }}</p>
-          </div>
-          <button class="btn btn-danger" @click.prevent="removeFromCart({ id: item.id, productType: item.productType })">
-             移除
-          </button>
-        </li>
-      </ul>
-      <div v-if="cartItems.length === 0" class="empty-cart">
-        <p>购物车是空的。</p>
-      </div>
-  
-      <!-- 新增折扣券表单 -->
-      <h2 class="form-title">新增折扣券</h2>
-      <form @submit.prevent="submitCoupon" class="coupon-form">
-        <div class="form-row">
-          <input type="text" v-model="brandSelect"  readonly>
-          <input type="text" v-model="newCoupon.coupon_name" placeholder="折扣券名称" required>
+  <div class="shopping-cart-container">
+    <h1 class="text-center">購物車</h1>
+    <!-- 购物车列表 -->
+    <ul class="cart-items-list">
+      <li v-for="item in cartItems" :key="item.id" class="cart-item">
+        <div class="item-details">
+          <h3>{{ item.name }}</h3>
+          <p>数量: {{ item.quantity }}</p>
+          <p>单价: ${{ item.price }}</p>
+          <p>小计: ${{ item.quantity * item.price }}</p>
         </div>
-        <div class="form-row">
-          <input type="number" v-model="totalPrice" placeholder="原价" required readonly>
-          <input type="number" v-model="newCoupon.discount_price" placeholder="折扣价" required>
-        </div>
-        <div class="form-row">
-          <input type="date" v-model="newCoupon.start_date" placeholder="开始日期" required>
-          <input type="date" v-model="newCoupon.expire_date" placeholder="结束日期" required>
-        </div>
-        <div class="form-row">
-          <input type="text" v-model="newCoupon.use_restriction" placeholder="使用限制" class="full-width">
-          <input type="text" :value="nextCouponId" placeholder="折扣券ID" readonly style="background-color: #e0e0e0;">
-        </div>
-        <button type="submit" class="btn btn-success full-width">新增折扣券</button>
-      </form>
+        <button class="btn btn-danger" @click.prevent="removeFromCart({ id: item.id, productType: item.productType })">
+           移除
+        </button>
+      </li>
+    </ul>
+    <div v-if="cartItems.length === 0" class="empty-cart">
+      <p>請新增品項</p>
     </div>
-  </template>
+
+    <!-- 新增折扣券表单 -->
+    <h2 class="form-title">新增折扣券</h2>
+    <form @submit.prevent="submitCoupon" class="coupon-form">
+      <div class="form-row">
+        <input type="text" v-model="brandSelect" readonly>
+        <input type="text" v-model="newCoupon.coupon_name" placeholder="折扣券名称" required>
+      </div>
+      <div class="form-row">
+        <input type="number" v-model="totalPrice" placeholder="原价" required readonly>
+        <input type="number" v-model="newCoupon.discount_price" placeholder="折扣价" required>
+      </div>
+      <div class="form-row">
+        <input type="date" v-model="newCoupon.start_date" placeholder="开始日期" required>
+        <input type="date" v-model="newCoupon.expire_date" placeholder="结束日期" required>
+      </div>
+      <div class="form-row">
+        <input type="text" v-model="newCoupon.use_restriction" placeholder="使用限制" class="full-width">
+        <input type="text" :value="nextCouponId" placeholder="折扣券ID" readonly style="background-color: #e0e0e0;">
+      </div>
+  <button @click="submitCoupon" class="btn btn-success" :disabled="cartItems.length === 0">新增折扣券</button>
+  <!-- <button @click="updateCoupon" class="btn btn-primary" :disabled="cartItems.length === 0">更新折價券</button> -->
+    </form>
+  </div>
+</template>
+
   
   <script>
   import { mapState, mapMutations } from 'vuex';
@@ -54,9 +56,12 @@
       }
     },
     methods: {
-      ...mapMutations(['addToCart', 'removeFromCart', 'resetForm', 'updateCoupon','updateOriginalTotalPrice']),
+      ...mapMutations(['removeFromCart','updateOriginalTotalPrice']),
       submitCoupon() {
         this.$store.dispatch('submitCoupon');
+      },
+      updateCoupon(){
+        this.$store.dispatch('updateCoupon');
       }
     },
     watch: {
@@ -146,4 +151,5 @@
   .btn-success {
     background-color: #4caf50;
   }
+  
   </style>

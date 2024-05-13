@@ -8,7 +8,7 @@
           <label for="brand-select" class="form-label">品牌:</label>
           <select id="brand-select" class="form-control" v-model="selectedBrand" @change="fetchCoupons">
             <option value="">所有品牌</option>
-            <option v-for="brand in brandOptions" :key="brand.brand_ID" :value="brand.brand_name">
+            <option v-for="brand in brandOptions" :key="brand.brand_id" :value="brand.brand_name">
               {{ brand.brand_name }}
             </option>
           </select>
@@ -59,7 +59,7 @@
     </h5>
     <div class="d-flex flex-column">
     <button class="btn btn-danger btn-sm mb-2" @click="deleteCoupon(coupon.coupon_id)">删除</button>
-    <button class="btn btn-primary btn-sm" @click="editCoupon(coupon.coupon_id)">编辑</button>
+    <button class="btn btn-primary btn-sm" @click="editCoupon(coupon)">编辑</button>
   </div>
   </div>
   <div v-if="coupon.items && coupon.items.length">
@@ -90,9 +90,11 @@
 <script>
 import axios from 'axios';
 import { getFullApiUrl } from '../../config.js';
+import { mapMutations,mapState } from 'vuex';
+
 export default {
+  
   data: () => ({
-    brandOptions: [],
     selectedBrand: '',
     selectedCoupons: [],
     selectedPrice: '',
@@ -101,23 +103,15 @@ export default {
     minEndDate: ''  // 用于存储最小结束日期
   }),
   created() {
-    this.fetchBrandOptions();
+    this.$store.dispatch('fetchBrandOptions');
     this.fetchCoupons();
   },
   methods: {
-    fetchBrandOptions() {
-      const url = getFullApiUrl('/brand_append');
-      axios.get(url)
-        .then(response => {
-          this.brandOptions = response.data;
-          this.isLoaded = true;
-        })
-        .catch(error => {
-          console.error('Error fetching brands:', error);
-          this.isLoaded = true;
-        });
-    },
-    fetchCoupons() {
+    ...mapMutations(['setBrandOptions','dulplicateInfoToNewCoupon']),
+
+
+
+  fetchCoupons() {
   const url = getFullApiUrl('/all_coupons_with_items');
   axios.get(url)
     .then(response => {
@@ -125,9 +119,9 @@ export default {
         ...coupon,
         expanded: false, // Track whether the coupon details are shown
         items: [].concat(
-          coupon.main_courses.map(course => ({ ItemType: 'Main_course', ItemName: course.split(' x ')[0], Quantity: parseInt(course.split(' x ')[1]) })),
-          coupon.beverages.map(beverage => ({ ItemType: 'Beverage', ItemName: beverage.split(' x ')[0], Quantity: parseInt(beverage.split(' x ')[1]) })),
-          coupon.snacks.map(snack => ({ ItemType: 'Snack', ItemName: snack.split(' x ')[0], Quantity: parseInt(snack.split(' x ')[1]) }))
+          coupon.main_courses.map(course => ({ ItemType: 'mainCourse', ItemName: course.split(' x ')[0], Quantity: parseInt(course.split(' x ')[1]) })),
+          coupon.beverages.map(beverage => ({ ItemType: 'beverage', ItemName: beverage.split(' x ')[0], Quantity: parseInt(beverage.split(' x ')[1]) })),
+          coupon.snacks.map(snack => ({ ItemType: 'snack', ItemName: snack.split(' x ')[0], Quantity: parseInt(snack.split(' x ')[1]) }))
         )
       }));
       this.selectedCoupons = this.filterCoupons(allCoupons);
@@ -137,6 +131,7 @@ export default {
       this.selectedCoupons = [];
     });
 },
+
 deleteCoupon(couponId) {
   // 提示用户确认删除
   if (confirm("确定要删除此折扣券吗？")) {
@@ -155,7 +150,6 @@ deleteCoupon(couponId) {
       });
   }
 },
-
     clearDate(type) {
       if (type === 'start') {
         this.startDate = '';
@@ -172,6 +166,13 @@ deleteCoupon(couponId) {
     return matchesBrand && matchesPrice && matchesDate;
   });
 },
+    editCoupon(coupon){
+      this.$store.commit('dulplicateInfoToNewCoupon',coupon);
+      this.$store.dispatch('fetchCouponMainCourseRelation',coupon.coupon_id);
+      this.$store.dispatch('fetchCouponBeverageRelation',coupon.coupon_id);
+      this.$store.dispatch('fetchCouponSnackRelation',coupon.coupon_id);
+
+    },
     matchesPriceCondition(price) {
       const ranges = {
         "0-300": price <= 300,
@@ -190,6 +191,9 @@ deleteCoupon(couponId) {
       return (!filterStartDate || start >= filterStartDate) && (!filterEndDate || expiration <= filterEndDate);
     }
   },
+  computed:{
+      ...mapState(['brandOptions','newCoupon','nextCouponId']),
+    },
   watch: {
     startDate(newVal) {
       if (newVal) {

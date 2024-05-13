@@ -7,7 +7,7 @@ app.use(cors());
 app.use(express.json()); // 用于解析JSON格式的请求体
 
 // 假设你的表名为 user，根据你真实的表名修改此处
-const userTableName = 'all_user';
+// const userTableName = 'all_user';
 
 const brandTableName = 'all_brand_name';
 const mainCourseTableName='main_course';
@@ -235,6 +235,97 @@ app.post('/add_coupon_items_relation', (req, res) => {
     }
 });
 
+app.put('/update_coupon', (req, res) => {
+    // Destructure and validate required fields from the request body
+    const {
+        coupon_id, brand_name, coupon_name, original_price, discount_price, start_date, expire_date, use_restriction
+    } = req.body;
+
+    // Check if all required fields are present and not null
+    if (!coupon_id || !brand_name || !coupon_name || original_price === null || discount_price === null || !start_date || !expire_date || !use_restriction) {
+        return res.status(400).send('All fields are required and must be valid.');
+    }
+
+    // Prepare the SQL query to insert the new coupon
+    const updateCouponQuery = `
+    UPDATE ${couponTableName}
+    SET brand_name = ?, coupon_name = ?, original_price = ?, discount_price = ?, start_date = ?, expire_date = ?, use_restriction = ?
+    WHERE coupon_id = ?`;
+  
+    // Execute the query
+    db.query(updateCouponQuery, [coupon_id, brand_name, coupon_name, original_price, discount_price, start_date, expire_date, use_restriction], (err, couponResult) => {
+        if (err) {
+            console.error('Error updating coupon:', err);
+            return res.status(500).send('Error adding coupon: ' + err.message);
+        }
+
+        console.log('Coupon added to the database with ID:', coupon_id);
+
+        // Optionally, handle the addition of related items like main courses, beverages, and snacks here
+
+        // Send a success response
+        res.status(201).send('Coupon added successfully');
+    });
+});
+
+app.post('/update_coupon_items_relation', (req, res) => {
+    const items = Array.isArray(req.body) ? req.body : [req.body]; // Ensure items are always processed as an array
+
+    const valuesMainCourse = [];
+    const valuesBeverage = [];
+    const valuesSnack = [];
+
+    let responseSent = false; // Variable to track if response has been sent
+
+    items.forEach(item => {
+        const value = [item.nextCouponId, item.id, item.quantity];
+        switch (item.productType) {
+            case 'mainCourse':
+                valuesMainCourse.push(value);
+                break;
+            case 'beverage':
+                valuesBeverage.push(value);
+                break;
+            case 'snack':
+                valuesSnack.push(value);
+                break;
+        }
+    });
+
+    const executeQuery = (tableName, columnName, values, couponId) => {
+        // Delete all entries with the specified coupon_id
+        const deleteQuery = `DELETE FROM ${tableName} WHERE coupon_id = ?`;
+        db.query(deleteQuery, [couponId], (deleteErr, deleteResults) => {
+            if (deleteErr) {
+                console.error('Error deleting entries:', deleteErr);
+                return res.status(500).send('Error deleting entries: ' + deleteErr.message);
+            }
+    
+            // Execute the insert query after deleting entries
+            const insertCouponQuery = `INSERT INTO ${tableName} (coupon_id, ${columnName}, quantity) VALUES ?`;
+            db.query(insertCouponQuery, [values], (insertErr, insertResults) => {
+                if (insertErr) {
+                    console.error('Error adding coupon items:', insertErr);
+                    return res.status(500).send('Error adding coupon items: ' + insertErr.message);
+                }
+                res.send('Coupon items added successfully.');
+            });
+        });
+    };
+    
+
+    // Execute queries based on product type
+    if (valuesMainCourse.length > 0) {
+        executeQuery(couponMainCourseTableName, 'id', valuesMainCourse);
+    }
+    if (valuesBeverage.length > 0) {
+        executeQuery(couponBeverageTableName, 'id', valuesBeverage);
+    }
+    if (valuesSnack.length > 0) {
+        executeQuery(couponSnackTableName, 'id', valuesSnack);
+    }
+});
+
 app.delete('/delete_coupon/:couponId', (req, res) => {
     const couponId = req.params.couponId;
 
@@ -246,9 +337,83 @@ app.delete('/delete_coupon/:couponId', (req, res) => {
         res.send('Coupon deleted successfully.');
     });
 });
-
+app.get('/get_coupon_main_course_relation/:couponId', (req, res) => {
+    const couponId = req.params.couponId;
+    db.query(`SELECT 
+    mc.id, 
+    mc.name, 
+    cmc.quantity, 
+    mc.price
+FROM 
+    main_course AS mc
+JOIN 
+    coupon_main_course AS cmc 
+ON 
+    mc.id = cmc.id
+WHERE 
+    cmc.coupon_id = ?;
+`, [couponId], (err, results) => {
+        if (err) {
+            console.error('Error fetching data: ', err);
+            res.status(500).send('Error fetching data');
+            return;
+        }
+        console.log('Data retrieved from the database: ', results);
+        res.json(results);
+    });
+});
   
+app.get('/get_coupon_beverage_relation/:couponId', (req, res) => {
+    const couponId = req.params.couponId;
+    db.query(`SELECT 
+    bv.id, 
+    bv.name, 
+    cb.quantity, 
+    bv.price
+FROM 
+    beverage AS bv
+JOIN 
+    coupon_beverage AS cb
+ON 
+    bv.id = cb.id
+WHERE 
+    cb.coupon_id = ?;
+`, [couponId], (err, results) => {
+        if (err) {
+            console.error('Error fetching data: ', err);
+            res.status(500).send('Error fetching data');
+            return;
+        }
+        console.log('Data retrieved from the database: ', results);
+        res.json(results);
+    });
+});
 
+app.get('/get_coupon_snack_relation/:couponId', (req, res) => {
+    const couponId = req.params.couponId;
+    db.query(`SELECT 
+    sn.id, 
+    sn.name, 
+    cs.quantity, 
+    sn.price
+FROM 
+    snack AS sn
+JOIN 
+    coupon_snack AS cs
+ON 
+    sn.id = cs.id
+WHERE 
+    cs.coupon_id = ?;
+`, [couponId], (err, results) => {
+        if (err) {
+            console.error('Error fetching data: ', err);
+            res.status(500).send('Error fetching data');
+            return;
+        }
+        console.log('Data retrieved from the database: ', results);
+        res.json(results);
+    });
+});
 
 
 
