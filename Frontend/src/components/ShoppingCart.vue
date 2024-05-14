@@ -101,12 +101,17 @@ export default {
     couponAction(newValue) {
       if (newValue === 'update') {
         this.$store.commit('setEditOrAdd', 0);
+        this.handleReset();
         this.$store.commit('setView','ShowCoupon');
       } else if (newValue === 'add') {
         this.$store.dispatch('fetchNextCouponId');
         this.$store.commit('setEditOrAdd', 1);
+        this.handleReset();
         this.$store.commit('setView','ShowMainCourse');
       }
+    },
+    totalPrice(newTotal) {
+    this.$store.commit('updateOriginalTotalPrice', newTotal);
     }
   }
 }
