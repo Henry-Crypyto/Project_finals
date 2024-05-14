@@ -24,7 +24,7 @@ export default createStore({
     mainCourses: [],
     beverages:[],
     snacks:[],
-    editOrAdd:0
+    editOrAdd:1
   },
   mutations: {
     setEditOrAdd(state, value) {
