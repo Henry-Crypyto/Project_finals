@@ -1,10 +1,13 @@
 <template>
   <b-container class="shopping-cart-container">
-    <b-row>
-      <b-col>
-        <h1 class="text-center">購物車</h1>
-      </b-col>
-    </b-row>
+    <b-row class="justify-content-center">
+  <b-col class="d-flex align-items-center justify-content-center">
+    <h1 class="text-center">購物車</h1>
+    <b-button variant="warning" @click="handleReset" class="ml-2">清空</b-button>
+  </b-col>
+</b-row>
+
+
     <b-list-group v-if="cartItems.length > 0">
       <b-list-group-item v-for="item in cartItems" :key="item.id">
         <b-row>
@@ -36,7 +39,8 @@
               <b-form-select-option value="add">新增折扣券</b-form-select-option>
               <b-form-select-option value="update">更新折扣券</b-form-select-option>
             </b-form-select>
-            <b-button variant="warning" @click="handleReset" class="mr-2">清空</b-button>
+            <!-- 把按鈕移到下拉式選單的右邊 -->
+            
           </b-form-group>
           <b-form-group>
             <b-form-input type="text" v-model="brandSelect" readonly></b-form-input>
@@ -62,6 +66,7 @@
     </b-row>
   </b-container>
 </template>
+
 
 
 
