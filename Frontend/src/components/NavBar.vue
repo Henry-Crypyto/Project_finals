@@ -8,7 +8,6 @@
           <b-nav-item @click="emitChange('mainCourse')">主食</b-nav-item>
           <b-nav-item @click="emitChange('beverage')">飲料</b-nav-item>
           <b-nav-item @click="emitChange('snack')">點心</b-nav-item>
-          <b-nav-item @click="emitChange('shoppingCart')">購物車</b-nav-item>
         </b-navbar-nav>
       </b-collapse>
     </b-container>
