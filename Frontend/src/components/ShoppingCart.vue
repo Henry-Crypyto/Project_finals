@@ -99,6 +99,7 @@ export default {
     },
     updateCoupon() {
       this.$store.dispatch('updateCoupon');
+      this.couponAction==='add';
     },
     handleSubmit() {
       if (this.couponAction === 'add') {

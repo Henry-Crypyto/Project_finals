@@ -167,12 +167,11 @@ deleteCoupon(couponId) {
   });
 },
     editCoupon(coupon){
-      this.$store.commit('setEditOrAdd',25);
       this.$store.commit('dulplicateInfoToNewCoupon',coupon);
       this.$store.dispatch('fetchCouponMainCourseRelation',coupon.coupon_id);
       this.$store.dispatch('fetchCouponBeverageRelation',coupon.coupon_id);
       this.$store.dispatch('fetchCouponSnackRelation',coupon.coupon_id);
-
+      this.$store.commit('setView','ShowMainCourse');
     },
     matchesPriceCondition(price) {
       const ranges = {
