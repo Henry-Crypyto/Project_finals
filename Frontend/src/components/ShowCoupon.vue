@@ -59,7 +59,7 @@
     </h5>
     <div class="d-flex flex-column">
     <button class="btn btn-danger btn-sm mb-2" @click="deleteCoupon(coupon.coupon_id)">删除</button>
-    <button class="btn btn-primary btn-sm" @click="editCoupon(coupon)" :disabled="this.editOrAdd===1">编辑</button>
+    <button class="btn btn-primary btn-sm" @click="editCoupon(coupon)" :disabled="editOrAdd===1">编辑</button>
   </div>
   </div>
   <div v-if="coupon.items && coupon.items.length">

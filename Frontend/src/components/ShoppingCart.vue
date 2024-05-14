@@ -1,56 +1,70 @@
 <template>
-  <div class="shopping-cart-container">
-    <h1 class="text-center">購物車</h1>
-    <!-- 购物车列表 -->
-    <ul class="cart-items-list">
-      <li v-for="item in cartItems" :key="item.id" class="cart-item">
-        <div class="item-details">
-          <h3>{{ item.name }}</h3>
-          <p>数量: {{ item.quantity }}</p>
-          <p>单价: ${{ item.price }}</p>
-          <p>小计: ${{ item.quantity * item.price }}</p>
-        </div>
-        <button class="btn btn-danger" @click.prevent="removeFromCart({ id: item.id, productType: item.productType })">
-          移除
-        </button>
-      </li>
-    </ul>
-    <div v-if="cartItems.length === 0" class="empty-cart">
-      <p>請新增品項</p>
-    </div>
-
-    <!-- 折扣券管理表单 -->
-    <h2 class="form-title">折扣券管理</h2>
-    <div class="select-container">
-      <select v-model="couponAction">
-        <option value="add">新增折扣券</option>
-        <option value="update">更新折扣券</option>
-      </select>
-      <button class="btn btn-warning" @click="handleReset">清空</button>
-    </div>
-    <form class="coupon-form" @submit.prevent="handleSubmit">
-      <div class="form-row">
-        <input type="text" v-model="brandSelect" readonly>
-        <input type="text" v-model="newCoupon.coupon_name" placeholder="折扣券名称" required>
-      </div>
-      <div class="form-row">
-        <input type="number" v-model="totalPrice" placeholder="原价" required readonly>
-        <input type="number" v-model.number="newCoupon.discount_price" placeholder="折扣价" min="0" required>
-      </div>
-      <div class="form-row">
-        <input type="date" v-model="newCoupon.start_date" placeholder="开始日期" required>
-        <input type="date" v-model="newCoupon.expire_date" placeholder="结束日期" required>
-      </div>
-      <div class="form-row">
-        <input type="text" v-model="newCoupon.use_restriction" placeholder="使用限制" class="full-width">
-        <input type="text" :value="nextCouponId" placeholder="折扣券ID" readonly style="background-color: #e0e0e0;">
-      </div>
-      <button :class="buttonClass" type="submit" :disabled="totalPrice <= 0">
-        {{ buttonText }}
-      </button>
-    </form>
-  </div>
+  <b-container class="shopping-cart-container">
+    <b-row>
+      <b-col>
+        <h1 class="text-center">購物車</h1>
+      </b-col>
+    </b-row>
+    <b-list-group v-if="cartItems.length > 0">
+      <b-list-group-item v-for="item in cartItems" :key="item.id">
+        <b-row>
+          <b-col>
+            <h3>{{ item.name }}</h3>
+            <p>數量: {{ item.quantity }}</p>
+            <p>單價: ${{ item.price }}</p>
+            <p>小計: ${{ item.quantity * item.price }}</p>
+          </b-col>
+          <b-col cols="auto">
+            <b-button variant="danger" @click.prevent="removeFromCart({ id: item.id, productType: item.productType })">
+              移除
+            </b-button>
+          </b-col>
+        </b-row>
+      </b-list-group-item>
+    </b-list-group>
+    <b-row v-else>
+      <b-col>
+        <p>請新增品項</p>
+      </b-col>
+    </b-row>
+    <b-row>
+      <b-col cols="12" md="6" offset-md="3">
+        <h2 class="form-title">折扣券管理</h2>
+        <b-form @submit.prevent="handleSubmit">
+          <b-form-group class="d-flex justify-content-center">
+            <b-form-select v-model="couponAction" class="mr-2">
+              <b-form-select-option value="add">新增折扣券</b-form-select-option>
+              <b-form-select-option value="update">更新折扣券</b-form-select-option>
+            </b-form-select>
+            <b-button variant="warning" @click="handleReset" class="mr-2">清空</b-button>
+          </b-form-group>
+          <b-form-group>
+            <b-form-input type="text" v-model="brandSelect" readonly></b-form-input>
+            <b-form-input type="text" v-model="newCoupon.coupon_name" placeholder="折扣券名稱" required></b-form-input>
+          </b-form-group>
+          <b-form-group>
+            <b-form-input type="number" v-model="totalPrice" placeholder="原價" required readonly></b-form-input>
+            <b-form-input type="number" v-model.number="newCoupon.discount_price" placeholder="折扣價" min="0" required></b-form-input>
+          </b-form-group>
+          <b-form-group>
+            <b-form-input type="date" v-model="newCoupon.start_date" placeholder="開始日期" required></b-form-input>
+            <b-form-input type="date" v-model="newCoupon.expire_date" placeholder="結束日期" required></b-form-input>
+          </b-form-group>
+          <b-form-group>
+            <b-form-input type="text" v-model="newCoupon.use_restriction" placeholder="使用限制"></b-form-input>
+            <b-form-input type="text" :value="nextCouponId" placeholder="折扣券ID" readonly></b-form-input>
+          </b-form-group>
+          <button :class="buttonClass" type="submit" :disabled="totalPrice <= 0">
+                 {{ buttonText }}
+            </button>
+        </b-form>
+      </b-col>
+    </b-row>
+  </b-container>
 </template>
+
+
+
 
 
 
