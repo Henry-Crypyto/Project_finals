@@ -170,12 +170,21 @@ export default createStore({
           alert('新增折扣券失败: ' + error.message);
         });
       },
-      updateCoupon({ state, commit,dispatch}) {
-        const urlA = getFullApiUrl('/update_coupon');
-        const urlB= getFullApiUrl('/update_coupon_items_relation');
-        axios.post(urlA, state.newCoupon)
+      updateCoupon({ state, commit, dispatch }) {
+        const urlA = getFullApiUrl('/add_coupon');
+        const urlB = getFullApiUrl('/add_coupon_items_relation');
+        const urlC = getFullApiUrl(`/delete_coupon/${state.nextCouponId}`);
+      
+        // 首先执行删除操作
+        axios.delete(urlC)
+          .then(response => {
+            console.log('Coupon relations deleted successfully:', response);
+            // 删除成功后，执行折扣券的更新操作
+            return axios.post(urlA, state.newCoupon);
+          })
           .then(response => {
             console.log('Coupon updated successfully:', response);
+            // 折扣券更新后，添加新的商品关系
             return axios.post(urlB, state.cartItems);
           })
           .then(response => {
@@ -185,10 +194,10 @@ export default createStore({
             dispatch('fetchNextCouponId');
           })
           .catch(error => {
-            console.error('Error submitting coupon:', error);
+            console.error('Error updating coupon:', error);
             alert('更新折扣券失败: ' + error.message);
           });
-        },
+      },
       fetchMainCourses({ commit }) {
         const url = getFullApiUrl('/all_main_course');
         axios.get(url)
