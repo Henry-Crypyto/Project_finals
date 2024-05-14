@@ -102,7 +102,7 @@ export default {
 
 .card-title {
   color: #4a90e2;
-  font-size: 20px; /* Larger font size for titles */
+  font-size: 30px; /* Larger font size for titles */
 }
 
 b-card-text {
