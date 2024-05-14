@@ -1,28 +1,50 @@
 <template>
-  <div class="main-course-container">
-    <h1 class="text-center">主菜選單</h1>
-    <ul class="main-course-list" v-if="filteredMainCourses.length > 0">
-      <li v-for="course in filteredMainCourses" :key="course.id" class="main-course-item">
-        <h3>{{ course.name }}</h3>
-        <p>原價: {{ course.price}}</p>
-        <p>肉類類型: {{ course.meat_type_name || '不詳' }}</p>
-        <p>品牌: {{ course.brand_name }}</p>
-        <div class="input-group mb-3">
-          <input type="number" class="form-control" v-model="course.quantity" min="1" placeholder="數量">
-          <div class="input-group-append">
-            <button class="btn btn-primary" type="button" @click="handleAddToCart(course)">加入購物車</button>
-          </div>
-        </div>
-      </li>
-    </ul>
-    <div v-else>
-      <p>正在加載數據或沒有數據顯示...</p>
-    </div>
-  </div>
+  <b-container class="page-container">
+    <b-container class="main-course-container">
+      <b-row>
+        <b-col>
+          <h1 class="text-center">主菜選單</h1>
+        </b-col>
+      </b-row>
+      <b-row v-if="filteredMainCourses.length > 0">
+        <b-col cols="12" sm="6" md="4" lg="3" v-for="course in filteredMainCourses" :key="course.id" class="mb-4">
+          <b-card
+            hover
+            shadow
+            class="h-100 custom-card"
+          >
+            <b-card-title class="text-center mb-2">{{ course.name }}</b-card-title>
+            <b-card-text><strong>原價:</strong> {{ course.price }}</b-card-text>
+            <b-card-text><strong>肉類類型:</strong> {{ course.meat_type_name || '不詳' }}</b-card-text>
+            <b-card-text><strong>品牌:</strong> {{ course.brand_name }}</b-card-text>
+            <b-form-group label="數量" label-for="quantity-input-{{ course.id }}">
+              <b-form-input
+                id="quantity-input-{{ course.id }}"
+                type="number"
+                v-model="course.quantity"
+                min="1"
+                placeholder="數量"
+              ></b-form-input>
+            </b-form-group>
+            <b-row>
+              <b-col class="d-flex justify-content-center mt-2">
+                <b-button variant="primary" @click="handleAddToCart(course)">加入購物車</b-button>
+              </b-col>
+            </b-row>
+          </b-card>
+        </b-col>
+      </b-row>
+      <b-row v-else>
+        <b-col>
+          <p>正在加載數據或沒有數據顯示...</p>
+        </b-col>
+      </b-row>
+    </b-container>
+  </b-container>
 </template>
 
 <script>
-import { mapMutations,mapState } from 'vuex';
+import { mapMutations, mapState } from 'vuex';
 
 export default {
   created() {
@@ -31,89 +53,59 @@ export default {
   computed: {
     ...mapState(['mainCourses']),
     filteredMainCourses() {
-    if (this.$store.state.brandSelect === 'all') {
-      return this.mainCourses;
-    } else {
-      return this.mainCourses.filter(course => course.brand_name === this.$store.state.brandSelect);
-    }
-  }
-  },
-  methods: {
-    ...mapMutations(['addToCart','setBrandSelect']), // 引入 Vuex mutation
-
-  handleAddToCart(course) {
-  // 如果购物车为空，则询问用户是否要继续添加商品
-  if (this.$store.state.cartItems.length === 0) {
-    if (!confirm(`购物车当前为空。你确定要添加 ${course.brand_name} 品牌的商品到购物车吗？`)) {
-      return; // 如果用户不确认，直接返回不执行添加操作
-    }
-  }
-  this.setBrandSelect(course.brand_name);
-  this.addToCart({
-    product:course,
-    productType: this.$store.state.productType[0]  // 假设你正在使用数组中的第一个产品类型
-  });
-},
-
-    showAlertForBrand(brandName) {
-      if (confirm(`是否要选择 ${brandName} 品牌的商品？`)) {
-        this.$store.commit('setBrandSelect', brandName);  // 更新品牌选择
+      if (this.$store.state.brandSelect === 'all') {
+        return this.mainCourses;
+      } else {
+        return this.mainCourses.filter(course => course.brand_name === this.$store.state.brandSelect);
       }
     }
+  },
+  methods: {
+    ...mapMutations(['addToCart', 'setBrandSelect']),
+    handleAddToCart(course) {
+      if (this.$store.state.cartItems.length === 0) {
+        if (!confirm(`购物车当前为空。你确定要添加 ${course.brand_name} 品牌的商品到购物车吗？`)) {
+          return;
+        }
+      }
+      this.setBrandSelect(course.brand_name);
+      this.addToCart({
+        product: course,
+        productType: this.$store.state.productType[0]  // 假设你正在使用数组中的第一个产品类型
+      });
+    },
   }
 }
 </script>
 
-
-
-
-
-
-
-
 <style scoped>
-.main-course-container {
-  width: 100%;
+.page-container {
+  border: 3px solid black;
   padding: 20px;
-  background-color: #f4f4f4;
-  text-align: center;
-}
-
-.main-course-list {
-  display: flex;
-  flex-wrap: wrap;
-  list-style: none;
-  padding: 0;
-  justify-content: space-around;
-}
-
-.main-course-item {
-  background-color: white;
-  padding: 15px;
+  margin-top: 20px;
   margin-bottom: 20px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  width: calc(25% - 20px);
-  border-radius: 10px;
-  transition: transform 0.3s;
+  border-radius: 67px;
 }
 
-.main-course-item:hover {
-  transform: translateY(-5px);
+.main-course-container {
+  background-color: #f8f9fa;
+  padding-top: 20px;
+  padding-bottom: 20px;
 }
 
-.input-group {
-  width: 100%;
+.custom-card {
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 15px;
 }
 
-@media (max-width: 768px) {
-  .main-course-item {
-    width: calc(50% - 20px);
-  }
+.card-title {
+  color: #4a90e2;
+  font-size: 30px; /* Larger font size for titles */
 }
 
-@media (max-width: 480px) {
-  .main-course-item {
-    width: 100%;
-  }
+b-card-text {
+  padding-left: 20px; /* Better alignment for text */
+  line-height: 1.5; /* Improved line spacing for readability */
 }
 </style>

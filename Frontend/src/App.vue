@@ -1,11 +1,11 @@
 <template>
   <div>
     <!-- 标题栏 -->
-    
+    <NavBar @change-section="handleSectionChange" />
 
     <!-- 主内容区域 -->
     <b-container class="my-3">
-      <NavBar @change-section="handleSectionChange" />
+     
       <ShoppingCart :items="cartItems" />
       <component :is="currentView" @add-to-cart="addToCart" />
     </b-container>

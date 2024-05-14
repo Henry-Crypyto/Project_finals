@@ -1,32 +1,51 @@
 <template>
-  <div class="beverage-container">
-    <h1 class="text-center">飲料選單</h1>
-    <ul class="beverage-list" v-if="filteredBeverages.length > 0">
-      <li v-for="beverage in filteredBeverages" :key="beverage.id" class="beverage-item card">
-        <div class="card-body">
-          <h3 class="card-title">{{ beverage.name.trim() }}</h3>
-          <p class="card-text">原價: {{ beverage.price }}</p>
-          <p class="card-text">容量: {{ beverage.beverage_size }}</p>
-          <p class="card-text">類型: {{ beverage.iced_hot_name }}</p>
-          <p class="card-text">品牌: {{ beverage.brand_name }}</p>
-          <div class="input-group mb-3">
-            <input type="number" class="form-control" v-model="beverage.quantity" min="1" placeholder="數量">
-            <div class="input-group-append">
-              <button class="btn btn-primary" @click="handleAddToCart(beverage)">加入購物車</button>
-            </div>
-          </div>
-        </div>
-      </li>
-    </ul>
-    <div v-else>
-      <p>正在加載數據或沒有數據顯示...</p>
-    </div>
-  </div>
+  <b-container class="page-container">
+    <b-container class="beverage-container">
+      <b-row>
+        <b-col>
+          <h1 class="text-center">飲料選單</h1>
+        </b-col>
+      </b-row>
+      <b-row v-if="filteredBeverages.length > 0">
+        <b-col cols="12" sm="6" md="4" lg="3" v-for="beverage in filteredBeverages" :key="beverage.id" class="mb-4">
+          <b-card
+            hover
+            shadow
+            class="h-100 custom-card"
+          >
+            <b-card-title class="text-center mb-2">{{ beverage.name.trim() }}</b-card-title>
+            <b-card-text><strong>原價:</strong> {{ beverage.price }}</b-card-text>
+            <b-card-text><strong>容量:</strong> {{ beverage.beverage_size }}</b-card-text>
+            <b-card-text><strong>類型:</strong> {{ beverage.iced_hot_name }}</b-card-text>
+            <b-card-text><strong>品牌:</strong> {{ beverage.brand_name }}</b-card-text>
+            <b-form-group label="數量" label-for="quantity-input-{{ beverage.id }}">
+              <b-form-input
+                id="quantity-input-{{ beverage.id }}"
+                type="number"
+                v-model="beverage.quantity"
+                min="1"
+                placeholder="數量"
+              ></b-form-input>
+            </b-form-group>
+            <b-row>
+              <b-col class="d-flex justify-content-center mt-2">
+                <b-button variant="primary" @click="handleAddToCart(beverage)">加入購物車</b-button>
+              </b-col>
+            </b-row>
+          </b-card>
+        </b-col>
+      </b-row>
+      <b-row v-else>
+        <b-col>
+          <p>正在加載數據或沒有數據顯示...</p>
+        </b-col>
+      </b-row>
+    </b-container>
+  </b-container>
 </template>
 
 <script>
-import { mapMutations,mapState } from 'vuex';
-
+import { mapMutations, mapState } from 'vuex';
 
 export default {
   created() {
@@ -35,91 +54,59 @@ export default {
   computed: {
     ...mapState(['beverages']),
     filteredBeverages() {
-  if (this.$store.state.brandSelect === 'all') {
-    return this.beverages;
-  } else {
-    return this.beverages.filter(beverage => beverage.brand_name === this.$store.state.brandSelect);
-  }
-}
+      if (this.$store.state.brandSelect === 'all') {
+        return this.beverages;
+      } else {
+        return this.beverages.filter(beverage => beverage.brand_name === this.$store.state.brandSelect);
+      }
+    }
   },
   methods: {
-    ...mapMutations(['addToCart','setBrandSelect']),
-  handleAddToCart(beverage) {
-// 如果购物车为空，则询问用户是否要继续添加商品
-if (this.$store.state.cartItems.length === 0) {
-  if (!confirm(`购物车当前为空。你确定要添加 ${beverage.brand_name} 品牌的商品到购物车吗？`)) {
-    return; // 如果用户不确认，直接返回不执行添加操作
-  }
-}
-this.setBrandSelect(beverage.brand_name);
-this.addToCart({
-  product:beverage,
-  productType: this.$store.state.productType[1]  // 假设你正在使用数组中的第一个产品类型
-});
-},
-showAlertForBrand(brandName) {
-    if (confirm(`是否要选择 ${brandName} 品牌的商品？`)) {
-      this.$store.commit('setBrandSelect', brandName);  // 更新品牌选择
+    ...mapMutations(['addToCart', 'setBrandSelect']),
+    handleAddToCart(beverage) {
+      if (this.$store.state.cartItems.length === 0) {
+        if (!confirm(`购物车当前为空。你确定要添加 ${beverage.brand_name} 品牌的商品到购物车吗？`)) {
+          return;
+        }
+      }
+      this.setBrandSelect(beverage.brand_name);
+      this.addToCart({
+        product: beverage,
+        productType: this.$store.state.productType[1]  // Assuming you are using the second product type
+      });
     }
-  }
   }
 }
 </script>
 
-
 <style scoped>
-.beverage-container {
-  width: 100%;
+.page-container {
+  border: 3px solid black; /* Bold rectangular border around the page */
   padding: 20px;
-  background-color: #f4f4f4;
-  text-align: center;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  border-radius: 67px; /* Optional: Adds rounded corners */
+  background-color: #f8f9fa; /* Matches inner container background */
 }
 
-.beverage-list {
-  display: flex;
-  flex-wrap: wrap;
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  justify-content: space-around;
+.beverage-container {
+  padding-top: 20px;
+  padding-bottom: 20px;
 }
 
-.beverage-item {
-  width: calc(25% - 20px);
-  margin: 10px;
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  transition: transform 0.3s ease-in-out;
-}
-
-.beverage-item:hover {
-  transform: translateY(-5px);
-}
-
-.card-body {
-  padding: 15px;
+.custom-card {
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 15px;
 }
 
 .card-title {
-  color: #076b92;
-  margin-bottom: 5px;
+  color: #4a90e2;
+  font-size: 20px; /* Larger font size for titles */
 }
 
-.card-text {
-  color: #666;
-  font-size: 0.9rem;
-}
-
-@media (max-width: 768px) {
-  .beverage-item {
-    width: calc(50% - 20px);
-  }
-}
-
-@media (max-width: 480px) {
-  .beverage-item {
-    width: 100%;
-  }
+b-card-text {
+  padding-left: 20px; /* Better alignment for text */
+  line-height: 1.5; /* Improved line spacing for readability */
 }
 </style>

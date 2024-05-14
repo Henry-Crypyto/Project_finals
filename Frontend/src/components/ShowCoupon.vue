@@ -51,7 +51,6 @@
     <!-- 显示选定品牌、价格和日期范围的折扣券信息 -->
     <div class="row">
   <div class="col-12" v-if="selectedCoupons.length > 0">
-    <h3 class="mb-3">折扣券信息</h3>
     <div v-for="coupon in selectedCoupons" :key="coupon.coupon_ID" class="card mb-3">
   <div class="card-body d-flex justify-content-between align-items-center">
     <h5 class="card-title" @click="coupon.expanded = !coupon.expanded">
@@ -59,7 +58,7 @@
     </h5>
     <div class="d-flex flex-column">
     <button class="btn btn-danger btn-sm mb-2" @click="deleteCoupon(coupon.coupon_id)">删除</button>
-    <button class="btn btn-primary btn-sm" @click="editCoupon(coupon)" :disabled="editOrAdd===1">编辑</button>
+    <button class="btn btn-primary btn-sm" @click="editCoupon(coupon)" v-if="editOrAdd !== 1">编辑</button>
   </div>
   </div>
   <div v-if="coupon.items && coupon.items.length">

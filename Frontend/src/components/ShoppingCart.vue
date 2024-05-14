@@ -23,14 +23,8 @@
         </b-row>
       </b-list-group-item>
     </b-list-group>
-    <b-row v-else>
-      <b-col>
-        <p>請新增品項</p>
-      </b-col>
-    </b-row>
     <b-row>
       <b-col cols="12" md="6" offset-md="3">
-        <h2 class="form-title">折扣券管理</h2>
         <b-form @submit.prevent="handleSubmit">
           <b-form-group class="d-flex justify-content-center">
             <b-form-select v-model="couponAction" class="ml-2">
@@ -39,6 +33,7 @@
             </b-form-select>
           </b-form-group>
           <b-form-group>
+            <b-form-input type="text" :value="nextCouponId" placeholder="折扣券ID" readonly></b-form-input>
             <b-form-input type="text" v-model="brandSelect" readonly></b-form-input>
             <b-form-input type="text" v-model="newCoupon.coupon_name" placeholder="折扣券名稱" required></b-form-input>
           </b-form-group>
@@ -52,7 +47,6 @@
           </b-form-group>
           <b-form-group>
             <b-form-input type="text" v-model="newCoupon.use_restriction" placeholder="使用限制"></b-form-input>
-            <b-form-input type="text" :value="nextCouponId" placeholder="折扣券ID" readonly></b-form-input>
           </b-form-group>
           <b-button :class="buttonClass" type="submit" :disabled="totalPrice <= 0" class="d-block mx-auto">
             {{ buttonText }}
