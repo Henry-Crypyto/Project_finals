@@ -1,13 +1,16 @@
 <template>
-  <b-navbar toggleable="lg" type="light" class="custom-navbar">
-    <b-container>
+  <b-navbar toggleable="lg" type="light" variant="light" class="custom-navbar">
+    <b-container class="justify-center">
       <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
       <b-collapse id="nav-collapse" is-nav>
-        <b-navbar-nav class="mx-auto">
-          <b-nav-item @click="emitChange('coupon')">折價券</b-nav-item>
-          <b-nav-item @click="emitChange('mainCourse')">主食</b-nav-item>
-          <b-nav-item @click="emitChange('beverage')">飲料</b-nav-item>
-          <b-nav-item @click="emitChange('snack')">點心</b-nav-item>
+        <b-navbar-nav class="mx-auto d-flex align-items-center">
+          <b-nav-item href="#" class="nav-link" @click="emitChange('coupon')">折價券</b-nav-item>
+          <div class="divider"></div>
+          <b-nav-item href="#" class="nav-link" @click="emitChange('mainCourse')">主食</b-nav-item>
+          <div class="divider"></div>
+          <b-nav-item href="#" class="nav-link" @click="emitChange('beverage')">飲料</b-nav-item>
+          <div class="divider"></div>
+          <b-nav-item href="#" class="nav-link" @click="emitChange('snack')">點心</b-nav-item>
         </b-navbar-nav>
       </b-collapse>
     </b-container>
@@ -26,28 +29,39 @@ export default {
 
 <style scoped>
 .custom-navbar {
-  background-color: rgba(18, 17, 16, 0.04); /* corrected color format with transparency */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  padding: 0.5rem 0;
+  background-color: #2d3748; /* 深色背景 */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  padding: 0.5rem;
 }
 
-.b-navbar-nav {
-  align-items: center;
-}
-
-.b-nav-item {
-  margin: 0 20px;
-  padding: 0.5rem 0.75rem;
-  font-size: 1.2rem; /* more practical font size */
+.nav-link {
+  font-size: 1.5rem;
   font-weight: 500;
-  color: #d70909;
-  cursor: pointer;
-  transition: color 0.3s ease, transform 0.3s ease;
+  color: #ffffff;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  padding: 0.75rem 1.5rem;
+  margin: 0 0.5rem;
+  border-radius: 8px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.b-nav-item:hover, .b-nav-item:focus {
-  color: #FFD700; /* golden color on hover/focus */
-  transform: translateY(-3px); /* subtle raise effect */
-  text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+.nav-link:hover, .nav-link:focus {
+  color: #f6e05e;
+}
+
+.divider {
+  width: 1px;
+  height: 2rem;
+  background-color: #e0e0e0;
+  margin: 0 1rem;
+  display: inline-block;
+}
+
+.logo {
+  height: 40px;
 }
 </style>
