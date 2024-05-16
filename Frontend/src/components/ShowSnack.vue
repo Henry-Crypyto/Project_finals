@@ -4,6 +4,18 @@
       <b-row>
         <b-col>
           <h1 class="text-center">小吃選單</h1>
+          <div class="d-flex justify-content-center mb-4">
+            <div class="col-md-2 mb-3">
+              <div class="form-group">
+                <select id="brand-select" class="form-control custom-select" v-model="localBrandSelect">
+                  <option value="">所有品牌</option>
+                  <option v-for="brand in brandOptions" :key="brand.brand_id" :value="brand.brand_name">
+                    {{ brand.brand_name }}
+                  </option>
+                </select>
+              </div>
+            </div>
+          </div>
         </b-col>
       </b-row>
       <b-row v-if="filteredSnacks.length > 0">
@@ -50,30 +62,45 @@ import { mapMutations, mapState } from 'vuex';
 export default {
   created() {
     this.$store.dispatch('fetchSnacks');
+    this.$store.dispatch('fetchBrandOptions'); // Fetch brand options when component is created
+  },
+  data() {
+    return {
+      localBrandSelect: ''  // This will be used for the local select input
+    };
   },
   computed: {
-    ...mapState(['snacks']),
+    ...mapState(['snacks', 'brandOptions', 'brandSelect','cartItems']),
     filteredSnacks() {
-      if (this.$store.state.brandSelect === 'all') {
+      if (this.localBrandSelect === '' || this.localBrandSelect === 'all') {
         return this.snacks;
       } else {
-        return this.snacks.filter(snack => snack.brand_name === this.$store.state.brandSelect);
+        return this.snacks.filter(snack => snack.brand_name === this.localBrandSelect);
       }
+    }
+  },
+  watch: {
+    // Watch for changes in the Vuex store's brandSelect and update the localBrandSelect accordingly
+    brandSelect(newBrandSelect) {
+      this.localBrandSelect = newBrandSelect;
     }
   },
   methods: {
     ...mapMutations(['addToCart', 'setBrandSelect']),
     handleAddToCart(snack) {
-      if (this.$store.state.cartItems.length === 0) {
-        if (!confirm(`购物车当前为空。你确定要添加 ${snack.brand_name} 品牌的商品到购物车吗？`)) {
-          return;
+      if (this.localBrandSelect === '' || this.localBrandSelect === 'all' || this.brandSelect === snack.brand_name) {
+        if (this.cartItems.length === 0) {
+          this.setBrandSelect(snack.brand_name);
         }
+        console.log(this.localBrandSelect);
+
+        this.addToCart({
+          product: snack,
+          productType: this.$store.state.productType[0]  // 假设你正在使用数组中的第一个产品类型
+        });
+      } else {
+        alert('品牌不匹配，无法添加到购物车。');
       }
-      this.setBrandSelect(snack.brand_name);
-      this.addToCart({
-        product: snack,
-        productType: this.$store.state.productType[2]  // Assuming you are using the third product type
-      });
     }
   }
 }
@@ -102,11 +129,43 @@ export default {
 
 .card-title {
   color: #4a90e2;
-  font-size: 30ppx; /* Larger font size for titles */
+  font-size: 30px; /* Larger font size for titles */
 }
 
 b-card-text {
   padding-left: 20px; /* Better alignment for text */
   line-height: 1.5; /* Improved line spacing for readability */
+}
+
+.select-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px; /* 为按钮和选择框添加间隙 */
+  margin: 20px 0;
+}
+
+.custom-select {
+  width: 200px;
+  padding: 10px 15px;
+  border: 2px solid #aaa;
+  border-radius: 8px;
+  background-color: #fff;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  font-size: 16px;
+  color: #333;
+  cursor: pointer;
+  outline: none; /* 移除焦点时的轮廓 */
+  appearance: none; /* 移除默认样式 */
+  position: relative;
+  background-image: linear-gradient(45deg, transparent 50%, gray 50%), linear-gradient(135deg, gray 50%, transparent 50%);
+  background-position: calc(100% - 20px) calc(1em + 2px), calc(100% - 15px) calc(1em + 2px);
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+
+.custom-select:focus {
+  border-color: #0056b3;
+  box-shadow: 0 0 8px rgba(0,86,179,0.8);
 }
 </style>
