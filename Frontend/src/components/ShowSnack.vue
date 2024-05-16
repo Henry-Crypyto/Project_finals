@@ -88,15 +88,16 @@ export default {
   methods: {
     ...mapMutations(['addToCart', 'setBrandSelect']),
     handleAddToCart(snack) {
-      if (this.localBrandSelect === '' || this.localBrandSelect === 'all' || this.brandSelect === snack.brand_name) {
-        if (this.cartItems.length === 0) {
+      if (this.cartItems.length === 0&&(this.localBrandSelect === '' || this.localBrandSelect === 'all' )) {
           this.setBrandSelect(snack.brand_name);
         }
+      if (this.brandSelect === snack.brand_name) {
+        
         console.log(this.localBrandSelect);
 
         this.addToCart({
           product: snack,
-          productType: this.$store.state.productType[0]  // 假设你正在使用数组中的第一个产品类型
+          productType: this.$store.state.productType[2]  // 假设你正在使用数组中的第一个产品类型
         });
       } else {
         alert('品牌不匹配，无法添加到购物车。');

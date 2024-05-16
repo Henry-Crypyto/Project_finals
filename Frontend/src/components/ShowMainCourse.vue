@@ -55,6 +55,7 @@
   </b-container>
 </template>
 
+
 <script>
 import { mapMutations, mapState } from 'vuex';
 
@@ -88,12 +89,11 @@ export default {
     ...mapMutations(['addToCart', 'setBrandSelect']),
 
     handleAddToCart(course) {
-      if (this.localBrandSelect === '' || this.localBrandSelect === 'all' || this.brandSelect === course.brand_name) {
-        if (this.cartItems.length === 0) {
+      if (this.cartItems.length === 0&&(this.localBrandSelect === '' || this.localBrandSelect === 'all')) {
           this.setBrandSelect(course.brand_name);
         }
+      if ( this.brandSelect === course.brand_name) {
         console.log(this.localBrandSelect);
-
         this.addToCart({
           product: course,
           productType: this.$store.state.productType[0]  // 假设你正在使用数组中的第一个产品类型
