@@ -4,14 +4,26 @@
       <b-row>
         <b-col>
           <h1 class="text-center">主菜選單</h1>
-          <div class="d-flex justify-content-center mb-4">
-            <div class="col-md-2 mb-3">
+          <div class="mb-4">
+            <div class="col-md-2 mb-3 mx-auto">
               <div class="form-group">
                 <select id="brand-select" class="form-control custom-select" v-model="localBrandSelect">
                   <option value="">所有品牌</option>
                   <option v-for="brand in brandOptions" :key="brand.brand_id" :value="brand.brand_name">
                     {{ brand.brand_name }}
                   </option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-2 mb-3 mx-auto">
+              <div class="form-group">
+                <select id="meat-select" class="form-control custom-select" v-model="localMeatSelect">
+                  <option value="">所有肉類</option>
+                  <option value="牛">牛</option>
+                  <option value="豬">豬</option>
+                  <option value="雞">雞</option>
+                  <option value="海鮮">海鮮</option>
+                  <option value="羊">羊</option>
                 </select>
               </div>
             </div>
@@ -66,17 +78,18 @@ export default {
   },
   data() {
     return {
-      localBrandSelect: ''  // This will be used for the local select input
+      localBrandSelect: '',  // This will be used for the local select input
+      localMeatSelect: '' // 新增的肉類篩選選項
     };
   },
   computed: {
     ...mapState(['mainCourses', 'brandOptions', 'brandSelect', 'cartItems','editOrAdd']),
     filteredMainCourses() {
-      if (this.localBrandSelect === '' || this.localBrandSelect === 'all') {
-        return this.mainCourses;
-      } else {
-        return this.mainCourses.filter(course => course.brand_name === this.localBrandSelect);
-      }
+      return this.mainCourses.filter(course => {
+        const brandMatch = this.localBrandSelect === '' || this.localBrandSelect === 'all' || course.brand_name === this.localBrandSelect;
+        const meatMatch = this.localMeatSelect === '' || course.meat_type_name === this.localMeatSelect;
+        return brandMatch && meatMatch;
+      });
     }
   },
   watch: {
@@ -153,9 +166,10 @@ b-card-text {
 
 .select-container {
   display: flex;
+  flex-direction: column; /* 垂直排列 */
   align-items: center;
   justify-content: center;
-  gap: 20px; /* 为按钮和选择框添加间隙 */
+  gap: 20px; /* 增加間距 */
   margin: 20px 0;
 }
 
@@ -169,8 +183,8 @@ b-card-text {
   font-size: 16px;
   color: #333;
   cursor: pointer;
-  outline: none; /* 移除焦点时的轮廓 */
-  appearance: none; /* 移除默认样式 */
+  outline: none; /* 移除焦點時的輪廓 */
+  appearance: none; /* 移除默認樣式 */
   position: relative;
   background-image: linear-gradient(45deg, transparent 50%, gray 50%), linear-gradient(135deg, gray 50%, transparent 50%);
   background-position: calc(100% - 20px) calc(1em + 2px), calc(100% - 15px) calc(1em + 2px);

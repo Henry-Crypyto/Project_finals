@@ -4,7 +4,7 @@
       <b-row>
         <b-col>
           <h1 class="text-center">飲料選單</h1>
-          <div class="d-flex justify-content-center mb-4">
+          <div class="d-flex flex-column align-items-center mb-4">
             <div class="col-md-2 mb-3">
               <div class="form-group">
                 <select id="brand-select" class="form-control custom-select" v-model="localBrandSelect">
@@ -15,16 +15,31 @@
                 </select>
               </div>
             </div>
+            <div class="col-md-2 mb-3">
+              <div class="form-group">
+                <select id="iced-hot-select" class="form-control custom-select" v-model="localIcedHotSelect">
+                  <option value="">所有類型</option>
+                  <option value="冰">冰</option>
+                  <option value="熱">熱</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-2 mb-3">
+              <div class="form-group">
+                <select id="size-select" class="form-control custom-select" v-model="localSizeSelect">
+                  <option value="">所有容量</option>
+                  <option value="450ml">450ml</option>
+                  <option value="650ml">650ml</option>
+                  <option value="950ml">950ml</option>
+                </select>
+              </div>
+            </div>
           </div>
         </b-col>
       </b-row>
       <b-row v-if="filteredBeverages.length > 0">
         <b-col cols="12" sm="6" md="4" lg="3" v-for="beverage in filteredBeverages" :key="beverage.id" class="mb-4">
-          <b-card
-            hover
-            shadow
-            class="h-100 custom-card"
-          >
+          <b-card hover shadow class="h-100 custom-card">
             <b-card-title class="text-center mb-2">{{ beverage.name.trim() }}</b-card-title>
             <b-card-text><strong>原價:</strong> {{ beverage.price }}</b-card-text>
             <b-card-text><strong>容量:</strong> {{ beverage.beverage_size }}</b-card-text>
@@ -46,7 +61,7 @@
             </b-row>
             <b-row>
               <b-col class="d-flex justify-content-center mt-2">
-                <b-button variant="danger" @click="handleAddHateToCart(beverage)" v-if="editOrAdd===2">討厭</b-button>
+                <b-button variant="danger" @click="handleAddHateToCart(beverage)" v-if="editOrAdd === 2">討厭</b-button>
               </b-col>
             </b-row>
           </b-card>
@@ -71,17 +86,20 @@ export default {
   },
   data() {
     return {
-      localBrandSelect: ''  // This will be used for the local select input
+      localBrandSelect: '',  // This will be used for the local select input
+      localIcedHotSelect: '', // This will be used for the iced/hot select input
+      localSizeSelect: '' // This will be used for the size select input
     };
   },
   computed: {
-    ...mapState(['beverages', 'brandOptions', 'brandSelect','cartItems','editOrAdd']),
+    ...mapState(['beverages', 'brandOptions', 'brandSelect', 'cartItems', 'editOrAdd']),
     filteredBeverages() {
-      if (this.localBrandSelect === '' || this.localBrandSelect === 'all') {
-        return this.beverages;
-      } else {
-        return this.beverages.filter(beverage => beverage.brand_name === this.localBrandSelect);
-      }
+      return this.beverages.filter(beverage => {
+        const brandMatch = this.localBrandSelect === '' || beverage.brand_name === this.localBrandSelect;
+        const icedHotMatch = this.localIcedHotSelect === '' || beverage.iced_hot_name === this.localIcedHotSelect;
+        const sizeMatch = this.localSizeSelect === '' || beverage.beverage_size === this.localSizeSelect;
+        return brandMatch && icedHotMatch && sizeMatch;
+      });
     }
   },
   watch: {
@@ -93,13 +111,13 @@ export default {
   methods: {
     ...mapMutations(['addToCart', 'setBrandSelect']),
     handleAddLoveToCart(beverage) {
-      if (this.cartItems.length === 0&&(this.brandSelect === '' || this.brandSelect === 'all' )) {
-          this.setBrandSelect(beverage.brand_name);
-        }
+      if (this.cartItems.length === 0 && (this.brandSelect === '' || this.brandSelect === 'all')) {
+        this.setBrandSelect(beverage.brand_name);
+      }
       if (this.brandSelect === beverage.brand_name) {
         this.addToCart({
           product: beverage,
-          preference:1,
+          preference: 1,
           productType: this.$store.state.productType[1]  // 假设你正在使用数组中的第一个产品类型
         });
       } else {
@@ -157,9 +175,10 @@ b-card-text {
 
 .select-container {
   display: flex;
+  flex-direction: column; /* 垂直排列 */
   align-items: center;
   justify-content: center;
-  gap: 20px; /* 为按钮和选择框添加间隙 */
+  gap: 20px; /* 增加間距 */
   margin: 20px 0;
 }
 
@@ -173,8 +192,8 @@ b-card-text {
   font-size: 16px;
   color: #333;
   cursor: pointer;
-  outline: none; /* 移除焦点时的轮廓 */
-  appearance: none; /* 移除默认样式 */
+  outline: none; /* 移除焦點時的輪廓 */
+  appearance: none; /* 移除默認樣式 */
   position: relative;
   background-image: linear-gradient(45deg, transparent 50%, gray 50%), linear-gradient(135deg, gray 50%, transparent 50%);
   background-position: calc(100% - 20px) calc(1em + 2px), calc(100% - 15px) calc(1em + 2px);

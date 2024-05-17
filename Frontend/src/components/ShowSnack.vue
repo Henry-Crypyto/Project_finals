@@ -16,15 +16,25 @@
               </div>
             </div>
           </div>
+          <div class="d-flex justify-content-center mb-4">
+            <div class="col-md-2 mb-3">
+              <div class="form-group">
+                <select id="flavor-select" class="form-control custom-select" v-model="localFlavorSelect">
+                  <option value="">所有口味</option>
+                  <option value="酸">酸</option>
+                  <option value="甜">甜</option>
+                  <option value="苦">苦</option>
+                  <option value="辣">辣</option>
+                  <option value="鹹">鹹</option>
+                </select>
+              </div>
+            </div>
+          </div>
         </b-col>
       </b-row>
       <b-row v-if="filteredSnacks.length > 0">
         <b-col cols="12" sm="6" md="4" lg="3" v-for="snack in filteredSnacks" :key="snack.id" class="mb-4">
-          <b-card
-            hover
-            shadow
-            class="h-100 custom-card"
-          >
+          <b-card hover shadow class="h-100 custom-card">
             <b-card-title class="text-center mb-2">{{ snack.name.trim() }}</b-card-title>
             <b-card-text v-if="snack.snack_size"><strong>大小:</strong> {{ snack.snack_size }}</b-card-text>
             <b-card-text><strong>原價:</strong> {{ snack.price }}</b-card-text>
@@ -67,25 +77,28 @@ import { mapMutations, mapState } from 'vuex';
 export default {
   created() {
     this.$store.dispatch('fetchSnacks');
-    this.$store.dispatch('fetchBrandOptions'); // Fetch brand options when component is created
+    this.$store.dispatch('fetchBrandOptions');
   },
   data() {
     return {
-      localBrandSelect: ''  // This will be used for the local select input
+      localBrandSelect: '',
+      localFlavorSelect: ''  // This will be used for the local flavor select input
     };
   },
   computed: {
-    ...mapState(['snacks', 'brandOptions', 'brandSelect','cartItems','editOrAdd']),
+    ...mapState(['snacks', 'brandOptions', 'brandSelect', 'cartItems', 'editOrAdd']),
     filteredSnacks() {
-      if (this.localBrandSelect === '' || this.localBrandSelect === 'all') {
-        return this.snacks;
-      } else {
-        return this.snacks.filter(snack => snack.brand_name === this.localBrandSelect);
+      let snacks = this.snacks;
+      if (this.localBrandSelect !== '' && this.localBrandSelect !== 'all') {
+        snacks = snacks.filter(snack => snack.brand_name === this.localBrandSelect);
       }
+      if (this.localFlavorSelect !== '' && this.localFlavorSelect !== 'all') {
+        snacks = snacks.filter(snack => snack.flavor_name === this.localFlavorSelect);
+      }
+      return snacks;
     }
   },
   watch: {
-    // Watch for changes in the Vuex store's brandSelect and update the localBrandSelect accordingly
     brandSelect(newBrandSelect) {
       this.localBrandSelect = newBrandSelect;
     }
@@ -93,14 +106,14 @@ export default {
   methods: {
     ...mapMutations(['addToCart', 'setBrandSelect']),
     handleAddLoveToCart(snack) {
-      if (this.cartItems.length === 0&&(this.brandSelect === '' || this.brandSelect === 'all' )) {
-          this.setBrandSelect(snack.brand_name);
-        }
+      if (this.cartItems.length === 0 && (this.brandSelect === '' || this.brandSelect === 'all')) {
+        this.setBrandSelect(snack.brand_name);
+      }
       if (this.brandSelect === snack.brand_name) {
-          this.addToCart({
+        this.addToCart({
           product: snack,
-          preference:1,
-          productType: this.$store.state.productType[2]  // 假设你正在使用数组中的第一个产品类型
+          preference: 1,
+          productType: this.$store.state.productType[2]
         });
       } else {
         alert('品牌不匹配，无法添加到购物车。');
@@ -114,7 +127,7 @@ export default {
         this.addToCart({
           product: snack,
           preference: 0,
-          productType: this.$store.state.productType[2]  // 假设你正在使用数组中的第一个产品类型
+          productType: this.$store.state.productType[2]
         });
       } else {
         alert('品牌不匹配，无法添加到购物车。');
@@ -126,12 +139,12 @@ export default {
 
 <style scoped>
 .page-container {
-  border: 3px solid black; /* Bold rectangular border around the page */
+  border: 3px solid black;
   padding: 20px;
   margin-top: 20px;
   margin-bottom: 20px;
-  border-radius: 67px; /* Optional: Adds rounded corners */
-  background-color: #f8f9fa; /* Matches inner container background */
+  border-radius: 67px;
+  background-color: #f8f9fa;
 }
 
 .snack-container {
@@ -147,19 +160,19 @@ export default {
 
 .card-title {
   color: #4a90e2;
-  font-size: 30px; /* Larger font size for titles */
+  font-size: 30px;
 }
 
 b-card-text {
-  padding-left: 20px; /* Better alignment for text */
-  line-height: 1.5; /* Improved line spacing for readability */
+  padding-left: 20px;
+  line-height: 1.5;
 }
 
 .select-container {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 20px; /* 为按钮和选择框添加间隙 */
+  gap: 20px;
   margin: 20px 0;
 }
 
@@ -173,8 +186,8 @@ b-card-text {
   font-size: 16px;
   color: #333;
   cursor: pointer;
-  outline: none; /* 移除焦点时的轮廓 */
-  appearance: none; /* 移除默认样式 */
+  outline: none;
+  appearance: none;
   position: relative;
   background-image: linear-gradient(45deg, transparent 50%, gray 50%), linear-gradient(135deg, gray 50%, transparent 50%);
   background-position: calc(100% - 20px) calc(1em + 2px), calc(100% - 15px) calc(1em + 2px);
