@@ -20,11 +20,7 @@
       </b-row>
       <b-row v-if="filteredMainCourses.length > 0">
         <b-col cols="12" sm="6" md="4" lg="3" v-for="course in filteredMainCourses" :key="course.id" class="mb-4">
-          <b-card
-            hover
-            shadow
-            class="h-100 custom-card"
-          >
+          <b-card hover shadow class="h-100 custom-card">
             <b-card-title class="text-center mb-2">{{ course.name }}</b-card-title>
             <b-card-text><strong>原價:</strong> {{ course.price }}</b-card-text>
             <b-card-text><strong>肉類類型:</strong> {{ course.meat_type_name || '不詳' }}</b-card-text>
@@ -40,7 +36,12 @@
             </b-form-group>
             <b-row>
               <b-col class="d-flex justify-content-center mt-2">
-                <b-button variant="primary" @click="handleAddToCart(course)">加入購物車</b-button>
+                <b-button variant="primary" @click="handleAddLoveToCart(course)">喜歡</b-button>
+              </b-col>
+            </b-row>
+            <b-row>
+              <b-col class="d-flex justify-content-center mt-2">
+                <b-button variant="danger" @click="handleAddHateToCart(course)" v-if="editOrAdd===2">討厭</b-button>
               </b-col>
             </b-row>
           </b-card>
@@ -54,7 +55,6 @@
     </b-container>
   </b-container>
 </template>
-
 
 <script>
 import { mapMutations, mapState } from 'vuex';
@@ -70,7 +70,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(['mainCourses', 'brandOptions', 'brandSelect', 'cartItems']),
+    ...mapState(['mainCourses', 'brandOptions', 'brandSelect', 'cartItems','editOrAdd']),
     filteredMainCourses() {
       if (this.localBrandSelect === '' || this.localBrandSelect === 'all') {
         return this.mainCourses;
@@ -88,14 +88,28 @@ export default {
   methods: {
     ...mapMutations(['addToCart', 'setBrandSelect']),
 
-    handleAddToCart(course) {
-      if (this.cartItems.length === 0&&(this.localBrandSelect === '' || this.localBrandSelect === 'all')) {
-          this.setBrandSelect(course.brand_name);
-        }
-      if ( this.brandSelect === course.brand_name) {
-        console.log(this.localBrandSelect);
+    handleAddLoveToCart(course) {
+      if (this.cartItems.length === 0 && (this.brandSelect === '' || this.brandSelect === 'all')) {
+        this.setBrandSelect(course.brand_name);
+      }
+      if (this.brandSelect === course.brand_name) {
         this.addToCart({
           product: course,
+          preference: 1,
+          productType: this.$store.state.productType[0]  // 假设你正在使用数组中的第一个产品类型
+        });
+      } else {
+        alert('品牌不匹配，无法添加到购物车。');
+      }
+    },
+    handleAddHateToCart(course) {
+      if (this.cartItems.length === 0 && (this.brandSelect === '' || this.brandSelect === 'all')) {
+        this.setBrandSelect(course.brand_name);
+      }
+      if (this.brandSelect === course.brand_name) {
+        this.addToCart({
+          product: course,
+          preference: 0,
           productType: this.$store.state.productType[0]  // 假设你正在使用数组中的第一个产品类型
         });
       } else {

@@ -197,11 +197,22 @@ export default {
 
   return (!filterStartDate || start >= filterStartDate) && (!filterEndDate || expiration <= filterEndDate);
 },
-    matchesCartItems(coupon) {
-      return this.cartItems.every(cartItem =>
-        coupon.items.some(couponItem => couponItem.ItemName === cartItem.name && couponItem.brand_name === cartItem.brand_name)
+matchesCartItems(coupon) {
+  return this.cartItems.every(cartItem => {
+    if (cartItem.preference === 1) {
+      // 確保折價券中包含該品項
+      return coupon.items.some(couponItem => 
+        couponItem.ItemName === cartItem.name && couponItem.brand_name === cartItem.brand_name
+      );
+    } else if (cartItem.preference === 0) {
+      // 確保折價券中不包含該品項
+      return !coupon.items.some(couponItem => 
+        couponItem.ItemName === cartItem.name && couponItem.brand_name === cartItem.brand_name
       );
     }
+    return true; // 對於其他情況，不影響匹配
+  });
+}
   },
   computed: {
     ...mapState(['brandOptions', 'newCoupon', 'nextCouponId', 'editOrAdd','cartItems']),

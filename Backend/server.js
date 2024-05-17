@@ -78,9 +78,9 @@ app.get('/all_coupons_with_items', (req, res) => {
     c.start_date, 
     c.expire_date, 
     c.use_restriction, 
-    GROUP_CONCAT(DISTINCT CONCAT(h.name, COALESCE(CONCAT(' (', h.flavor_name, ')'), ''), ' x ', mc.quantity) ORDER BY h.name SEPARATOR ', ') AS main_courses, 
+   GROUP_CONCAT(DISTINCT CONCAT(h.name, ' x ', mc.quantity) ORDER BY h.name SEPARATOR ', ') AS main_courses,  
     GROUP_CONCAT(DISTINCT CONCAT(b.name, ' x ', cb.quantity) ORDER BY b.name SEPARATOR ', ') AS beverages, 
-    GROUP_CONCAT(DISTINCT CONCAT(s.name, COALESCE(CONCAT(' (', s.snack_size, ')'), ''), ' x ', cs.quantity) ORDER BY s.name SEPARATOR ', ') AS snacks
+     GROUP_CONCAT(DISTINCT CONCAT(s.name, ' x ', cs.quantity) ORDER BY s.name SEPARATOR ', ') AS snacks
 FROM 
     coupon c 
     LEFT JOIN coupon_main_course mc ON mc.coupon_id = c.coupon_id

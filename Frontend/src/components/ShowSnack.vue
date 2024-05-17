@@ -41,7 +41,12 @@
             </b-form-group>
             <b-row>
               <b-col class="d-flex justify-content-center mt-2">
-                <b-button variant="primary" @click="handleAddToCart(snack)">加入購物車</b-button>
+                <b-button variant="primary" @click="handleAddLoveToCart(snack)">喜歡</b-button>
+              </b-col>
+            </b-row>
+            <b-row>
+              <b-col class="d-flex justify-content-center mt-2">
+                <b-button variant="danger" @click="handleAddHateToCart(snack)" v-if="editOrAdd===2">討厭</b-button>
               </b-col>
             </b-row>
           </b-card>
@@ -70,7 +75,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(['snacks', 'brandOptions', 'brandSelect','cartItems']),
+    ...mapState(['snacks', 'brandOptions', 'brandSelect','cartItems','editOrAdd']),
     filteredSnacks() {
       if (this.localBrandSelect === '' || this.localBrandSelect === 'all') {
         return this.snacks;
@@ -87,16 +92,28 @@ export default {
   },
   methods: {
     ...mapMutations(['addToCart', 'setBrandSelect']),
-    handleAddToCart(snack) {
-      if (this.cartItems.length === 0&&(this.localBrandSelect === '' || this.localBrandSelect === 'all' )) {
+    handleAddLoveToCart(snack) {
+      if (this.cartItems.length === 0&&(this.brandSelect === '' || this.brandSelect === 'all' )) {
           this.setBrandSelect(snack.brand_name);
         }
       if (this.brandSelect === snack.brand_name) {
-        
-        console.log(this.localBrandSelect);
-
+          this.addToCart({
+          product: snack,
+          preference:1,
+          productType: this.$store.state.productType[2]  // 假设你正在使用数组中的第一个产品类型
+        });
+      } else {
+        alert('品牌不匹配，无法添加到购物车。');
+      }
+    },
+    handleAddHateToCart(snack) {
+      if (this.cartItems.length === 0 && (this.brandSelect === '' || this.brandSelect === 'all')) {
+        this.setBrandSelect(snack.brand_name);
+      }
+      if (this.brandSelect === snack.brand_name) {
         this.addToCart({
           product: snack,
+          preference: 0,
           productType: this.$store.state.productType[2]  // 假设你正在使用数组中的第一个产品类型
         });
       } else {

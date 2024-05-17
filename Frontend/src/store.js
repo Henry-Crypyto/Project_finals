@@ -51,7 +51,7 @@ export default createStore({
       state.newCoupon.use_restriction=coupon.use_restriction;
     },
     addToCart(state, payload) {
-        const { product, productType } = payload;
+        const { product, productType,preference } = payload;
         const item = state.cartItems.find(item => item.id === product.id 
           && item.productType === productType);        
           if (item) {
@@ -60,6 +60,7 @@ export default createStore({
           state.cartItems.push({
             nextCouponId:state.nextCouponId,
             id: product.id,
+            preference:preference,
             brandName:product.brand_name,
             productType: productType,
             name: product.name,
