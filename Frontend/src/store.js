@@ -60,6 +60,7 @@ export default createStore({
           state.cartItems.push({
             nextCouponId:state.nextCouponId,
             id: product.id,
+            brandName:product.brand_name,
             productType: productType,
             name: product.name,
             price: product.price,
@@ -73,14 +74,44 @@ export default createStore({
         state.newCoupon.brand_name = newBrandSelect; 
         console.log(state.brandSelect); // 同步更新 newCoupon 中的 brand_name
       },
-      removeFromCart(state, payload) {
+      decreaseFromCart(state, payload) {
         const { id, productType } = payload;
-        state.cartItems = state.cartItems.filter(item => !(item.id === id && item.productType === productType));
-        // After removing the item, check if the cart is empty and update brand select if needed
+        const itemIndex = state.cartItems.findIndex(item => item.id === id && item.productType === productType);
+        
+        if (itemIndex !== -1) {  // Check if the item is found
+          if (state.cartItems[itemIndex].quantity > 1) {
+            state.cartItems[itemIndex].quantity--;  // Decrease quantity by 1
+          } else {
+            state.cartItems.splice(itemIndex, 1);  // Remove item from array if quantity is 1 or less
+          }
+        }
+    
+        // After updating the cart, check if the cart is empty and update brand select if needed
         if (state.cartItems.length === 0) {
-          this.commit('setBrandSelect', 'all');  // 使用commit调用另一个mutation
+          this.commit('setBrandSelect', 'all');  // Reset the brand select to 'all' if cart is empty
         }
       },
+      
+        increaseFromCart(state, payload) {
+          const { id, productType } = payload;
+          const item = state.cartItems.find(item => item.id === id && item.productType === productType);
+          
+          if (item) {  // Check if the item is found
+            item.quantity++;  // Increase quantity by 1
+          } else {
+            // Optionally handle the case where the item isn't found, such as adding it to the cart
+            // This part is optional and depends on your application's requirements
+            console.log("Item not found in cart, cannot increase quantity.");
+          }
+        },
+        removeFromCart(state, payload) {
+          const { id, productType } = payload;
+          state.cartItems = state.cartItems.filter(item => !(item.id === id && item.productType === productType));
+          // After removing the item, check if the cart is empty and update brand select if needed
+          if (state.cartItems.length === 0) {
+            this.commit('setBrandSelect', 'all');  // 使用commit调用另一个mutation
+          }
+        },
     setNextCouponId(state, id) {
       state.nextCouponId = id;
       state.newCoupon.coupon_id = id;
@@ -98,6 +129,7 @@ export default createStore({
       };
       state.cartItems=[];
       this.commit('setBrandSelect', 'all');
+      this.dispatch('fetchNextCouponId');
       },
     setMainCourses(state, courses) {
       state.mainCourses = courses;

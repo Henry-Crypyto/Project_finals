@@ -6,6 +6,38 @@
         <b-button variant="warning" @click="handleReset" class="ml-2">清空</b-button>
       </b-col>
     </b-row>
+    <b-row>
+      <b-col cols="12" md="6" offset-md="3">
+        <b-form @submit.prevent="handleSubmit">
+          <b-form-group class="d-flex justify-content-center">
+            <b-form-select v-model="couponAction" class="ml-2">
+              <b-form-select-option value="user">使用者模式</b-form-select-option>
+              <b-form-select-option value="add">新增或刪除折扣券</b-form-select-option>
+              <b-form-select-option value="update">更新折扣券</b-form-select-option>
+            </b-form-select>
+          </b-form-group>
+          <b-form-group>
+            <b-form-input type="text" :value="nextCouponId" placeholder="折扣券ID" readonly v-if="editOrAdd!==2"></b-form-input>
+            <b-form-input type="text" v-model="brandSelect" readonly v-if="editOrAdd!==2"></b-form-input>
+            <b-form-input type="text" v-model="newCoupon.coupon_name" placeholder="折扣券名稱" required v-if="editOrAdd!==2"></b-form-input>
+          </b-form-group>
+          <b-form-group>
+            <b-form-input type="number" v-model="totalPrice" placeholder="原價" required readonly v-if="editOrAdd!==2"></b-form-input>
+            <b-form-input type="number" v-model.number="newCoupon.discount_price" placeholder="折扣價" min="0" required v-if="editOrAdd!==2"></b-form-input>
+          </b-form-group>
+          <b-form-group>
+            <b-form-input type="date" v-model="newCoupon.start_date" placeholder="開始日期" required v-if="editOrAdd!==2"></b-form-input>
+            <b-form-input type="date" v-model="newCoupon.expire_date" placeholder="結束日期" required v-if="editOrAdd!==2"></b-form-input>
+          </b-form-group>
+          <b-form-group>
+            <b-form-input type="text" v-model="newCoupon.use_restriction" placeholder="使用限制" v-if="editOrAdd!==2"></b-form-input>
+          </b-form-group>
+          <b-button :class="buttonClass" type="submit" :disabled="totalPrice <= 0" v-if="editOrAdd!==2" class="d-block mx-auto" >
+            {{ buttonText }}
+          </b-button>
+        </b-form>
+      </b-col>
+    </b-row>
     <b-list-group v-if="cartItems.length > 0">
       <b-list-group-item v-for="item in cartItems" :key="item.id">
         <b-row>
@@ -16,46 +48,18 @@
             <p>小計: ${{ item.quantity * item.price }}</p>
           </b-col>
           <b-col cols="auto">
-            <b-button variant="danger" @click.prevent="removeFromCart({ id: item.id, productType: item.productType })">
-              移除
-            </b-button>
+            <b-button-group>
+              <b-button variant="success" @click.prevent="increaseQuantity(item)" v-if="editOrAdd!==2">+</b-button>
+              <b-button variant="info" @click.prevent="decreaseQuantity(item)" v-if="editOrAdd!==2">-</b-button>
+              <b-button variant="danger" @click.prevent="removeFromCart(item)">移除</b-button>
+            </b-button-group>
           </b-col>
         </b-row>
       </b-list-group-item>
     </b-list-group>
-    <b-row>
-      <b-col cols="12" md="6" offset-md="3">
-        <b-form @submit.prevent="handleSubmit">
-          <b-form-group class="d-flex justify-content-center">
-            <b-form-select v-model="couponAction" class="ml-2">
-              <b-form-select-option value="add">新增折扣券</b-form-select-option>
-              <b-form-select-option value="update">更新折扣券</b-form-select-option>
-            </b-form-select>
-          </b-form-group>
-          <b-form-group>
-            <b-form-input type="text" :value="nextCouponId" placeholder="折扣券ID" readonly></b-form-input>
-            <b-form-input type="text" v-model="brandSelect" readonly></b-form-input>
-            <b-form-input type="text" v-model="newCoupon.coupon_name" placeholder="折扣券名稱" required></b-form-input>
-          </b-form-group>
-          <b-form-group>
-            <b-form-input type="number" v-model="totalPrice" placeholder="原價" required readonly></b-form-input>
-            <b-form-input type="number" v-model.number="newCoupon.discount_price" placeholder="折扣價" min="0" required></b-form-input>
-          </b-form-group>
-          <b-form-group>
-            <b-form-input type="date" v-model="newCoupon.start_date" placeholder="開始日期" required></b-form-input>
-            <b-form-input type="date" v-model="newCoupon.expire_date" placeholder="結束日期" required></b-form-input>
-          </b-form-group>
-          <b-form-group>
-            <b-form-input type="text" v-model="newCoupon.use_restriction" placeholder="使用限制"></b-form-input>
-          </b-form-group>
-          <b-button :class="buttonClass" type="submit" :disabled="totalPrice <= 0" class="d-block mx-auto">
-            {{ buttonText }}
-          </b-button>
-        </b-form>
-      </b-col>
-    </b-row>
   </b-container>
 </template>
+
 
 
 
@@ -80,32 +84,54 @@ export default {
       return this.cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
     },
     buttonText() {
-      return this.couponAction === 'add' ? '新增折扣券' : '更新折扣券';
-    },
-    buttonClass() {
-      return this.couponAction === 'add' ? 'btn btn-success' : 'btn btn-primary';
-    }
+  if (this.couponAction === 'add') {
+    return '新增折扣券';
+  } else if (this.couponAction === 'update') {
+    return '更新折扣券';
+  } 
+  return '';
+},
+buttonClass() {
+  if (this.couponAction === 'add') {
+    return 'btn btn-success';
+  } else if (this.couponAction === 'update') {
+    return 'btn btn-primary';
+  } else if (this.couponAction === 'user') {
+    return 'btn btn-info'; // You can choose any appropriate class
+  }
+  return '';
+}
   },
   methods: {
     ...mapMutations(['removeFromCart', 'updateOriginalTotalPrice', 'setEditOrAdd','setView']),
+    increaseQuantity(item) {
+      this.$store.commit('increaseFromCart', {
+        id: item.id,
+        productType: item.productType
+      });
+    },
+    decreaseQuantity(item) {
+      this.$store.commit('decreaseFromCart', {
+        id: item.id,
+        productType: item.productType
+      });
+    },
     submitCoupon() {
       this.$store.dispatch('submitCoupon');
     },
     updateCoupon() {
       this.$store.dispatch('updateCoupon');
-      this.couponAction==='add';
     },
     handleSubmit() {
+      console.log(this.couponAction);
       if (this.couponAction === 'add') {
         this.submitCoupon();
-      } else {
+      } else if(this.couponAction === 'update') {
         this.updateCoupon();
       }
     },
     handleReset() {
-      // 实现具体的清空逻辑
       this.$store.commit('resetNewCoupon');
-      
     }
   },
   watch: {
@@ -119,6 +145,10 @@ export default {
         this.$store.commit('setEditOrAdd', 1);
         this.handleReset();
         this.$store.commit('setView','ShowMainCourse');
+      }else{
+        this.$store.commit('setEditOrAdd', 2);
+        this.handleReset();
+        this.$store.commit('setView','ShowCoupon');
       }
     },
     totalPrice(newTotal) {
@@ -127,6 +157,7 @@ export default {
   }
 }
 </script>
+
 
 
   
@@ -261,6 +292,42 @@ select:focus {
 
 .btn-success {
   background-color: #4caf50;
+}
+.quantity-btn {
+  font-weight: bold;
+  color: white;
+  width: 36px; /* Fixed width for alignment */
+  height: 36px; /* Fixed height for alignment */
+  padding: 0; /* Remove padding to make button square */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px; /* Increase font size for visibility */
+}
+
+.btn-success {
+  background-color: #28a745; /* Bootstrap default green */
+}
+
+.btn-success:hover {
+  background-color: #218838; /* Darken on hover */
+}
+
+.btn-info {
+  background-color: #17a2b8; /* Bootstrap default blue */
+}
+
+.btn-info:hover {
+  background-color: #e50f3d; /* Darken on hover */
+}
+
+.btn-warning {
+  background-color: #ffc107; /* Bootstrap default yellow */
+  color: black; /* Change text color for better contrast */
+}
+
+.btn-warning:hover {
+  background-color: #e0a800; /* Darken on hover */
 }
 
 </style>
