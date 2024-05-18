@@ -12,18 +12,18 @@
           <b-form-group class="d-flex justify-content-center">
             <b-form-select v-model="couponAction" class="ml-2">
               <b-form-select-option value="user">使用者模式</b-form-select-option>
-              <b-form-select-option value="add">新增或刪除折扣券</b-form-select-option>
-              <b-form-select-option value="update">更新折扣券</b-form-select-option>
+              <b-form-select-option value="add">新增或刪除折價券</b-form-select-option>
+              <b-form-select-option value="update">更新折價券</b-form-select-option>
             </b-form-select>
           </b-form-group>
           <b-form-group>
-            <b-form-input type="text" :value="nextCouponId" placeholder="折扣券ID" readonly v-if="editOrAdd!==2"></b-form-input>
+            <b-form-input type="text" :value="nextCouponId" placeholder="折價券ID" readonly v-if="editOrAdd!==2"></b-form-input>
             <b-form-input type="text" v-model="brandSelect" readonly v-if="editOrAdd!==2"></b-form-input>
-            <b-form-input type="text" v-model="newCoupon.coupon_name" placeholder="折扣券名稱" required v-if="editOrAdd!==2"></b-form-input>
+            <b-form-input type="text" v-model="newCoupon.coupon_name" placeholder="折價券名稱" required v-if="editOrAdd!==2"></b-form-input>
           </b-form-group>
           <b-form-group>
             <b-form-input type="number" v-model="totalPrice" placeholder="原價" required readonly v-if="editOrAdd!==2"></b-form-input>
-            <b-form-input type="number" v-model.number="newCoupon.discount_price" placeholder="折扣價" min="0" required v-if="editOrAdd!==2"></b-form-input>
+            <b-form-input type="number" v-model.number="newCoupon.discount_price" placeholder="折價" min="0" required v-if="editOrAdd!==2"></b-form-input>
           </b-form-group>
           <b-form-group>
             <b-form-input type="date" v-model="newCoupon.start_date" placeholder="開始日期" required v-if="editOrAdd!==2"></b-form-input>
@@ -85,9 +85,9 @@ export default {
     },
     buttonText() {
   if (this.couponAction === 'add') {
-    return '新增折扣券';
+    return '新增折價券';
   } else if (this.couponAction === 'update') {
-    return '更新折扣券';
+    return '更新折價券';
   } 
   return '';
 },

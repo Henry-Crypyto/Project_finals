@@ -17,7 +17,7 @@
       <b-col md="2" class="mb-3">
         <b-form-group label="价格:" label-for="price-select" class="custom-form-group">
           <b-form-select id="price-select" v-model="selectedPrice" class="custom-select">
-            <b-form-select-option value="">所有价格</b-form-select-option>
+            <b-form-select-option value="">所有價格</b-form-select-option>
             <b-form-select-option value="0-300">0~300元</b-form-select-option>
             <b-form-select-option value="301-600">301~600元</b-form-select-option>
             <b-form-select-option value="601-900">601~900元</b-form-select-option>
@@ -61,9 +61,11 @@
       <b-col v-if="selectedCoupons.length > 0">
         <b-card v-for="coupon in selectedCoupons" :key="coupon.coupon_ID" class="mb-3 custom-card">
           <b-card-body class="d-flex justify-content-between align-items-center">
-            <h5 class="card-title" @click="coupon.expanded = !coupon.expanded">
-              <span class="discount-price">$ {{ coupon.discount_price }}</span> {{ coupon.coupon_name }}
-            </h5>
+            <div class="card-title-container">
+              <h5 class="card-title" @click="coupon.expanded = !coupon.expanded">
+                <span class="discount-price">$ {{ coupon.discount_price }}</span> {{ coupon.coupon_name }}
+              </h5>
+            </div>
             <div class="d-flex flex-column">
               <b-button variant="danger" size="sm" class="mb-2" @click="deleteCoupon(coupon.coupon_id)" v-if="editOrAdd === 1">删除</b-button>
               <b-button variant="primary" size="sm" @click="editCoupon(coupon)" v-if="editOrAdd === 0">编辑</b-button>
@@ -72,9 +74,9 @@
           <b-card-body v-if="coupon.items && coupon.items.length">
             <div v-if="coupon.items.some(item => item.ItemType === 'mainCourse')" class="item-section">
               <div class="item-type-title-container">
-                        <h6 class="item-type-title">主食</h6>
-                </div>              
-                <b-row>
+                <h6 class="item-type-title">主食</h6>
+              </div>
+              <b-row>
                 <b-col v-for="item in coupon.items.filter(item => item.ItemType === 'mainCourse')" :key="item.ItemName" class="d-flex align-items-center item-col">
                   <div>
                     <p>{{ item.ItemName }} x {{ item.Quantity }}</p>
@@ -85,8 +87,9 @@
             </div>
             <div v-if="coupon.items.some(item => item.ItemType === 'beverage')" class="item-section">
               <div class="item-type-title-container">
-                        <h6 class="item-type-title">飲料</h6>
-                </div>               <b-row>
+                <h6 class="item-type-title">飲料</h6>
+              </div>
+              <b-row>
                 <b-col v-for="item in coupon.items.filter(item => item.ItemType === 'beverage')" :key="item.ItemName" class="d-flex align-items-center item-col">
                   <div>
                     <p>{{ item.ItemName }} x {{ item.Quantity }}</p>
@@ -97,8 +100,9 @@
             </div>
             <div v-if="coupon.items.some(item => item.ItemType === 'snack')" class="item-section">
               <div class="item-type-title-container">
-                        <h6 class="item-type-title">點心</h6>
-                </div>               <b-row>
+                <h6 class="item-type-title">點心</h6>
+              </div>
+              <b-row>
                 <b-col v-for="item in coupon.items.filter(item => item.ItemType === 'snack')" :key="item.ItemName" class="d-flex align-items-center item-col">
                   <div>
                     <p>{{ item.ItemName }} x {{ item.Quantity }}</p>
@@ -110,16 +114,17 @@
           </b-card-body>
           <b-card-text class="pl-8" v-if="coupon.expanded">
             {{ coupon.coupon_content }}<br>
-            开始日期: {{ new Date(coupon.start_date).toLocaleDateString() }}<br>
-            原价: {{ coupon.original_price }}, 折扣价: {{ coupon.discount_price }}<br>
+            開始日期: {{ new Date(coupon.start_date).toLocaleDateString() }}<br>
+            原價: {{ coupon.original_price }}, 折扣價: {{ coupon.discount_price }}<br>
             到期日期: {{ new Date(coupon.expire_date).toLocaleDateString() }}<br>
-            使用限制: {{ coupon.use_restriction || '无特别限制' }}
+            使用限制: {{ coupon.use_restriction || '無特别限制' }}
           </b-card-text>
         </b-card>
       </b-col>
     </b-row>
   </b-container>
 </template>
+
 
 <script>
 import axios from 'axios';
@@ -375,10 +380,16 @@ export default {
   padding: 1.25rem; /* 卡片内边距 */
 }
 
+.card-title-container {
+  text-align: center; /* Center the title within its container */
+  flex-grow: 1; /* Ensure the container takes up available space */
+}
+
 .card-title {
-  cursor: pointer; 
-  font-size: 1.25rem; /* 卡片标题字体大小 */
-  color: #0056b3; /* 标题颜色 */
+  display: inline-block; /* Center the element within the container */
+  cursor: pointer; /* Add a pointer cursor for interactivity */
+  font-size: 1.25rem; /* Card title font size */
+  color: #0056b3; /* Title color */
 }
 
 .card-text {
@@ -431,10 +442,8 @@ export default {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Add a subtle shadow for depth */
 }
 
-
-
-
 .item-col {
   margin-bottom: 1rem; /* Add spacing between items */
 }
+
 </style>
