@@ -90,7 +90,8 @@ FROM
     LEFT JOIN coupon_snack cs ON cs.coupon_id = c.coupon_id
     LEFT JOIN snack s ON cs.id = s.id
 GROUP BY 
-    c.coupon_id, c.brand_name, c.coupon_name, c.original_price, c.discount_price, c.start_date, c.expire_date, c.use_restriction;
+    c.coupon_id, c.brand_name, c.coupon_name, c.original_price,
+    c.discount_price, c.start_date, c.expire_date, c.use_restriction;
 `;
 
     db.query(query, (err, results) => {

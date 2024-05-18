@@ -70,12 +70,43 @@
             </div>
           </b-card-body>
           <b-card-body v-if="coupon.items && coupon.items.length">
-            <h6 class="pl-6">品项:</h6>
-            <ul>
-              <li v-for="item in coupon.items" :key="item.ItemName">
-                {{ item.ItemName }} x {{ item.Quantity }}
-              </li>
-            </ul>
+            <div v-if="coupon.items.some(item => item.ItemType === 'mainCourse')" class="item-section">
+              <div class="item-type-title-container">
+                        <h6 class="item-type-title">主食</h6>
+                </div>              
+                <b-row>
+                <b-col v-for="item in coupon.items.filter(item => item.ItemType === 'mainCourse')" :key="item.ItemName" class="d-flex align-items-center item-col">
+                  <div>
+                    <p>{{ item.ItemName }} x {{ item.Quantity }}</p>
+                    <img v-if="item.ImagePath" :src="require(`@/assets/image/${item.ImagePath}`)" :alt="item.ItemName" class="coupon-item-image" />
+                  </div>
+                </b-col>
+              </b-row>
+            </div>
+            <div v-if="coupon.items.some(item => item.ItemType === 'beverage')" class="item-section">
+              <div class="item-type-title-container">
+                        <h6 class="item-type-title">飲料</h6>
+                </div>               <b-row>
+                <b-col v-for="item in coupon.items.filter(item => item.ItemType === 'beverage')" :key="item.ItemName" class="d-flex align-items-center item-col">
+                  <div>
+                    <p>{{ item.ItemName }} x {{ item.Quantity }}</p>
+                    <img v-if="item.ImagePath" :src="require(`@/assets/image/${item.ImagePath}`)" :alt="item.ItemName" class="coupon-item-image" />
+                  </div>
+                </b-col>
+              </b-row>
+            </div>
+            <div v-if="coupon.items.some(item => item.ItemType === 'snack')" class="item-section">
+              <div class="item-type-title-container">
+                        <h6 class="item-type-title">點心</h6>
+                </div>               <b-row>
+                <b-col v-for="item in coupon.items.filter(item => item.ItemType === 'snack')" :key="item.ItemName" class="d-flex align-items-center item-col">
+                  <div>
+                    <p>{{ item.ItemName }} x {{ item.Quantity }}</p>
+                    <img v-if="item.ImagePath" :src="require(`@/assets/image/${item.ImagePath}`)" :alt="item.ItemName" class="coupon-item-image" />
+                  </div>
+                </b-col>
+              </b-row>
+            </div>
           </b-card-body>
           <b-card-text class="pl-8" v-if="coupon.expanded">
             {{ coupon.coupon_content }}<br>
@@ -106,6 +137,9 @@ export default {
   }),
   created() {
     this.$store.dispatch('fetchBrandOptions');
+    this.$store.dispatch('fetchMainCourses');
+    this.$store.dispatch('fetchBeverages');
+    this.$store.dispatch('fetchSnacks');
     this.fetchCoupons();
   },
   methods: {
@@ -119,9 +153,48 @@ export default {
             ...coupon,
             expanded: false, // Track whether the coupon details are shown
             items: [].concat(
-              coupon.main_courses.map(course => ({ ItemType: 'mainCourse', ItemName: course.split(' x ')[0], Quantity: parseInt(course.split(' x ')[1]) })),
-              coupon.beverages.map(beverage => ({ ItemType: 'beverage', ItemName: beverage.split(' x ')[0], Quantity: parseInt(beverage.split(' x ')[1]) })),
-              coupon.snacks.map(snack => ({ ItemType: 'snack', ItemName: snack.split(' x ')[0], Quantity: parseInt(snack.split(' x ')[1]) }))
+              coupon.main_courses.map(course => {
+                const itemName = course.split(' x ')[0];
+                const quantity = parseInt(course.split(' x ')[1]);
+                const mainCourse = this.mainCourses.find(mc => mc.brand_name === coupon.brand_name && mc.name === itemName);
+                const imagePath = mainCourse ? mainCourse.image_path : null;
+                console.log('Main Course Image Path:', imagePath);
+                return {
+                  ItemType: 'mainCourse',
+                  ItemName: itemName,
+                  Quantity: quantity,
+                  ItemBrand: coupon.brand_name,
+                  ImagePath: imagePath
+                };
+              }),
+              coupon.beverages.map(beverage => {
+                const itemName = beverage.split(' x ')[0];
+                const quantity = parseInt(beverage.split(' x ')[1]);
+                const beverageItem = this.beverages.find(b => b.brand_name === coupon.brand_name && b.name === itemName);
+                const imagePath = beverageItem ? beverageItem.image_path : null;
+                console.log('Beverage Image Path:', imagePath);
+                return {
+                  ItemType: 'beverage',
+                  ItemName: itemName,
+                  Quantity: quantity,
+                  ItemBrand: coupon.brand_name,
+                  ImagePath: imagePath
+                };
+              }),
+              coupon.snacks.map(snack => {
+                const itemName = snack.split(' x ')[0];
+                const quantity = parseInt(snack.split(' x ')[1]);
+                const snackItem = this.snacks.find(s => s.brand_name === coupon.brand_name && s.name === itemName);
+                const imagePath = snackItem ? snackItem.image_path : null;
+                console.log('Snack Image Path:', imagePath);
+                return {
+                  ItemType: 'snack',
+                  ItemName: itemName,
+                  Quantity: quantity,
+                  ItemBrand: coupon.brand_name,
+                  ImagePath: imagePath
+                };
+              })
             )
           }));
           this.selectedCoupons = this.filterCoupons(allCoupons);
@@ -163,7 +236,6 @@ export default {
         const matchesPrice = this.selectedPrice ? this.matchesPriceCondition(coupon.discount_price) : true;
         const matchesDate = this.matchesDateCondition(coupon.expire_date, coupon.start_date);
         const matchesCartItems = this.matchesCartItems(coupon);
-        console.log(coupon.start_date);
         return matchesBrand && matchesPrice && matchesDate && matchesCartItems;
       });
     },
@@ -185,37 +257,35 @@ export default {
       return this.selectedPrice ? ranges[this.selectedPrice] : true;
     },
     matchesDateCondition(expireDate, startDate) {
-  const toLocalDate = (dateStr) => {
-    const date = new Date(dateStr);
-    return new Date(date.getFullYear(), date.getMonth(), date.getDate());
-  };
-
-  const filterStartDate = this.startDate ? toLocalDate(this.startDate) : null;
-  const filterEndDate = this.endDate ? toLocalDate(this.endDate) : new Date('2099-12-31');
-  const expiration = toLocalDate(expireDate);
-  const start = toLocalDate(startDate);
-
-  return (!filterStartDate || start >= filterStartDate) && (!filterEndDate || expiration <= filterEndDate);
-},
-matchesCartItems(coupon) {
-  return this.cartItems.every(cartItem => {
-    if (cartItem.preference === 1) {
-      // 確保折價券中包含該品項
-      return coupon.items.some(couponItem => 
-        couponItem.ItemName === cartItem.name && couponItem.brand_name === cartItem.brand_name
-      );
-    } else if (cartItem.preference === 0) {
-      // 確保折價券中不包含該品項
-      return !coupon.items.some(couponItem => 
-        couponItem.ItemName === cartItem.name && couponItem.brand_name === cartItem.brand_name
-      );
+      const toLocalDate = (dateStr) => {
+        const date = new Date(dateStr);
+        return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      };
+      const filterStartDate = this.startDate ? toLocalDate(this.startDate) : null;
+      const filterEndDate = this.endDate ? toLocalDate(this.endDate) : new Date('2099-12-31');
+      const expiration = toLocalDate(expireDate);
+      const start = toLocalDate(startDate);
+      return (!filterStartDate || start >= filterStartDate) && (!filterEndDate || expiration <= filterEndDate);
+    },
+    matchesCartItems(coupon) {
+      return this.cartItems.every(cartItem => {
+        if (cartItem.preference === 1) {
+          // 确保折价券中包含该品项
+          return coupon.items.some(couponItem => 
+            couponItem.ItemName === cartItem.name && couponItem.brand_name === cartItem.brand_name && couponItem.ItemType === cartItem.productType
+          );
+        } else if (cartItem.preference === 0) {
+          // 确保折价券中不包含该品项
+          return !coupon.items.some(couponItem => 
+            couponItem.ItemName === cartItem.name && couponItem.brand_name === cartItem.brand_name && couponItem.ItemType === cartItem.productType
+          );
+        }
+        return true; // 对于其他情况，不影响匹配
+      });
     }
-    return true; // 對於其他情況，不影響匹配
-  });
-}
   },
   computed: {
-    ...mapState(['brandOptions', 'newCoupon', 'nextCouponId', 'editOrAdd','cartItems']),
+    ...mapState(['brandOptions', 'newCoupon', 'nextCouponId', 'editOrAdd', 'cartItems', 'mainCourses', 'beverages', 'snacks']),
   },
   watch: {
     startDate(newVal) {
@@ -330,5 +400,41 @@ matchesCartItems(coupon) {
 
 .pl-8 { 
   padding-left: 3rem; 
+}
+
+.coupon-item-image {
+  display: block;
+  max-width: 100px; /* Set a max width for the image */
+  max-height: 100px; /* Set a max height for the image */
+  margin-top: 10px;
+}
+
+.item-section {
+  margin-bottom: 2rem; /* Add spacing between sections */
+}
+
+.item-type-title-container {
+  text-align: center; /* Center the title within its container */
+}
+
+.item-type-title {
+  display: inline-block; /* Makes the border match the width of the text */
+  font-size: 2.25rem;
+  font-weight: bold;
+  color: #0056b3;
+  margin: 0 auto 1rem auto; /* Center the element and add bottom margin */
+  text-align: center;
+  border: 2px solid #0056b3; /* Add border around the text */
+  padding: 10px 20px; /* Increase padding for better spacing */
+  border-radius: 12px; /* Add more rounded corners */
+  background: linear-gradient(to right, #e0f7ff, #f1f9ff); /* Add a subtle gradient background */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Add a subtle shadow for depth */
+}
+
+
+
+
+.item-col {
+  margin-bottom: 1rem; /* Add spacing between items */
 }
 </style>
