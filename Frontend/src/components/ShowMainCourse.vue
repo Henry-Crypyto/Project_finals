@@ -33,6 +33,7 @@
       <b-row v-if="filteredMainCourses.length > 0">
         <b-col cols="12" sm="6" md="4" lg="3" v-for="course in filteredMainCourses" :key="course.id" class="mb-4">
           <b-card hover shadow class="h-100 custom-card">
+            <img :src="getMainCourseImage(course.image_path)" alt="Main Course Image" class="card-img-top"/>
             <b-card-title class="text-center mb-2">{{ course.name }}</b-card-title>
             <b-card-text><strong>原價:</strong> {{ course.price }}</b-card-text>
             <b-card-text><strong>肉類類型:</strong> {{ course.meat_type_name || '不詳' }}</b-card-text>
@@ -100,7 +101,12 @@ export default {
   },
   methods: {
     ...mapMutations(['addToCart', 'setBrandSelect']),
-
+    getMainCourseImage(imagePath) {
+      if (!imagePath) {
+        return require('@/assets/image/default.png'); // 預設圖片路徑
+      }
+      return require(`@/assets/image/${imagePath}`);
+    },
     handleAddLoveToCart(course) {
       if (this.cartItems.length === 0 && (this.brandSelect === '' || this.brandSelect === 'all')) {
         this.setBrandSelect(course.brand_name);

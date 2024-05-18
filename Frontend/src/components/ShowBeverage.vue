@@ -40,6 +40,7 @@
       <b-row v-if="filteredBeverages.length > 0">
         <b-col cols="12" sm="6" md="4" lg="3" v-for="beverage in filteredBeverages" :key="beverage.id" class="mb-4">
           <b-card hover shadow class="h-100 custom-card">
+            <img :src="getMainCourseImage(beverage.image_path)" alt="Main Course Image" class="card-img-top"/>
             <b-card-title class="text-center mb-2">{{ beverage.name.trim() }}</b-card-title>
             <b-card-text><strong>原價:</strong> {{ beverage.price }}</b-card-text>
             <b-card-text><strong>容量:</strong> {{ beverage.beverage_size }}</b-card-text>
@@ -110,6 +111,12 @@ export default {
   },
   methods: {
     ...mapMutations(['addToCart', 'setBrandSelect']),
+    getMainCourseImage(imagePath) {
+      if (!imagePath) {
+        return require('@/assets/image/default.png'); // 預設圖片路徑
+      }
+      return require(`@/assets/image/${imagePath}`);
+    },
     handleAddLoveToCart(beverage) {
       if (this.cartItems.length === 0 && (this.brandSelect === '' || this.brandSelect === 'all')) {
         this.setBrandSelect(beverage.brand_name);

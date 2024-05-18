@@ -35,6 +35,7 @@
       <b-row v-if="filteredSnacks.length > 0">
         <b-col cols="12" sm="6" md="4" lg="3" v-for="snack in filteredSnacks" :key="snack.id" class="mb-4">
           <b-card hover shadow class="h-100 custom-card">
+            <img :src="getSnackImage(snack.image_path)" alt="Main Course Image" class="card-img-top"/>
             <b-card-title class="text-center mb-2">{{ snack.name.trim() }}</b-card-title>
             <b-card-text v-if="snack.snack_size"><strong>大小:</strong> {{ snack.snack_size }}</b-card-text>
             <b-card-text><strong>原價:</strong> {{ snack.price }}</b-card-text>
@@ -105,6 +106,12 @@ export default {
   },
   methods: {
     ...mapMutations(['addToCart', 'setBrandSelect']),
+    getSnackImage(imagePath) {
+      if (!imagePath) {
+        return require('@/assets/image/default.png'); // 預設圖片路徑
+      }
+      return require(`@/assets/image/${imagePath}`);
+    },
     handleAddLoveToCart(snack) {
       if (this.cartItems.length === 0 && (this.brandSelect === '' || this.brandSelect === 'all')) {
         this.setBrandSelect(snack.brand_name);
