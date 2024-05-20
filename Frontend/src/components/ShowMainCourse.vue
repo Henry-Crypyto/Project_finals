@@ -52,12 +52,12 @@
             </b-form-group>
             <b-row>
               <b-col class="d-flex justify-content-center mt-2">
-                <b-button variant="primary" @click="handleAddLoveToCart(course)" class="custom-button">喜歡</b-button>
+                <b-button variant="primary" @click="handleAddLoveToCart(course)" >喜歡</b-button>
               </b-col>
             </b-row>
             <b-row>
               <b-col class="d-flex justify-content-center mt-2">
-                <b-button variant="danger" @click="handleAddHateToCart(course)" v-if="editOrAdd === 2" class="custom-button">討厭</b-button>
+                <b-button variant="danger" @click="handleAddHateToCart(course)" v-if="editOrAdd === 2" >討厭</b-button>
               </b-col>
             </b-row>
           </b-card>
@@ -126,6 +126,10 @@ export default {
       return require(`@/assets/image/${imagePath}`);
     },
     handleAddLoveToCart(course) {
+      if (this.cartItems.some(item => item.id === course.id && item.preference === 0)) {
+        alert('該商品已經被添加到討厭列表，不能同時添加到喜歡列表。');
+        return;
+      }
       if (this.cartItems.length === 0 && (this.brandSelect === '' || this.brandSelect === 'all')) {
         this.setBrandSelect(course.brand_name);
       }
@@ -140,6 +144,10 @@ export default {
       }
     },
     handleAddHateToCart(course) {
+      if (this.cartItems.some(item => item.id === course.id && item.preference === 1)) {
+        alert('該商品已經被添加到喜歡列表，不能同時添加到討厭列表。');
+        return;
+      }
       if (this.cartItems.length === 0 && (this.brandSelect === '' || this.brandSelect === 'all')) {
         this.setBrandSelect(course.brand_name);
       }
@@ -156,6 +164,7 @@ export default {
   }
 }
 </script>
+
 
 <style scoped>
 .page-container {
@@ -221,31 +230,7 @@ b-card-text {
   box-shadow: 0 0 8px rgba(0,86,179,0.8);
 }
 
-.custom-button {
-  background-color: #4a90e2;
-  color: #fff;
-  border: 1px solid #4a90e2;
-  border-radius: 5px;
-  padding: 10px 20px;
-  font-size: 14px;
-  transition: all 0.3s ease;
-  margin: 5px;
-}
 
-.custom-button:hover {
-  background-color: #357ab7;
-  border-color: #357ab7;
-}
-
-.custom-button:active {
-  background-color: #2e6da4;
-  border-color: #2e6da4;
-}
-
-.custom-button:focus {
-  outline: none;
-  box-shadow: 0 0 5px rgba(74, 144, 226, 0.5);
-}
 
 .custom-checkbox {
   display: flex;

@@ -118,6 +118,10 @@ export default {
       return require(`@/assets/image/${imagePath}`);
     },
     handleAddLoveToCart(beverage) {
+      if (this.cartItems.some(item => item.id === beverage.id && item.preference === 0)) {
+        alert('該商品已經被添加到討厭列表，不能同時添加到喜歡列表。');
+        return;
+      }
       if (this.cartItems.length === 0 && (this.brandSelect === '' || this.brandSelect === 'all')) {
         this.setBrandSelect(beverage.brand_name);
       }
@@ -132,6 +136,10 @@ export default {
       }
     },
     handleAddHateToCart(beverage) {
+      if (this.cartItems.some(item => item.id === beverage.id && item.preference === 1)) {
+        alert('該商品已經被添加到討厭列表，不能同時添加到喜歡列表。');
+        return;
+      }
       if (this.cartItems.length === 0 && (this.brandSelect === '' || this.brandSelect === 'all')) {
         this.setBrandSelect(beverage.brand_name);
       }
