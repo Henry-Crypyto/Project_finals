@@ -17,6 +17,7 @@ const couponMainCourseTableName='coupon_main_course'
 const couponBeverageTableName='coupon_beverage'
 const couponSnackTableName='coupon_snack'
 const couponTableName = 'coupon';
+const mainCourseMeatTypeTableName='main_course_meat_type'
 
 
 
@@ -118,7 +119,17 @@ GROUP BY
 });
 
 app.get('/all_main_course', (req, res) => {
-    db.query(`SELECT * FROM ${mainCourseTableName}`, (err, results) => {
+    db.query(`SELECT 
+    mc.*, 
+    GROUP_CONCAT(mt.meat_type_name SEPARATOR ', ') AS meat_type
+FROM 
+    ${mainCourseTableName} AS mc
+LEFT JOIN 
+    main_course_meat_type AS mcmt ON mc.id = mcmt.main_course_id
+LEFT JOIN 
+    meat_type AS mt ON mcmt.meat_type_id = mt.meat_type_id
+GROUP BY 
+    mc.id`, (err, results) => {
         if (err) {
             console.error('Error fetching data: ', err);
             res.status(500).send('Error fetching data');
@@ -143,6 +154,29 @@ app.get('/all_beverage', (req, res) => {
 
 app.get('/all_snack', (req, res) => {
     db.query(`SELECT * FROM ${snackTableName}`, (err, results) => {
+        if (err) {
+            console.error('Error fetching data: ', err);
+            res.status(500).send('Error fetching data');
+            return;
+        }
+        console.log('Data retrieved from the database: ', results);
+        res.json(results);
+    });
+});
+app.get('/all_main_course_meat_type', (req, res) => {
+    db.query(`SELECT 
+    mc.id AS course_id,
+    mc.name AS course_name,
+    GROUP_CONCAT(mt.meat_type_name SEPARATOR ', ') AS meat_types
+FROM 
+    main_course AS mc
+JOIN 
+    main_course_meat_type AS mcmt ON mc.id = mcmt.main_course_id
+JOIN 
+    meat_type AS mt ON mcmt.meat_type_id = mt.meat_type_id
+GROUP BY 
+    mc.id, mc.name;
+`, (err, results) => {
         if (err) {
             console.error('Error fetching data: ', err);
             res.status(500).send('Error fetching data');

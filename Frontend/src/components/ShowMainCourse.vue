@@ -16,15 +16,18 @@
               </div>
             </div>
             <div class="col-md-2 mb-3 mx-auto">
-              <div class="form-group">
-                <select id="meat-select" class="form-control custom-select" v-model="localMeatSelect">
-                  <option value="">所有肉類</option>
-                  <option value="牛">牛</option>
-                  <option value="豬">豬</option>
-                  <option value="雞">雞</option>
-                  <option value="海鮮">海鮮</option>
-                  <option value="羊">羊</option>
-                </select>
+              <div class="form-group d-flex justify-content-center">
+                <div class="d-flex flex-row flex-wrap">
+                  <div v-for="option in meatOptions" :key="option.value" class="mx-3 my-2">
+                    <b-form-checkbox
+                      :value="option.value"
+                      v-model="localMeatSelect"
+                      class="custom-checkbox"
+                    >
+                      {{ option.text }}
+                    </b-form-checkbox>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -36,7 +39,7 @@
             <img :src="getMainCourseImage(course.image_path)" alt="Main Course Image" class="card-img-top"/>
             <b-card-title class="text-center mb-2">{{ course.name }}</b-card-title>
             <b-card-text><strong>原價:</strong> {{ course.price }}</b-card-text>
-            <b-card-text><strong>肉類類型:</strong> {{ course.meat_type_name || '不詳' }}</b-card-text>
+            <b-card-text><strong>肉類類型:</strong> {{ course.meat_type || '不詳' }}</b-card-text>
             <b-card-text><strong>品牌:</strong> {{ course.brand_name }}</b-card-text>
             <b-form-group label="數量" label-for="quantity-input-{{ course.id }}">
               <b-form-input
@@ -49,12 +52,12 @@
             </b-form-group>
             <b-row>
               <b-col class="d-flex justify-content-center mt-2">
-                <b-button variant="primary" @click="handleAddLoveToCart(course)">喜歡</b-button>
+                <b-button variant="primary" @click="handleAddLoveToCart(course)" class="custom-button">喜歡</b-button>
               </b-col>
             </b-row>
             <b-row>
               <b-col class="d-flex justify-content-center mt-2">
-                <b-button variant="danger" @click="handleAddHateToCart(course)" v-if="editOrAdd===2">討厭</b-button>
+                <b-button variant="danger" @click="handleAddHateToCart(course)" v-if="editOrAdd === 2" class="custom-button">討厭</b-button>
               </b-col>
             </b-row>
           </b-card>
@@ -75,35 +78,50 @@ import { mapMutations, mapState } from 'vuex';
 export default {
   created() {
     this.$store.dispatch('fetchMainCourses');
-    this.$store.dispatch('fetchBrandOptions'); // Fetch brand options when component is created
+    this.$store.dispatch('fetchBrandOptions');
   },
   data() {
     return {
-      localBrandSelect: '',  // This will be used for the local select input
-      localMeatSelect: '' // 新增的肉類篩選選項
+      localBrandSelect: '', // 本地品牌选择
+      localMeatSelect: [],  // 本地不吃的肉类选择数组
+      meatOptions: [
+        { text: '不吃牛', value: '牛' },
+        { text: '不吃豬', value: '豬' },
+        { text: '不吃雞', value: '雞' },
+        { text: '不吃海鮮', value: '海鮮' },
+        { text: '不吃羊', value: '羊' }
+      ]
     };
   },
   computed: {
-    ...mapState(['mainCourses', 'brandOptions', 'brandSelect', 'cartItems','editOrAdd']),
+    ...mapState(['mainCourses', 'brandOptions', 'brandSelect', 'cartItems', 'editOrAdd']),
     filteredMainCourses() {
       return this.mainCourses.filter(course => {
         const brandMatch = this.localBrandSelect === '' || this.localBrandSelect === 'all' || course.brand_name === this.localBrandSelect;
-        const meatMatch = this.localMeatSelect === '' || course.meat_type_name === this.localMeatSelect;
+        const meatMatch = this.localMeatSelect.every(meat => !(course.meat_type && course.meat_type.includes(meat)));
         return brandMatch && meatMatch;
       });
     }
   },
   watch: {
-    // Watch for changes in the Vuex store's brandSelect and update the localBrandSelect accordingly
+    // 监听 Vuex store 中的 brandSelect 的变化，并相应地更新 localBrandSelect
     brandSelect(newBrandSelect) {
       this.localBrandSelect = newBrandSelect;
     }
   },
   methods: {
     ...mapMutations(['addToCart', 'setBrandSelect']),
+    toggleMeatSelection(meat) {
+      const index = this.localMeatSelect.indexOf(meat);
+      if (index > -1) {
+        this.localMeatSelect.splice(index, 1); // 如果已经选中，则取消选中
+      } else {
+        this.localMeatSelect.push(meat); // 如果未选中，则添加到数组中
+      }
+    },
     getMainCourseImage(imagePath) {
       if (!imagePath) {
-        return require('@/assets/image/default.png'); // 預設圖片路徑
+        return require('@/assets/image/default.png'); // 预设图片路径
       }
       return require(`@/assets/image/${imagePath}`);
     },
@@ -115,7 +133,7 @@ export default {
         this.addToCart({
           product: course,
           preference: 1,
-          productType: this.$store.state.productType[0]  // 假设你正在使用数组中的第一个产品类型
+          productType: this.$store.state.productType[0] // 假设你正在使用数组中的第一个产品类型
         });
       } else {
         alert('品牌不匹配，无法添加到购物车。');
@@ -129,7 +147,7 @@ export default {
         this.addToCart({
           product: course,
           preference: 0,
-          productType: this.$store.state.productType[0]  // 假设你正在使用数组中的第一个产品类型
+          productType: this.$store.state.productType[0] // 假设你正在使用数组中的第一个产品类型
         });
       } else {
         alert('品牌不匹配，无法添加到购物车。');
@@ -202,4 +220,101 @@ b-card-text {
   border-color: #0056b3;
   box-shadow: 0 0 8px rgba(0,86,179,0.8);
 }
+
+.custom-button {
+  background-color: #4a90e2;
+  color: #fff;
+  border: 1px solid #4a90e2;
+  border-radius: 5px;
+  padding: 10px 20px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  margin: 5px;
+}
+
+.custom-button:hover {
+  background-color: #357ab7;
+  border-color: #357ab7;
+}
+
+.custom-button:active {
+  background-color: #2e6da4;
+  border-color: #2e6da4;
+}
+
+.custom-button:focus {
+  outline: none;
+  box-shadow: 0 0 5px rgba(74, 144, 226, 0.5);
+}
+
+.custom-checkbox {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 8px 12px;
+  border: 2px solid #4a90e2;
+  border-radius: 5px;
+  transition: all 0.3s ease;
+  background-color: #fff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  margin-right: 10px;
+}
+
+.custom-checkbox:hover {
+  background-color: #f0f8ff;
+  border-color: #357ab7;
+}
+
+.custom-checkbox .custom-control-input:checked ~ .custom-control-label::before {
+  background-color: #4a90e2;
+  border-color: #4a90e2;
+}
+
+.custom-checkbox .custom-control-input:focus ~ .custom-control-label::before {
+  box-shadow: 0 0 5px rgba(74, 144, 226, 0.5);
+}
+
+.custom-checkbox .custom-control-label {
+  margin-left: 8px;
+  color: #333;
+  font-size: 16px;
+}
+
+.custom-checkbox .custom-control-input {
+  display: none;
+}
+
+.custom-checkbox .custom-control-label::before {
+  content: '';
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  margin-right: 8px;
+  border: 2px solid #ccc;
+  border-radius: 3px;
+  transition: all 0.3s ease;
+  background-color: #fff;
+}
+
+.custom-checkbox .custom-control-input:checked ~ .custom-control-label::after {
+  content: '';
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-left: -20px;
+  margin-top: 5px;
+  border-left: 2px solid #fff;
+  border-bottom: 2px solid #fff;
+  transform: rotate(-45deg);
+  transition: all 0.3s ease;
+}
+
+.custom-checkbox .custom-control-label::after {
+  content: '';
+  display: inline-block;
+  width: 0;
+  height: 0;
+  transition: all 0.3s ease;
+}
+
 </style>

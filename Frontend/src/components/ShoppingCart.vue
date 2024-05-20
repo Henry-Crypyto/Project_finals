@@ -17,22 +17,22 @@
             </b-form-select>
           </b-form-group>
           <b-form-group>
-            <b-form-input type="text" :value="nextCouponId" placeholder="折價券ID" readonly v-if="editOrAdd!==2"></b-form-input>
-            <b-form-input type="text" v-model="brandSelect" readonly v-if="editOrAdd!==2"></b-form-input>
-            <b-form-input type="text" v-model="newCoupon.coupon_name" placeholder="折價券名稱" required v-if="editOrAdd!==2"></b-form-input>
+            <b-form-input type="text" :value="nextCouponId" placeholder="折價券ID" readonly v-if="editOrAdd !== 2"></b-form-input>
+            <b-form-input type="text" v-model="brandSelect" readonly v-if="editOrAdd !== 2"></b-form-input>
+            <b-form-input type="text" v-model="newCoupon.coupon_name" placeholder="折價券名稱" required v-if="editOrAdd !== 2"></b-form-input>
           </b-form-group>
           <b-form-group>
-            <b-form-input type="number" v-model="totalPrice" placeholder="原價" required readonly v-if="editOrAdd!==2"></b-form-input>
-            <b-form-input type="number" v-model.number="newCoupon.discount_price" placeholder="折價" min="0" required v-if="editOrAdd!==2"></b-form-input>
+            <b-form-input type="number" v-model="totalPrice" placeholder="原價" required readonly v-if="editOrAdd !== 2"></b-form-input>
+            <b-form-input type="number" v-model.number="newCoupon.discount_price" placeholder="折價" min="0" required v-if="editOrAdd !== 2"></b-form-input>
           </b-form-group>
           <b-form-group>
-            <b-form-input type="date" v-model="newCoupon.start_date" placeholder="開始日期" required v-if="editOrAdd!==2"></b-form-input>
-            <b-form-input type="date" v-model="newCoupon.expire_date" placeholder="結束日期" required v-if="editOrAdd!==2"></b-form-input>
+            <b-form-input type="date" v-model="newCoupon.start_date" placeholder="開始日期" @change="validateDates" required v-if="editOrAdd !== 2"></b-form-input>
+            <b-form-input type="date" v-model="newCoupon.expire_date" :min="newCoupon.start_date" placeholder="結束日期" required v-if="editOrAdd !== 2"></b-form-input>
           </b-form-group>
           <b-form-group>
-            <b-form-input type="text" v-model="newCoupon.use_restriction" placeholder="使用限制" v-if="editOrAdd!==2"></b-form-input>
+            <b-form-input type="text" v-model="newCoupon.use_restriction" placeholder="使用限制" v-if="editOrAdd !== 2"></b-form-input>
           </b-form-group>
-          <b-button :class="buttonClass" type="submit" :disabled="totalPrice <= 0" v-if="editOrAdd!==2" class="d-block mx-auto" >
+          <b-button :class="buttonClass" type="submit" :disabled="totalPrice <= 0" v-if="editOrAdd !== 2" class="d-block mx-auto">
             {{ buttonText }}
           </b-button>
         </b-form>
@@ -49,8 +49,8 @@
           </b-col>
           <b-col cols="auto">
             <b-button-group>
-              <b-button variant="success" @click.prevent="increaseQuantity(item)" v-if="editOrAdd!==2">+</b-button>
-              <b-button variant="info" @click.prevent="decreaseQuantity(item)" v-if="editOrAdd!==2">-</b-button>
+              <b-button variant="success" @click.prevent="increaseQuantity(item)" v-if="editOrAdd !== 2">+</b-button>
+              <b-button variant="info" @click.prevent="decreaseQuantity(item)" v-if="editOrAdd !== 2">-</b-button>
               <b-button variant="danger" @click.prevent="removeFromCart(item)">移除</b-button>
             </b-button-group>
           </b-col>
@@ -60,50 +60,42 @@
   </b-container>
 </template>
 
-
-
-
-
-
-
-
-
-  
 <script>
 import { mapState, mapMutations } from 'vuex';
 
 export default {
   data() {
     return {
-      couponAction: 'add'  // 默认设置为新增
+      couponAction: 'add', // 默认设置为新增
+      dateError: ''
     };
   },
   computed: {
-    ...mapState(['cartItems', 'brandSelect', 'newCoupon', 'nextCouponId', 'editOrAdd','currentView']),
+    ...mapState(['cartItems', 'brandSelect', 'newCoupon', 'nextCouponId', 'editOrAdd', 'currentView']),
     totalPrice() {
       return this.cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
     },
     buttonText() {
-  if (this.couponAction === 'add') {
-    return '新增折價券';
-  } else if (this.couponAction === 'update') {
-    return '更新折價券';
-  } 
-  return '';
-},
-buttonClass() {
-  if (this.couponAction === 'add') {
-    return 'btn btn-success';
-  } else if (this.couponAction === 'update') {
-    return 'btn btn-primary';
-  } else if (this.couponAction === 'user') {
-    return 'btn btn-info'; // You can choose any appropriate class
-  }
-  return '';
-}
+      if (this.couponAction === 'add') {
+        return '新增折價券';
+      } else if (this.couponAction === 'update') {
+        return '更新折價券';
+      }
+      return '';
+    },
+    buttonClass() {
+      if (this.couponAction === 'add') {
+        return 'btn btn-success';
+      } else if (this.couponAction === 'update') {
+        return 'btn btn-primary';
+      } else if (this.couponAction === 'user') {
+        return 'btn btn-info'; // You can choose any appropriate class
+      }
+      return '';
+    }
   },
   methods: {
-    ...mapMutations(['removeFromCart', 'updateOriginalTotalPrice', 'setEditOrAdd','setView']),
+    ...mapMutations(['removeFromCart', 'updateOriginalTotalPrice', 'setEditOrAdd', 'setView']),
     increaseQuantity(item) {
       this.$store.commit('increaseFromCart', {
         id: item.id,
@@ -126,12 +118,17 @@ buttonClass() {
       console.log(this.couponAction);
       if (this.couponAction === 'add') {
         this.submitCoupon();
-      } else if(this.couponAction === 'update') {
+      } else if (this.couponAction === 'update') {
         this.updateCoupon();
       }
     },
     handleReset() {
       this.$store.commit('resetNewCoupon');
+    },
+    validateDates() {
+      if (new Date(this.newCoupon.expire_date) < new Date(this.newCoupon.start_date)) {
+        this.newCoupon.expire_date = this.newCoupon.start_date;
+      }
     }
   },
   watch: {
@@ -139,24 +136,30 @@ buttonClass() {
       if (newValue === 'update') {
         this.$store.commit('setEditOrAdd', 0);
         this.handleReset();
-        this.$store.commit('setView','ShowCoupon');
+        this.$store.commit('setView', 'ShowCoupon');
       } else if (newValue === 'add') {
         this.$store.dispatch('fetchNextCouponId');
         this.$store.commit('setEditOrAdd', 1);
         this.handleReset();
-        this.$store.commit('setView','ShowMainCourse');
-      }else{
+        this.$store.commit('setView', 'ShowMainCourse');
+      } else {
         this.$store.commit('setEditOrAdd', 2);
         this.handleReset();
-        this.$store.commit('setView','ShowCoupon');
+        this.$store.commit('setView', 'ShowCoupon');
       }
     },
     totalPrice(newTotal) {
-    this.$store.commit('updateOriginalTotalPrice', newTotal);
+      this.$store.commit('updateOriginalTotalPrice', newTotal);
+    },
+    'newCoupon.start_date'(newStartDate) {
+      if (new Date(this.newCoupon.expire_date) < new Date(newStartDate)) {
+        this.newCoupon.expire_date = newStartDate;
+      }
     }
   }
 }
 </script>
+
 
 
 

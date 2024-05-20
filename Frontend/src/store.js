@@ -22,6 +22,7 @@ export default createStore({
     },
     selectedCoupons: [],
     mainCourses: [],
+    mainCoursesMeatType:[],
     beverages:[],
     snacks:[],
     editOrAdd:1
@@ -135,6 +136,9 @@ export default createStore({
     setMainCourses(state, courses) {
       state.mainCourses = courses;
     },
+    setMainCoursesMeatType(state, courses) {
+      state.mainCoursesMeatType = courses;
+    },
     clearCartItems(state) {
       state.cartItems = []; // Clear cart items array
     },
@@ -238,6 +242,18 @@ export default createStore({
             commit('setMainCourses', response.data.map(course => ({
               ...course,
               quantity: 1  // 初始化数量为 1
+            })));
+          })
+          .catch(error => {
+            console.error('Error fetching main courses:', error);
+          });
+      },
+      fetchMainCoursesMeatType({ commit }) {
+        const url = getFullApiUrl('/all_main_course_meat_type');
+        axios.get(url)
+          .then(response => {
+            commit('setMainCoursesMeatType', response.data.map(course => ({
+              ...course
             })));
           })
           .catch(error => {
