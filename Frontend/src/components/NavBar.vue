@@ -11,6 +11,8 @@
           <b-nav-item href="#" class="nav-link" @click="emitChange('beverage')">飲料</b-nav-item>
           <div class="divider"></div>
           <b-nav-item href="#" class="nav-link" @click="emitChange('snack')">點心</b-nav-item>
+          <div class="divider"></div>
+          <b-nav-item href="#" class="nav-link" @click="emitChange('shoppingCart')">{{ shoppingCartLabel }}</b-nav-item>
         </b-navbar-nav>
       </b-collapse>
     </b-container>
@@ -18,10 +20,18 @@
 </template>
 
 <script>
+import { mapState } from 'vuex';
+
 export default {
   methods: {
     emitChange(section) {
       this.$emit('change-section', section);
+    }
+  },
+  computed: {
+    ...mapState(['cartItems', 'userDeveloper']),
+    shoppingCartLabel() {
+      return this.cartItems.length > 0 ? `購物車-${this.cartItems.length}項` : '購物車';
     }
   }
 }

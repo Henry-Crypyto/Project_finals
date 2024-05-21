@@ -67,8 +67,8 @@
               </h5>
             </div>
             <div class="d-flex flex-column">
-              <b-button variant="danger" size="sm" class="mb-2" @click="deleteCoupon(coupon.coupon_id)" v-if="editOrAdd === 1">删除</b-button>
-              <b-button variant="primary" size="sm" @click="editCoupon(coupon)" v-if="editOrAdd === 0">编辑</b-button>
+              <b-button variant="danger" size="sm" class="mb-2" @click="deleteCoupon(coupon.coupon_id)" v-if="userDeveloper === 'add'">删除</b-button>
+              <b-button variant="primary" size="sm" @click="editCoupon(coupon)" v-if="userDeveloper === 'update'">编辑</b-button>
             </div>
           </b-card-body>
           <b-card-body v-if="coupon.items && coupon.items.length">
@@ -148,7 +148,7 @@ export default {
     this.fetchCoupons();
   },
   methods: {
-    ...mapMutations(['setBrandOptions', 'dulplicateInfoToNewCoupon', 'setEditOrAdd']),
+    ...mapMutations(['setBrandOptions', 'dulplicateInfoToNewCoupon', 'setUserDeveloper']),
 
     fetchCoupons() {
       const url = getFullApiUrl('/all_coupons_with_items');
@@ -163,7 +163,7 @@ export default {
                 const quantity = parseInt(course.split(' x ')[1]);
                 const mainCourse = this.mainCourses.find(mc => mc.brand_name === coupon.brand_name && mc.name === itemName);
                 const imagePath = mainCourse ? mainCourse.image_path : null;
-                console.log('Main Course Image Path:', imagePath);
+                // console.log('Main Course Image Path:', imagePath);
                 return {
                   ItemType: 'mainCourse',
                   ItemName: itemName,
@@ -177,7 +177,7 @@ export default {
                 const quantity = parseInt(beverage.split(' x ')[1]);
                 const beverageItem = this.beverages.find(b => b.brand_name === coupon.brand_name && b.name === itemName);
                 const imagePath = beverageItem ? beverageItem.image_path : null;
-                console.log('Beverage Image Path:', imagePath);
+                // console.log('Beverage Image Path:', imagePath);
                 return {
                   ItemType: 'beverage',
                   ItemName: itemName,
@@ -191,7 +191,7 @@ export default {
                 const quantity = parseInt(snack.split(' x ')[1]);
                 const snackItem = this.snacks.find(s => s.brand_name === coupon.brand_name && s.name === itemName);
                 const imagePath = snackItem ? snackItem.image_path : null;
-                console.log('Snack Image Path:', imagePath);
+                // console.log('Snack Image Path:', imagePath);
                 return {
                   ItemType: 'snack',
                   ItemName: itemName,
@@ -290,7 +290,7 @@ export default {
     }
   },
   computed: {
-    ...mapState(['brandOptions', 'newCoupon', 'nextCouponId', 'editOrAdd', 'cartItems', 'mainCourses', 'beverages', 'snacks']),
+    ...mapState(['brandOptions', 'newCoupon', 'nextCouponId', 'userDeveloper', 'cartItems', 'mainCourses', 'beverages', 'snacks']),
   },
   watch: {
     startDate(newVal) {
@@ -299,11 +299,6 @@ export default {
         if (this.endDate && new Date(this.endDate) < new Date(newVal)) {
           this.endDate = '';  // 如果当前结束日期小于新的开始日期，则清空结束日期
         }
-      }
-    },
-    editOrAdd(newVal) {
-      if (newVal === 1) {
-        console.log("This is update");
       }
     }
   }

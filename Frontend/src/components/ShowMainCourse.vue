@@ -57,7 +57,7 @@
             </b-row>
             <b-row>
               <b-col class="d-flex justify-content-center mt-2">
-                <b-button variant="danger" @click="handleAddHateToCart(course)" v-if="editOrAdd === 2" >討厭</b-button>
+                <b-button variant="danger" @click="handleAddHateToCart(course)" v-if="userDeveloper === 'user'" >討厭</b-button>
               </b-col>
             </b-row>
           </b-card>
@@ -94,7 +94,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(['mainCourses', 'brandOptions', 'brandSelect', 'cartItems', 'editOrAdd']),
+    ...mapState(['mainCourses', 'brandOptions', 'brandSelect', 'cartItems', 'userDeveloper']),
     filteredMainCourses() {
       return this.mainCourses.filter(course => {
         const brandMatch = this.localBrandSelect === '' || this.localBrandSelect === 'all' || course.brand_name === this.localBrandSelect;
@@ -126,8 +126,8 @@ export default {
       return require(`@/assets/image/${imagePath}`);
     },
     handleAddLoveToCart(course) {
-      if (this.cartItems.some(item => item.id === course.id && item.preference === 0)) {
-        alert('該商品已經被添加到討厭列表，不能同時添加到喜歡列表。');
+      if (this.cartItems.some(item => item.id === course.id && item.preference === 0&&item.productType===this.$store.state.productType[0])) {
+        alert('小兄弟，你不能同時喜歡和討厭，你那叫愛');
         return;
       }
       if (this.cartItems.length === 0 && (this.brandSelect === '' || this.brandSelect === 'all')) {
@@ -144,8 +144,8 @@ export default {
       }
     },
     handleAddHateToCart(course) {
-      if (this.cartItems.some(item => item.id === course.id && item.preference === 1)) {
-        alert('該商品已經被添加到喜歡列表，不能同時添加到討厭列表。');
+      if (this.cartItems.some(item => item.id === course.id && item.preference === 1&&item.productType===this.$store.state.productType[0])) {
+        alert('小兄弟，你不能同時喜歡和討厭，你那叫愛');
         return;
       }
       if (this.cartItems.length === 0 && (this.brandSelect === '' || this.brandSelect === 'all')) {

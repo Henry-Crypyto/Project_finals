@@ -25,12 +25,12 @@ export default createStore({
     mainCoursesMeatType:[],
     beverages:[],
     snacks:[],
-    editOrAdd:1
+    userDeveloper:'user'
   },
   mutations: {
-    setEditOrAdd(state, value) {
-      state.editOrAdd= value;
-      console.log(state.editOrAdd);
+    setUserDeveloper(state, value) {
+      state.userDeveloper= value;
+      console.log(state.userDeveloper);
     },
     setView(state, view) {
       state.currentView = view;
