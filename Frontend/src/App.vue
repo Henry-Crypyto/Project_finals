@@ -60,7 +60,7 @@ export default {
   watch: {
     userDeveloper(newVal) {
       this.localUserDeveloper = newVal;
-      this.$store.dispatch('clearCartItems');
+      this.$store.commit('clearCartItems');
     }
   },
   methods: {
