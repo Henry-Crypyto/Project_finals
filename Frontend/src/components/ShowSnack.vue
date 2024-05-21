@@ -32,8 +32,8 @@
           </div>
         </b-col>
       </b-row>
-      <b-row v-if="filteredSnacks.length > 0">
-        <b-col cols="12" sm="6" md="4" lg="3" v-for="snack in filteredSnacks" :key="snack.id" class="mb-4">
+      <b-row v-if="paginatedSnacks.length > 0">
+        <b-col cols="12" sm="6" md="4" lg="3" v-for="snack in paginatedSnacks" :key="snack.id" class="mb-4">
           <b-card hover shadow class="h-100 custom-card">
             <img :src="getSnackImage(snack.image_path)" alt="Main Course Image" class="card-img-top"/>
             <b-card-title class="text-center mb-2">{{ snack.name.trim() }}</b-card-title>
@@ -57,7 +57,7 @@
             </b-row>
             <b-row>
               <b-col class="d-flex justify-content-center mt-2">
-                <b-button variant="danger" @click="handleAddHateToCart(snack)" v-if="userDeveloper==='user'">討厭</b-button>
+                <b-button variant="danger" @click="handleAddHateToCart(snack)" v-if="userDeveloper === 'user'">討厭</b-button>
               </b-col>
             </b-row>
           </b-card>
@@ -66,6 +66,17 @@
       <b-row v-else>
         <b-col>
           <p>正在加載數據或沒有數據顯示...</p>
+        </b-col>
+      </b-row>
+      <b-row class="mt-4" v-if="filteredSnacks.length > 0">
+        <b-col>
+          <b-pagination
+            v-model="currentPage"
+            :total-rows="filteredSnacks.length"
+            :per-page="itemsPerPage"
+            aria-controls="snack-container"
+            align="center"
+          ></b-pagination>
         </b-col>
       </b-row>
     </b-container>
@@ -83,7 +94,9 @@ export default {
   data() {
     return {
       localBrandSelect: '',
-      localFlavorSelect: ''  // This will be used for the local flavor select input
+      localFlavorSelect: '', // This will be used for the local flavor select input
+      currentPage: 1, // Current page number
+      itemsPerPage: 20 // Number of items per page
     };
   },
   computed: {
@@ -97,12 +110,23 @@ export default {
         snacks = snacks.filter(snack => snack.flavor_name === this.localFlavorSelect);
       }
       return snacks;
+    },
+    paginatedSnacks() {
+      const start = (this.currentPage - 1) * this.itemsPerPage;
+      const end = start + this.itemsPerPage;
+      return this.filteredSnacks.slice(start, end);
     }
   },
   watch: {
     brandSelect(newBrandSelect) {
       this.localBrandSelect = newBrandSelect;
-    }
+    },
+    localBrandSelect(){
+      this.currentPage=1;
+    },
+    localFlavorSelect(){
+      this.currentPage=1;
+    },
   },
   methods: {
     ...mapMutations(['addToCart', 'setBrandSelect']),
@@ -113,7 +137,7 @@ export default {
       return require(`@/assets/image/${imagePath}`);
     },
     handleAddLoveToCart(snack) {
-      if (this.cartItems.some(item => item.id === snack.id && item.preference === 0&&item.productType===this.$store.state.productType[2])) {
+      if (this.cartItems.some(item => item.id === snack.id && item.preference === 0 && item.productType === this.$store.state.productType[2])) {
         alert('小兄弟，你不能同時喜歡和討厭，你那叫愛');
         return;
       }
@@ -131,7 +155,7 @@ export default {
       }
     },
     handleAddHateToCart(snack) {
-      if (this.cartItems.some(item => item.id === snack.id && item.preference === 1&&item.productType===this.$store.state.productType[2])) {
+      if (this.cartItems.some(item => item.id === snack.id && item.preference === 1 && item.productType === this.$store.state.productType[2])) {
         alert('小兄弟，你不能同時喜歡和討厭，你那叫愛');
         return;
       }

@@ -33,8 +33,8 @@
           </div>
         </b-col>
       </b-row>
-      <b-row v-if="filteredMainCourses.length > 0">
-        <b-col cols="12" sm="6" md="4" lg="3" v-for="course in filteredMainCourses" :key="course.id" class="mb-4">
+      <b-row v-if="paginatedMainCourses.length > 0">
+        <b-col cols="12" sm="6" md="4" lg="3" v-for="course in paginatedMainCourses" :key="course.id" class="mb-4">
           <b-card hover shadow class="h-100 custom-card">
             <img :src="getMainCourseImage(course.image_path)" alt="Main Course Image" class="card-img-top"/>
             <b-card-title class="text-center mb-2">{{ course.name }}</b-card-title>
@@ -52,12 +52,12 @@
             </b-form-group>
             <b-row>
               <b-col class="d-flex justify-content-center mt-2">
-                <b-button variant="primary" @click="handleAddLoveToCart(course)" >喜歡</b-button>
+                <b-button variant="primary" @click="handleAddLoveToCart(course)">喜歡</b-button>
               </b-col>
             </b-row>
             <b-row>
               <b-col class="d-flex justify-content-center mt-2">
-                <b-button variant="danger" @click="handleAddHateToCart(course)" v-if="userDeveloper === 'user'" >討厭</b-button>
+                <b-button variant="danger" @click="handleAddHateToCart(course)" v-if="userDeveloper === 'user'">討厭</b-button>
               </b-col>
             </b-row>
           </b-card>
@@ -66,6 +66,17 @@
       <b-row v-else>
         <b-col>
           <p>正在加載數據或沒有數據顯示...</p>
+        </b-col>
+      </b-row>
+      <b-row class="mt-4" v-if="filteredMainCourses.length > 0">
+        <b-col>
+          <b-pagination
+            v-model="currentPage"
+            :total-rows="filteredMainCourses.length"
+            :per-page="itemsPerPage"
+            aria-controls="main-course-container"
+            align="center"
+          ></b-pagination>
         </b-col>
       </b-row>
     </b-container>
@@ -90,7 +101,9 @@ export default {
         { text: '不吃雞', value: '雞' },
         { text: '不吃海鮮', value: '海鮮' },
         { text: '不吃羊', value: '羊' }
-      ]
+      ],
+      currentPage: 1, // 当前页数
+      itemsPerPage: 20 // 每页显示的项目数
     };
   },
   computed: {
@@ -101,10 +114,20 @@ export default {
         const meatMatch = this.localMeatSelect.every(meat => !(course.meat_type && course.meat_type.includes(meat)));
         return brandMatch && meatMatch;
       });
+    },
+    paginatedMainCourses() {
+      const start = (this.currentPage - 1) * this.itemsPerPage;
+      const end = start + this.itemsPerPage;
+      return this.filteredMainCourses.slice(start, end);
     }
   },
   watch: {
-    // 监听 Vuex store 中的 brandSelect 的变化，并相应地更新 localBrandSelect
+    localBrandSelect() {
+      this.currentPage = 1;
+    },
+    localMeatSelect() {
+      this.currentPage = 1;
+    },
     brandSelect(newBrandSelect) {
       this.localBrandSelect = newBrandSelect;
     }
@@ -126,7 +149,7 @@ export default {
       return require(`@/assets/image/${imagePath}`);
     },
     handleAddLoveToCart(course) {
-      if (this.cartItems.some(item => item.id === course.id && item.preference === 0&&item.productType===this.$store.state.productType[0])) {
+      if (this.cartItems.some(item => item.id === course.id && item.preference === 0 && item.productType === this.$store.state.productType[0])) {
         alert('小兄弟，你不能同時喜歡和討厭，你那叫愛');
         return;
       }
@@ -144,7 +167,7 @@ export default {
       }
     },
     handleAddHateToCart(course) {
-      if (this.cartItems.some(item => item.id === course.id && item.preference === 1&&item.productType===this.$store.state.productType[0])) {
+      if (this.cartItems.some(item => item.id === course.id && item.preference === 1 && item.productType === this.$store.state.productType[0])) {
         alert('小兄弟，你不能同時喜歡和討厭，你那叫愛');
         return;
       }

@@ -37,8 +37,8 @@
           </div>
         </b-col>
       </b-row>
-      <b-row v-if="filteredBeverages.length > 0">
-        <b-col cols="12" sm="6" md="4" lg="3" v-for="beverage in filteredBeverages" :key="beverage.id" class="mb-4">
+      <b-row v-if="paginatedBeverages.length > 0">
+        <b-col cols="12" sm="6" md="4" lg="3" v-for="beverage in paginatedBeverages" :key="beverage.id" class="mb-4">
           <b-card hover shadow class="h-100 custom-card">
             <img :src="getMainCourseImage(beverage.image_path)" alt="Main Course Image" class="card-img-top"/>
             <b-card-title class="text-center mb-2">{{ beverage.name.trim() }}</b-card-title>
@@ -73,6 +73,17 @@
           <p>正在加載數據或沒有數據顯示...</p>
         </b-col>
       </b-row>
+      <b-row class="mt-4" v-if="filteredBeverages.length > 0">
+        <b-col>
+          <b-pagination
+            v-model="currentPage"
+            :total-rows="filteredBeverages.length"
+            :per-page="itemsPerPage"
+            aria-controls="beverage-container"
+            align="center"
+          ></b-pagination>
+        </b-col>
+      </b-row>
     </b-container>
   </b-container>
 </template>
@@ -89,7 +100,9 @@ export default {
     return {
       localBrandSelect: '',  // This will be used for the local select input
       localIcedHotSelect: '', // This will be used for the iced/hot select input
-      localSizeSelect: '' // This will be used for the size select input
+      localSizeSelect: '', // This will be used for the size select input
+      currentPage: 1, // Current page number
+      itemsPerPage: 20 // Number of items per page
     };
   },
   computed: {
@@ -101,12 +114,26 @@ export default {
         const sizeMatch = this.localSizeSelect === '' || beverage.beverage_size === this.localSizeSelect;
         return brandMatch && icedHotMatch && sizeMatch;
       });
+    },
+    paginatedBeverages() {
+      const start = (this.currentPage - 1) * this.itemsPerPage;
+      const end = start + this.itemsPerPage;
+      return this.filteredBeverages.slice(start, end);
     }
   },
   watch: {
     // Watch for changes in the Vuex store's brandSelect and update the localBrandSelect accordingly
     brandSelect(newBrandSelect) {
       this.localBrandSelect = newBrandSelect;
+    },
+    localBrandSelect(){
+      this.currentPage=1;
+    },
+    localIcedHotSelect(){
+      this.currentPage=1;
+    },
+    localSizeSelect(){
+      this.currentPage=1;
     }
   },
   methods: {
@@ -118,7 +145,7 @@ export default {
       return require(`@/assets/image/${imagePath}`);
     },
     handleAddLoveToCart(beverage) {
-      if (this.cartItems.some(item => item.id === beverage.id && item.preference === 0&&item.productType===this.$store.state.productType[1])) {
+      if (this.cartItems.some(item => item.id === beverage.id && item.preference === 0 && item.productType === this.$store.state.productType[1])) {
         alert('小兄弟，你不能同時喜歡和討厭，你那叫愛');
         return;
       }
@@ -136,7 +163,7 @@ export default {
       }
     },
     handleAddHateToCart(beverage) {
-      if (this.cartItems.some(item => item.id === beverage.id && item.preference === 1&&item.productType===this.$store.state.productType[1])) {
+      if (this.cartItems.some(item => item.id === beverage.id && item.preference === 1 && item.productType === this.$store.state.productType[1])) {
         alert('小兄弟，你不能同時喜歡和討厭，你那叫愛');
         return;
       }
