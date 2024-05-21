@@ -60,6 +60,7 @@ export default {
   watch: {
     userDeveloper(newVal) {
       this.localUserDeveloper = newVal;
+      this.$store.dispatch('clearCartItems');
     }
   },
   methods: {
@@ -78,6 +79,9 @@ export default {
     },
     updateUserDeveloper() {
       this.$store.commit('setUserDeveloper', this.localUserDeveloper);
+      this.$store.commit('clearCartItems');
+      console.log("asdasd");
+
     }
   },
   created() {

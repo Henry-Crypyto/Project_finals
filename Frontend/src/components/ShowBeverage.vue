@@ -102,7 +102,7 @@ export default {
       localIcedHotSelect: '', // This will be used for the iced/hot select input
       localSizeSelect: '', // This will be used for the size select input
       currentPage: 1, // Current page number
-      itemsPerPage: 20 // Number of items per page
+      itemsPerPage: 16 // Number of items per page
     };
   },
   computed: {

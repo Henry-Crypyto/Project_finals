@@ -96,7 +96,7 @@ export default {
       localBrandSelect: '',
       localFlavorSelect: '', // This will be used for the local flavor select input
       currentPage: 1, // Current page number
-      itemsPerPage: 20 // Number of items per page
+      itemsPerPage: 16 // Number of items per page
     };
   },
   computed: {

@@ -103,7 +103,7 @@ export default {
         { text: '不吃羊', value: '羊' }
       ],
       currentPage: 1, // 当前页数
-      itemsPerPage: 20 // 每页显示的项目数
+      itemsPerPage: 16 // 每页显示的项目数
     };
   },
   computed: {
