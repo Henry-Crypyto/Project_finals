@@ -36,6 +36,9 @@
       <b-row v-if="paginatedMainCourses.length > 0">
         <b-col cols="12" sm="6" md="4" lg="3" v-for="course in paginatedMainCourses" :key="course.id" class="mb-4">
           <b-card hover shadow class="h-100 custom-card">
+            <b-button v-if="userDeveloper === 'addOrDeleteItem'" variant="danger" class="position-absolute top-0 end-0 mt-2 me-2" @click="handleDeleteCourse(course)">
+              X
+            </b-button>
             <img :src="getMainCourseImage(course.image_path)" alt="Main Course Image" class="card-img-top"/>
             <b-card-title class="text-center mb-2">{{ course.name }}</b-card-title>
             <b-card-text><strong>原價:</strong> {{ course.price }}</b-card-text>
@@ -85,6 +88,8 @@
 
 <script>
 import { mapMutations, mapState } from 'vuex';
+import { getFullApiUrl } from '../../config.js';
+import axios from 'axios';
 
 export default {
   created() {
@@ -183,6 +188,28 @@ export default {
       } else {
         alert('品牌不匹配，无法添加到购物车。');
       }
+    },
+    handleDeleteCourse(course) {
+    if (confirm(`Are you sure you want to delete ${course.name}?`)) {
+    // If the user confirms, proceed with the deletion
+    this.deleteMainCourses(course.id);
+    
+     }
+   },
+   deleteMainCourses(courseId) {
+      // 提示用户确认删除
+        const url = getFullApiUrl(`/delete_main_course/${courseId}`);
+        axios.delete(url)
+          .then(() => {
+            // 删除成功后重新获取折扣券信息
+            this.$store.dispatch('fetchMainCourses');
+            alert('主餐刪除完成');
+          })
+          .catch(error => {
+            console.error('Error deleting coupon:', error);
+            // 处理删除失败的情况
+            alert("折扣券删除失败：" + error.message);
+          });
     }
   }
 }

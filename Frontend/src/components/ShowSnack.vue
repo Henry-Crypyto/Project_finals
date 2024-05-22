@@ -85,7 +85,8 @@
 
 <script>
 import { mapMutations, mapState } from 'vuex';
-
+// import axios from 'axios';
+// import { getFullApiUrl } from '../../config.js';
 export default {
   created() {
     this.$store.dispatch('fetchSnacks');

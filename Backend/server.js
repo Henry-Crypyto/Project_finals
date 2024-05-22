@@ -365,6 +365,63 @@ WHERE
 
   
 
+app.delete('/delete_main_course/:itemId', (req, res) => {
+    const itemId = req.params.itemId;
+    db.query(`DELETE FROM ${mainCourseTableName} WHERE id = ?`, [itemId], (err, results) => {
+        if (err) {
+            console.error('Error deleting coupon:', err);
+            return res.status(500).send('Error deleting coupon: ' + err.message);
+        }
+        res.send('Coupon deleted successfully.');
+    });
+});
+
+app.put('/update_all_coupon_original_price', (req, res) => {
+    const updateQuery = `
+    UPDATE coupon
+    SET original_price = (
+        SELECT SUM(total_price)
+        FROM (
+            -- 從 main_course 計算總價
+            SELECT c.coupon_id, SUM(mc.price * cmc.quantity) AS total_price
+            FROM coupon_main_course cmc
+            JOIN main_course mc ON cmc.id = mc.id
+            JOIN coupon c ON cmc.coupon_id = c.coupon_id
+            GROUP BY c.coupon_id
+    
+            UNION ALL
+    
+            -- 從 beverage 計算總價
+            SELECT c.coupon_id, SUM(b.price * cb.quantity) AS total_price
+            FROM coupon_beverage cb
+            JOIN beverage b ON cb.id = b.id
+            JOIN coupon c ON cb.coupon_id = c.coupon_id
+            GROUP BY c.coupon_id
+    
+            UNION ALL
+    
+            -- 從 snack 計算總價
+            SELECT c.coupon_id, SUM(s.price * cs.quantity) AS total_price
+            FROM coupon_snack cs
+            JOIN snack s ON cs.id = s.id
+            JOIN coupon c ON cs.coupon_id = c.coupon_id
+            GROUP BY c.coupon_id
+        ) AS prices
+        WHERE prices.coupon_id = coupon.coupon_id
+    )
+    `;
+    db.query(updateQuery, (err, results) => {
+        if (err) {
+            console.error('Error updating data: ', err);
+            res.status(500).send('Error updating data');
+            return;
+        }
+        console.log('Data updated in the database: ', results);
+        res.send('Data updated');
+    });
+});
+
+
 
 
 

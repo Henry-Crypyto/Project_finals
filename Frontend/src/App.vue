@@ -10,6 +10,8 @@
           <option value="user">使用者模式</option>
           <option value="add">新增和刪除折價券</option>
           <option value="update">更新折價券</option>
+          <option value="addOrDeleteItem">新增或刪除品項</option>
+          <option value="updateItem">更新品項</option>
         </select>
       </div>
     </b-container>
@@ -80,8 +82,6 @@ export default {
     updateUserDeveloper() {
       this.$store.commit('setUserDeveloper', this.localUserDeveloper);
       this.$store.commit('clearCartItems');
-      console.log("asdasd");
-
     }
   },
   created() {

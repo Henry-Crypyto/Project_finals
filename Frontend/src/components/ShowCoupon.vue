@@ -59,8 +59,7 @@
     <!-- Display Coupons Information for Selected Brand, Price, and Date Range -->
     <b-row>
       <b-col v-if="selectedCoupons.length > 0">
-        <b-card v-for="coupon in selectedCoupons" :key="coupon.coupon_ID" class="mb-3 custom-card">
-          <b-card-body class="d-flex justify-content-between align-items-center">
+      <b-card v-for="coupon in paginatedCoupons" :key="coupon.coupon_ID" class="mb-3 custom-card">          <b-card-body class="d-flex justify-content-between align-items-center">
             <div class="card-title-container">
               <h5 class="card-title" @click="coupon.expanded = !coupon.expanded">
                 <span class="discount-price">$ {{ coupon.discount_price }}</span> {{ coupon.coupon_name }}
@@ -122,6 +121,17 @@
         </b-card>
       </b-col>
     </b-row>
+    <b-row class="mt-4" v-if="selectedCoupons.length > 0">
+      <b-col>
+        <b-pagination
+          v-model="currentPage"
+          :total-rows="selectedCoupons.length"
+          :per-page="pageSize"
+          aria-controls="coupon-container"
+          align="center"
+        ></b-pagination>
+      </b-col>
+    </b-row>
   </b-container>
 </template>
 
@@ -138,7 +148,10 @@ export default {
     selectedPrice: '',
     startDate: '',
     endDate: '',
-    minEndDate: ''  // 用于存储最小结束日期
+    minEndDate: '',
+    currentPage: 1,
+    pageSize: 12,
+    pageCount: 0 // 用于存储最小结束日期
   }),
   created() {
     this.$store.dispatch('fetchBrandOptions');
@@ -203,6 +216,7 @@ export default {
             )
           }));
           this.selectedCoupons = this.filterCoupons(allCoupons);
+          this.pageCount = Math.ceil(this.selectedCoupons.length / this.pageSize);
         })
         .catch(error => {
           console.error('Error fetching coupons:', error);
@@ -291,6 +305,11 @@ export default {
   },
   computed: {
     ...mapState(['brandOptions', 'newCoupon', 'nextCouponId', 'userDeveloper', 'cartItems', 'mainCourses', 'beverages', 'snacks']),
+    paginatedCoupons() {
+    const start = (this.currentPage - 1) * this.pageSize;
+    const end = start + this.pageSize;
+    return this.selectedCoupons.slice(start, end);
+  }
   },
   watch: {
     startDate(newVal) {
