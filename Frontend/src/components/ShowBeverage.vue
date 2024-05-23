@@ -51,9 +51,9 @@
               <div class="form-group">
                 <select id="size-select" class="form-control custom-select" v-model="localSizeSelect">
                   <option value="">所有容量</option>
-                  <option value="450ml">450ml</option>
-                  <option value="650ml">650ml</option>
-                  <option value="950ml">950ml</option>
+                  <option v-for="size in sizeOptions" :key="size.value" :value="size.value">
+                    {{ size.text }}
+                  </option>
                 </select>
               </div>
             </div>
@@ -123,6 +123,7 @@ export default {
   created() {
     this.$store.dispatch('fetchBeverages');
     this.$store.dispatch('fetchBrandOptions');
+    this.fetchBeverageSize();
   },
   data() {
     return {
@@ -141,11 +142,7 @@ export default {
         { value: '冰', text: '冰' },
         { value: '熱', text: '熱' }
       ],
-      sizeOptions: [
-        { value: '450ml', text: '450ml' },
-        { value: '650ml', text: '650ml' },
-        { value: '950ml', text: '950ml' }
-      ],
+      sizeOptions: [], // Initialize as empty array
       currentPage: 1, // Current page number
       itemsPerPage: 16 // Number of items per page
     };
@@ -275,10 +272,22 @@ export default {
           console.error('Error deleting beverage:', error);
           alert("飲料删除失败：" + error.message);
         });
+    },
+    fetchBeverageSize() {
+      const url = getFullApiUrl('/all_beverage_size');
+      axios.get(url)
+        .then(response => {
+          this.sizeOptions = response.data.map(size => ({ value: size.beverage_size, text: size.beverage_size }));
+        })
+        .catch(error => {
+          console.error('Error fetching beverage sizes:', error);
+        });
     }
   }
 }
 </script>
+
+
 
 <style scoped>
 .page-container {

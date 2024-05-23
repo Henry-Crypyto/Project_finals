@@ -164,6 +164,18 @@ app.get('/all_beverage', (req, res) => {
     });
 });
 
+app.get('/all_beverage_size', (req, res) => {
+    db.query(`SELECT * FROM size_beverage`, (err, results) => {
+        if (err) {
+            console.error('Error fetching data: ', err);
+            res.status(500).send('Error fetching data');
+            return;
+        }
+        console.log('Data retrieved from the database: ', results);
+        res.json(results);
+    });
+});
+
 app.get('/all_snack', (req, res) => {
     db.query(`SELECT * FROM ${snackTableName}`, (err, results) => {
         if (err) {
@@ -394,7 +406,84 @@ app.delete('/delete_main_course/:itemId', (req, res) => {
 });
 
 app.post('/add_main_course', (req, res) => {
-    const { brand, name, price, flavor, meatTypes } = req.body;
+  const { brand, name, price, flavor, meatTypes } = req.body;
+
+  // 确认文件已上传
+  if (!req.files || !req.files.image) {
+    return res.status(400).send('No image file uploaded');
+  }
+
+  const image = req.files.image.data; // 获取上传的文件数据
+
+  // 开始一个事务
+  db.beginTransaction(err => {
+    if (err) {
+      console.error('Error starting transaction:', err);
+      return res.status(500).send('Error starting transaction');
+    }
+
+    // 将主菜数据插入到 main_course 表中
+    db.query(
+      'INSERT INTO main_course (brand_name, name, price, flavor_name, image) VALUES (?, ?, ?, ?, ?)',
+      [brand, name, price, flavor, image],
+      (err, results) => {
+        if (err) {
+          console.error('Error adding main course:', err);
+          return db.rollback(() => {
+            res.status(500).send('Error adding main course');
+          });
+        }
+
+        const mainCourseId = results.insertId;
+
+        // 准备肉类类型数据
+        const meatTypeArray = meatTypes.split(',').map(meatTypeId => parseInt(meatTypeId, 10));
+
+        // 将数据插入到 main_course_meat_type 表中
+        const meatTypeValues = meatTypeArray.map(meatTypeId => [mainCourseId, meatTypeId]);
+
+        db.query(
+          'INSERT INTO main_course_meat_type (main_course_id, meat_type_id) VALUES ?',
+          [meatTypeValues],
+          (err) => {
+            if (err) {
+              console.error('Error adding meat types:', err);
+              return db.rollback(() => {
+                res.status(500).send('Error adding meat types');
+              });
+            }
+
+            // 提交事务
+            db.commit(err => {
+              if (err) {
+                console.error('Error committing transaction:', err);
+                return db.rollback(() => {
+                  res.status(500).send('Error committing transaction');
+                });
+              }
+
+              res.send({ success: true, message: 'Main course added successfully' });
+            });
+          }
+        );
+      }
+    );
+  });
+});
+
+app.delete('/delete_beverage/:itemId', (req, res) => {
+    const itemId = req.params.itemId;
+    db.query(`DELETE FROM ${beverageTableName} WHERE id = ?`, [itemId], (err, results) => {
+        if (err) {
+            console.error('Error deleting coupon:', err);
+            return res.status(500).send('Error deleting coupon: ' + err.message);
+        }
+        res.send('Coupon deleted successfully.');
+    });
+});
+
+app.post('/add_beverage', (req, res) => {
+    const { brand, name, price, iced_hot, size } = req.body;
   
     // 确认文件已上传
     if (!req.files || !req.files.image) {
@@ -403,64 +492,54 @@ app.post('/add_main_course', (req, res) => {
   
     const image = req.files.image.data; // 获取上传的文件数据
   
-    // 开始一个事务
-    db.beginTransaction(err => {
-      if (err) {
-        console.error('Error starting transaction:', err);
-        return res.status(500).send('Error starting transaction');
-      }
-  
-      // 将主菜数据插入到 main_course 表中
-      db.query(
-        'INSERT INTO main_course (brand_name, name, price, flavor_name, image) VALUES (?, ?, ?, ?, ?)',
-        [brand, name, price, flavor, image],
-        (err, results) => {
-          if (err) {
-            console.error('Error adding main course:', err);
-            return db.rollback(() => {
-              res.status(500).send('Error adding main course');
-            });
-          }
-  
-          const mainCourseId = results.insertId;
-  
-          // 准备肉类类型数据
-          const meatTypeArray = meatTypes.split(',').map(meatTypeId => parseInt(meatTypeId, 10));
-  
-          // 将数据插入到 main_course_meat_type 表中
-          const meatTypeValues = meatTypeArray.map(meatTypeId => [mainCourseId, meatTypeId]);
-  
-          db.query(
-            'INSERT INTO main_course_meat_type (main_course_id, meat_type_id) VALUES ?',
-            [meatTypeValues],
-            (err) => {
-              if (err) {
-                console.error('Error adding meat types:', err);
-                return db.rollback(() => {
-                  res.status(500).send('Error adding meat types');
-                });
-              }
-  
-              // 提交事务
-              db.commit(err => {
-                if (err) {
-                  console.error('Error committing transaction:', err);
-                  return db.rollback(() => {
-                    res.status(500).send('Error committing transaction');
-                  });
-                }
-  
-                res.send({ success: true, message: 'Main course added successfully' });
-              });
-            }
-          );
+    // 将饮料数据插入到 beverages 表中
+    db.query(
+      'INSERT INTO beverage (brand_name, name, price, iced_hot_name, beverage_size, image) VALUES (?, ?, ?, ?, ?, ?)',
+      [brand, name, price, iced_hot, size, image],
+      (err, results) => {
+        if (err) {
+          console.error('Error adding beverage:', err);
+          return res.status(500).send('Error adding beverage');
         }
-      );
-    });
+        res.send({ success: true, message: 'Beverage added successfully', beverageId: results.insertId });
+      }
+    );
   });
-  
 
+app.delete('/delete_snack/:itemId', (req, res) => {
+    const itemId = req.params.itemId;
+    db.query(`DELETE FROM ${snackTableName} WHERE id = ?`, [itemId], (err, results) => {
+        if (err) {
+            console.error('Error deleting coupon:', err);
+            return res.status(500).send('Error deleting coupon: ' + err.message);
+        }
+        res.send('Coupon deleted successfully.');
+    });
+});
+
+app.post('/add_snack', (req, res) => {
+    const { brand, name, price, flavor, size } = req.body;
   
+    // 确认文件已上传
+    if (!req.files || !req.files.image) {
+      return res.status(400).send('No image file uploaded');
+    }
+  
+    const image = req.files.image.data; // 获取上传的文件数据
+  
+    // 将饮料数据插入到 beverages 表中
+    db.query(
+      'INSERT INTO snack (brand_name, name, price, flavor_name, snack_size , image) VALUES (?, ?, ?, ?, ?, ?)',
+      [brand, name, price, flavor, size, image],
+      (err, results) => {
+        if (err) {
+          console.error('Error adding beverage:', err);
+          return res.status(500).send('Error adding beverage');
+        }
+        res.send({ success: true, message: 'Beverage added successfully', beverageId: results.insertId });
+      }
+    );
+  });
   
 
 app.put('/update_all_coupon_original_price', (req, res) => {

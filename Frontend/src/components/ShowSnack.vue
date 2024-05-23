@@ -4,7 +4,30 @@
       <b-row>
         <b-col>
           <h1 class="text-center">小吃選單</h1>
-          <div class="d-flex justify-content-center mb-4">
+          <div v-if="userDeveloper === 'addOrDeleteItem'" class="mb-4">
+            <b-form @submit.prevent="handleAddSnack">
+              <b-form-group label="品牌">
+                <b-form-select v-model="newSnack.brand" :options="brandOptions.map(brand => ({ value: brand.brand_name, text: brand.brand_name }))" required></b-form-select>
+              </b-form-group>
+              <b-form-group label="品項名稱">
+                <b-form-input v-model="newSnack.name" required></b-form-input>
+              </b-form-group>
+              <b-form-group label="單價">
+                <b-form-input type="number" v-model="newSnack.price" required></b-form-input>
+              </b-form-group>
+              <b-form-group label="口味">
+                <b-form-select v-model="newSnack.flavor" :options="flavorOptions" required></b-form-select>
+              </b-form-group>
+              <b-form-group label="大小">
+                <b-form-select v-model="newSnack.size" :options="sizeOptions" required></b-form-select>
+              </b-form-group>
+              <b-form-group label="上傳圖片">
+                <input type="file" @change="handleImageUpload" accept="image/png" ref="fileInput" required>
+              </b-form-group>
+              <b-button type="submit" variant="success">新增品項</b-button>
+            </b-form>
+          </div>
+          <div class="d-flex flex-column align-items-center mb-4">
             <div class="col-md-2 mb-3">
               <div class="form-group">
                 <select id="brand-select" class="form-control custom-select" v-model="localBrandSelect">
@@ -15,17 +38,23 @@
                 </select>
               </div>
             </div>
-          </div>
-          <div class="d-flex justify-content-center mb-4">
             <div class="col-md-2 mb-3">
               <div class="form-group">
                 <select id="flavor-select" class="form-control custom-select" v-model="localFlavorSelect">
                   <option value="">所有口味</option>
-                  <option value="酸">酸</option>
-                  <option value="甜">甜</option>
-                  <option value="苦">苦</option>
-                  <option value="辣">辣</option>
-                  <option value="鹹">鹹</option>
+                  <option v-for="flavor in flavorOptions" :key="flavor.value" :value="flavor.value">
+                    {{ flavor.text }}
+                  </option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-2 mb-3">
+              <div class="form-group">
+                <select id="size-select" class="form-control custom-select" v-model="localSizeSelect">
+                  <option value="">所有大小</option>
+                  <option v-for="size in sizeOptions" :key="size.value" :value="size.value">
+                    {{ size.text }}
+                  </option>
                 </select>
               </div>
             </div>
@@ -35,11 +64,14 @@
       <b-row v-if="paginatedSnacks.length > 0">
         <b-col cols="12" sm="6" md="4" lg="3" v-for="snack in paginatedSnacks" :key="snack.id" class="mb-4">
           <b-card hover shadow class="h-100 custom-card">
-            <img :src="getSnackImage(snack.image)" alt="Main Course Image" class="card-img-top"/>
+            <b-button v-if="userDeveloper === 'addOrDeleteItem'" variant="danger" class="position-absolute top-0 end-0 mt-2 me-2" @click="handleDeleteSnack(snack)">
+              X
+            </b-button>
+            <img :src="getSnackImage(snack.image)" alt="Snack Image" class="card-img-top"/>
             <b-card-title class="text-center mb-2">{{ snack.name.trim() }}</b-card-title>
-            <b-card-text v-if="snack.snack_size"><strong>大小:</strong> {{ snack.snack_size }}</b-card-text>
             <b-card-text><strong>原價:</strong> {{ snack.price }}</b-card-text>
-            <b-card-text><strong>風味:</strong> {{ snack.flavor_name }}</b-card-text>
+            <b-card-text><strong>大小:</strong> {{ snack.snack_size || '無' }}</b-card-text>
+            <b-card-text><strong>口味:</strong> {{ snack.flavor_name }}</b-card-text>
             <b-card-text><strong>品牌:</strong> {{ snack.brand_name }}</b-card-text>
             <b-form-group label="數量" label-for="quantity-input-{{ snack.id }}">
               <b-form-input
@@ -85,17 +117,40 @@
 
 <script>
 import { mapMutations, mapState } from 'vuex';
-// import axios from 'axios';
-// import { getFullApiUrl } from '../../config.js';
+import axios from 'axios';
+import { getFullApiUrl } from '../../config.js';
+
 export default {
   created() {
     this.$store.dispatch('fetchSnacks');
     this.$store.dispatch('fetchBrandOptions');
+    this.fetchSnackSize();
   },
   data() {
     return {
-      localBrandSelect: '',
-      localFlavorSelect: '', // This will be used for the local flavor select input
+      localBrandSelect: '',  // This will be used for the local select input
+      localFlavorSelect: '', // This will be used for the flavor select input
+      localSizeSelect: '', // This will be used for the size select input
+      newSnack: {
+        brand: '',
+        name: '',
+        price: '',
+        flavor: '',
+        size: '',
+        image: null
+      },
+      flavorOptions: [
+        { value: '酸', text: '酸' },
+        { value: '甜', text: '甜' },
+        { value: '苦', text: '苦' },
+        { value: '辣', text: '辣' },
+        { value: '鹹', text: '鹹' }
+      ],
+      sizeOptions: [
+        { value: '大', text: '大' },
+        { value: '中', text: '中' },
+        { value: '小', text: '小' },
+      ], // Initialize as empty array
       currentPage: 1, // Current page number
       itemsPerPage: 16 // Number of items per page
     };
@@ -103,14 +158,12 @@ export default {
   computed: {
     ...mapState(['snacks', 'brandOptions', 'brandSelect', 'cartItems', 'userDeveloper']),
     filteredSnacks() {
-      let snacks = this.snacks;
-      if (this.localBrandSelect !== '' && this.localBrandSelect !== 'all') {
-        snacks = snacks.filter(snack => snack.brand_name === this.localBrandSelect);
-      }
-      if (this.localFlavorSelect !== '' && this.localFlavorSelect !== 'all') {
-        snacks = snacks.filter(snack => snack.flavor_name === this.localFlavorSelect);
-      }
-      return snacks;
+      return this.snacks.filter(snack => {
+        const brandMatch = this.localBrandSelect === '' || snack.brand_name === this.localBrandSelect;
+        const flavorMatch = this.localFlavorSelect === '' || snack.flavor_name === this.localFlavorSelect;
+        const sizeMatch = this.localSizeSelect === '' || snack.snack_size === this.localSizeSelect;
+        return brandMatch && flavorMatch && sizeMatch;
+      });
     },
     paginatedSnacks() {
       const start = (this.currentPage - 1) * this.itemsPerPage;
@@ -119,15 +172,19 @@ export default {
     }
   },
   watch: {
+    // Watch for changes in the Vuex store's brandSelect and update the localBrandSelect accordingly
     brandSelect(newBrandSelect) {
       this.localBrandSelect = newBrandSelect;
     },
-    localBrandSelect(){
-      this.currentPage=1;
+    localBrandSelect() {
+      this.currentPage = 1;
     },
-    localFlavorSelect(){
-      this.currentPage=1;
+    localFlavorSelect() {
+      this.currentPage = 1;
     },
+    localSizeSelect() {
+      this.currentPage = 1;
+    }
   },
   methods: {
     ...mapMutations(['addToCart', 'setBrandSelect']),
@@ -172,6 +229,67 @@ export default {
       } else {
         alert('品牌不匹配，无法添加到购物车。');
       }
+    },
+    handleAddSnack() {
+      const formData = new FormData();
+      formData.append('brand', this.newSnack.brand);
+      formData.append('name', this.newSnack.name);
+      formData.append('price', this.newSnack.price);
+      formData.append('flavor', this.newSnack.flavor);
+      formData.append('size', this.newSnack.size);
+      formData.append('image', this.newSnack.image);
+
+      axios.post(getFullApiUrl('/add_snack'), formData)
+        .then(() => {
+          this.$store.dispatch('fetchSnacks');
+          alert('Snack added successfully');
+          // Reset the newSnack object to clear the input fields
+          this.newSnack = {
+            brand: '',
+            name: '',
+            price: '',
+            flavor: '',
+            size: '',
+            image: null
+          };
+          // Reset the file input
+          this.$refs.fileInput.value = '';
+        })
+        .catch(error => {
+          console.error('Error adding snack:', error);
+          alert('Failed to add snack: ' + error.message);
+        });
+    },
+    handleImageUpload(event) {
+      const file = event.target.files[0];
+      this.newSnack.image = file;
+    },
+    handleDeleteSnack(snack) {
+      if (confirm(`Are you sure you want to delete ${snack.name}?`)) {
+        this.deleteSnack(snack.id);
+      }
+    },
+    deleteSnack(snackId) {
+      const url = getFullApiUrl(`/delete_snack/${snackId}`);
+      axios.delete(url)
+        .then(() => {
+          this.$store.dispatch('fetchSnacks');
+          alert('小吃刪除完成');
+        })
+        .catch(error => {
+          console.error('Error deleting snack:', error);
+          alert("小吃删除失败：" + error.message);
+        });
+    },
+    fetchSnackSize() {
+      const url = getFullApiUrl('/all_snack_size');
+      axios.get(url)
+        .then(response => {
+          this.sizeOptions = response.data.map(size => ({ value: size.snack_size, text: size.snack_size }));
+        })
+        .catch(error => {
+          console.error('Error fetching snack sizes:', error);
+        });
     }
   }
 }
@@ -210,6 +328,7 @@ b-card-text {
 
 .select-container {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 20px;
