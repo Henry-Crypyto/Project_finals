@@ -35,7 +35,7 @@
       <b-row v-if="paginatedSnacks.length > 0">
         <b-col cols="12" sm="6" md="4" lg="3" v-for="snack in paginatedSnacks" :key="snack.id" class="mb-4">
           <b-card hover shadow class="h-100 custom-card">
-            <img :src="getSnackImage(snack.image_path)" alt="Main Course Image" class="card-img-top"/>
+            <img :src="getSnackImage(snack.image)" alt="Main Course Image" class="card-img-top"/>
             <b-card-title class="text-center mb-2">{{ snack.name.trim() }}</b-card-title>
             <b-card-text v-if="snack.snack_size"><strong>大小:</strong> {{ snack.snack_size }}</b-card-text>
             <b-card-text><strong>原價:</strong> {{ snack.price }}</b-card-text>
@@ -131,11 +131,11 @@ export default {
   },
   methods: {
     ...mapMutations(['addToCart', 'setBrandSelect']),
-    getSnackImage(imagePath) {
-      if (!imagePath) {
+    getSnackImage(image64) {
+      if (!image64) {
         return require('@/assets/image/default.png'); // 預設圖片路徑
       }
-      return require(`@/assets/image/${imagePath}`);
+      return image64;
     },
     handleAddLoveToCart(snack) {
       if (this.cartItems.some(item => item.id === snack.id && item.preference === 0 && item.productType === this.$store.state.productType[2])) {

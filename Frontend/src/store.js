@@ -238,12 +238,12 @@ export default createStore({
       fetchMainCourses({ commit }) {
         const url = getFullApiUrl('/all_main_course');
         axios.get(url)
-          .then(response => {
-            commit('setMainCourses', response.data.map(course => ({
-              ...course,
-              quantity: 1  // 初始化数量为 1
-            })));
-          })
+        .then(response => {
+          commit('setMainCourses', response.data.map(course => ({
+            ...course,
+            quantity: 1  // 初始化数量为 1
+          })));
+        })
           .catch(error => {
             console.error('Error fetching main courses:', error);
           });

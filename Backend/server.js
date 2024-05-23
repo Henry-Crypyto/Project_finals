@@ -135,6 +135,11 @@ GROUP BY
             res.status(500).send('Error fetching data');
             return;
         }
+        results.forEach(course => {
+            if (course.image) {
+              course.image = `data:image/png;base64,${course.image.toString('base64')}`; // 确保image字段是base64字符串
+            }
+          });
         console.log('Data retrieved from the database: ', results);
         res.json(results);
     });
@@ -147,6 +152,11 @@ app.get('/all_beverage', (req, res) => {
             res.status(500).send('Error fetching data');
             return;
         }
+        results.forEach(beverage => {
+            if (beverage.image) {
+              beverage.image = `data:image/png;base64,${beverage.image.toString('base64')}`; // 确保image字段是base64字符串
+            }
+          });
         console.log('Data retrieved from the database: ', results);
         res.json(results);
     });
@@ -159,6 +169,11 @@ app.get('/all_snack', (req, res) => {
             res.status(500).send('Error fetching data');
             return;
         }
+        results.forEach(snack => {
+            if (snack.image) {
+              snack.image = `data:image/png;base64,${snack.image.toString('base64')}`; // 确保image字段是base64字符串
+            }
+          });
         console.log('Data retrieved from the database: ', results);
         res.json(results);
     });

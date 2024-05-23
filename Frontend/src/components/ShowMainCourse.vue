@@ -39,7 +39,7 @@
             <b-button v-if="userDeveloper === 'addOrDeleteItem'" variant="danger" class="position-absolute top-0 end-0 mt-2 me-2" @click="handleDeleteCourse(course)">
               X
             </b-button>
-            <img :src="getMainCourseImage(course.image_path)" alt="Main Course Image" class="card-img-top"/>
+            <img :src="getMainCourseImage(course.image)" alt="Main Course Image" class="card-img-top"/>
             <b-card-title class="text-center mb-2">{{ course.name }}</b-card-title>
             <b-card-text><strong>原價:</strong> {{ course.price }}</b-card-text>
             <b-card-text><strong>肉類類型:</strong> {{ course.meat_type || '不詳' }}</b-card-text>
@@ -147,11 +147,11 @@ export default {
         this.localMeatSelect.push(meat); // 如果未选中，则添加到数组中
       }
     },
-    getMainCourseImage(imagePath) {
-      if (!imagePath) {
+    getMainCourseImage(base64) {
+      if (!base64) {
         return require('@/assets/image/default.png'); // 预设图片路径
       }
-      return require(`@/assets/image/${imagePath}`);
+      return base64; // base64 字符串已经包含 "data:image/png;base64,"
     },
     handleAddLoveToCart(course) {
       if (this.cartItems.some(item => item.id === course.id && item.preference === 0 && item.productType === this.$store.state.productType[0])) {
@@ -190,30 +190,32 @@ export default {
       }
     },
     handleDeleteCourse(course) {
-    if (confirm(`Are you sure you want to delete ${course.name}?`)) {
-    // If the user confirms, proceed with the deletion
-    this.deleteMainCourses(course.id);
-    
-     }
-   },
-   deleteMainCourses(courseId) {
+      if (confirm(`Are you sure you want to delete ${course.name}?`)) {
+        // If the user confirms, proceed with the deletion
+        this.deleteMainCourses(course.id);
+      }
+    },
+    deleteMainCourses(courseId) {
       // 提示用户确认删除
-        const url = getFullApiUrl(`/delete_main_course/${courseId}`);
-        axios.delete(url)
-          .then(() => {
-            // 删除成功后重新获取折扣券信息
-            this.$store.dispatch('fetchMainCourses');
-            alert('主餐刪除完成');
-          })
-          .catch(error => {
-            console.error('Error deleting coupon:', error);
-            // 处理删除失败的情况
-            alert("折扣券删除失败：" + error.message);
-          });
+      const url = getFullApiUrl(`/delete_main_course/${courseId}`);
+      axios.delete(url)
+        .then(() => {
+          // 删除成功后重新获取主菜信息
+          this.$store.dispatch('fetchMainCourses');
+          alert('主餐刪除完成');
+        })
+        .catch(error => {
+          console.error('Error deleting course:', error);
+          // 处理删除失败的情况
+          alert("主餐删除失败：" + error.message);
+        });
     }
   }
 }
 </script>
+
+
+
 
 
 <style scoped>
