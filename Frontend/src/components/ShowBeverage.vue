@@ -4,6 +4,29 @@
       <b-row>
         <b-col>
           <h1 class="text-center">飲料選單</h1>
+          <div v-if="userDeveloper === 'addOrDeleteItem'" class="mb-4">
+            <b-form @submit.prevent="handleAddBeverage">
+              <b-form-group label="品牌">
+                <b-form-select v-model="newBeverage.brand" :options="brandOptions.map(brand => ({ value: brand.brand_name, text: brand.brand_name }))" required></b-form-select>
+              </b-form-group>
+              <b-form-group label="品項名稱">
+                <b-form-input v-model="newBeverage.name" required></b-form-input>
+              </b-form-group>
+              <b-form-group label="單價">
+                <b-form-input type="number" v-model="newBeverage.price" required></b-form-input>
+              </b-form-group>
+              <b-form-group label="類型">
+                <b-form-select v-model="newBeverage.iced_hot" :options="icedHotOptions" required></b-form-select>
+              </b-form-group>
+              <b-form-group label="容量">
+                <b-form-select v-model="newBeverage.size" :options="sizeOptions" required></b-form-select>
+              </b-form-group>
+              <b-form-group label="上傳圖片">
+                <input type="file" @change="handleImageUpload" accept="image/png" ref="fileInput" required>
+              </b-form-group>
+              <b-button type="submit" variant="success">新增品項</b-button>
+            </b-form>
+          </div>
           <div class="d-flex flex-column align-items-center mb-4">
             <div class="col-md-2 mb-3">
               <div class="form-group">
@@ -40,7 +63,10 @@
       <b-row v-if="paginatedBeverages.length > 0">
         <b-col cols="12" sm="6" md="4" lg="3" v-for="beverage in paginatedBeverages" :key="beverage.id" class="mb-4">
           <b-card hover shadow class="h-100 custom-card">
-            <img :src="getBeverageImage(beverage.image)" alt="Main Course Image" class="card-img-top"/>
+            <b-button v-if="userDeveloper === 'addOrDeleteItem'" variant="danger" class="position-absolute top-0 end-0 mt-2 me-2" @click="handleDeleteBeverage(beverage)">
+              X
+            </b-button>
+            <img :src="getBeverageImage(beverage.image)" alt="Beverage Image" class="card-img-top"/>
             <b-card-title class="text-center mb-2">{{ beverage.name.trim() }}</b-card-title>
             <b-card-text><strong>原價:</strong> {{ beverage.price }}</b-card-text>
             <b-card-text><strong>容量:</strong> {{ beverage.beverage_size }}</b-card-text>
@@ -90,18 +116,36 @@
 
 <script>
 import { mapMutations, mapState } from 'vuex';
-// import axios from 'axios';
-// import { getFullApiUrl } from '../../config.js';
+import axios from 'axios';
+import { getFullApiUrl } from '../../config.js';
+
 export default {
   created() {
     this.$store.dispatch('fetchBeverages');
-    this.$store.dispatch('fetchBrandOptions'); // Fetch brand options when component is created
+    this.$store.dispatch('fetchBrandOptions');
   },
   data() {
     return {
       localBrandSelect: '',  // This will be used for the local select input
       localIcedHotSelect: '', // This will be used for the iced/hot select input
       localSizeSelect: '', // This will be used for the size select input
+      newBeverage: {
+        brand: '',
+        name: '',
+        price: '',
+        iced_hot: '',
+        size: '',
+        image: null
+      },
+      icedHotOptions: [
+        { value: '冰', text: '冰' },
+        { value: '熱', text: '熱' }
+      ],
+      sizeOptions: [
+        { value: '450ml', text: '450ml' },
+        { value: '650ml', text: '650ml' },
+        { value: '950ml', text: '950ml' }
+      ],
       currentPage: 1, // Current page number
       itemsPerPage: 16 // Number of items per page
     };
@@ -127,14 +171,14 @@ export default {
     brandSelect(newBrandSelect) {
       this.localBrandSelect = newBrandSelect;
     },
-    localBrandSelect(){
-      this.currentPage=1;
+    localBrandSelect() {
+      this.currentPage = 1;
     },
-    localIcedHotSelect(){
-      this.currentPage=1;
+    localIcedHotSelect() {
+      this.currentPage = 1;
     },
-    localSizeSelect(){
-      this.currentPage=1;
+    localSizeSelect() {
+      this.currentPage = 1;
     }
   },
   methods: {
@@ -180,6 +224,57 @@ export default {
       } else {
         alert('品牌不匹配，无法添加到购物车。');
       }
+    },
+    handleAddBeverage() {
+      const formData = new FormData();
+      formData.append('brand', this.newBeverage.brand);
+      formData.append('name', this.newBeverage.name);
+      formData.append('price', this.newBeverage.price);
+      formData.append('iced_hot', this.newBeverage.iced_hot);
+      formData.append('size', this.newBeverage.size);
+      formData.append('image', this.newBeverage.image);
+
+      axios.post(getFullApiUrl('/add_beverage'), formData)
+        .then(() => {
+          this.$store.dispatch('fetchBeverages');
+          alert('Beverage added successfully');
+          // Reset the newBeverage object to clear the input fields
+          this.newBeverage = {
+            brand: '',
+            name: '',
+            price: '',
+            iced_hot: '',
+            size: '',
+            image: null
+          };
+          // Reset the file input
+          this.$refs.fileInput.value = '';
+        })
+        .catch(error => {
+          console.error('Error adding beverage:', error);
+          alert('Failed to add beverage: ' + error.message);
+        });
+    },
+    handleImageUpload(event) {
+      const file = event.target.files[0];
+      this.newBeverage.image = file;
+    },
+    handleDeleteBeverage(beverage) {
+      if (confirm(`Are you sure you want to delete ${beverage.name}?`)) {
+        this.deleteBeverage(beverage.id);
+      }
+    },
+    deleteBeverage(beverageId) {
+      const url = getFullApiUrl(`/delete_beverage/${beverageId}`);
+      axios.delete(url)
+        .then(() => {
+          this.$store.dispatch('fetchBeverages');
+          alert('飲料刪除完成');
+        })
+        .catch(error => {
+          console.error('Error deleting beverage:', error);
+          alert("飲料删除失败：" + error.message);
+        });
     }
   }
 }

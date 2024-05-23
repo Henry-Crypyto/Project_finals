@@ -4,6 +4,29 @@
       <b-row>
         <b-col>
           <h1 class="text-center">主菜選單</h1>
+          <div v-if="userDeveloper === 'addOrDeleteItem'" class="mb-4">
+            <b-form @submit.prevent="handleAddCourse">
+              <b-form-group label="品牌">
+                <b-form-select v-model="newCourse.brand" :options="brandOptions.map(brand => ({ value: brand.brand_name, text: brand.brand_name }))" required></b-form-select>
+              </b-form-group>
+              <b-form-group label="品項名稱">
+                <b-form-input v-model="newCourse.name" required></b-form-input>
+              </b-form-group>
+              <b-form-group label="單價">
+                <b-form-input type="number" v-model="newCourse.price" required></b-form-input>
+              </b-form-group>
+              <b-form-group label="口味">
+                <b-form-select v-model="newCourse.flavor" :options="flavorOptions" required></b-form-select>
+              </b-form-group>
+              <b-form-group label="肉類">
+                <b-form-checkbox-group v-model="newCourse.meatTypes" :options="meatSubmitOptions"></b-form-checkbox-group>
+              </b-form-group>
+              <b-form-group label="上傳圖片">
+                <input type="file" @change="handleImageUpload" accept="image/png" ref="fileInput" required>
+              </b-form-group>
+              <b-button type="submit" variant="success">新增品項</b-button>
+            </b-form>
+          </div>
           <div class="mb-4">
             <div class="col-md-2 mb-3 mx-auto">
               <div class="form-group">
@@ -100,12 +123,33 @@ export default {
     return {
       localBrandSelect: '', // 本地品牌选择
       localMeatSelect: [],  // 本地不吃的肉类选择数组
+      newCourse: {
+        brand: '',
+        name: '',
+        price: '',
+        flavor: '',
+        meatTypes: [], // 新增的肉类选择
+        image: null
+      },
+      flavorOptions: [
+        { value: '辣', text: '辣' },
+        { value: '甜', text: '甜' },
+        { value: '鹹', text: '鹹' },
+        { value: '酸', text: '酸' }
+      ],
       meatOptions: [
         { text: '不吃牛', value: '牛' },
         { text: '不吃豬', value: '豬' },
         { text: '不吃雞', value: '雞' },
         { text: '不吃海鮮', value: '海鮮' },
         { text: '不吃羊', value: '羊' }
+      ],
+      meatSubmitOptions: [
+        { text: '牛', value: '牛' },
+        { text: '豬', value: '豬' },
+        { text: '雞', value: '雞' },
+        { text: '海鮮', value: '海鮮' },
+        { text: '羊', value: '羊' }
       ],
       currentPage: 1, // 当前页数
       itemsPerPage: 16 // 每页显示的项目数
@@ -209,10 +253,65 @@ export default {
           // 处理删除失败的情况
           alert("主餐删除失败：" + error.message);
         });
+    },
+    handleAddCourse() {
+    const formData = new FormData();
+    formData.append('brand', this.newCourse.brand);
+    formData.append('name', this.newCourse.name);
+    formData.append('price', this.newCourse.price);
+    formData.append('flavor', this.newCourse.flavor);
+
+    // Convert meat types to numerical IDs
+    const meatTypeIds = this.newCourse.meatTypes.map(type => {
+      switch (type) {
+        case '牛':
+          return 1;
+        case '羊':
+          return 2;
+        case '豬':
+          return 3;
+        case '雞':
+          return 4;
+        case '海鮮':
+          return 5;
+        default:
+          return null;
+      }
+    }).filter(id => id !== null);
+
+    formData.append('meatTypes', meatTypeIds.join(',')); // 将数组转换为逗号分隔的字符串
+    formData.append('image', this.newCourse.image);
+
+    axios.post(getFullApiUrl('/add_main_course'), formData)
+      .then(() => {
+        this.$store.dispatch('fetchMainCourses');
+        alert('Course added successfully');
+        // Reset the newCourse object to clear the input fields
+        this.newCourse = {
+          brand: '',
+          name: '',
+          price: '',
+          flavor: '',
+          meatTypes: [],
+          image: null
+        };
+        // Reset the file input
+        this.$refs.fileInput.value = '';
+      })
+      .catch(error => {
+        console.error('Error adding course:', error);
+        alert('Failed to add course: ' + error.message);
+      });
+  },
+    handleImageUpload(event) {
+      const file = event.target.files[0];
+      this.newCourse.image = file;
     }
   }
 }
 </script>
+
+
 
 
 
