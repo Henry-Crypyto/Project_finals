@@ -79,7 +79,7 @@
                 <b-col v-for="item in coupon.items.filter(item => item.ItemType === 'mainCourse')" :key="item.ItemName" class="d-flex align-items-center item-col">
                   <div>
                     <p>{{ item.ItemName }} x {{ item.Quantity }}</p>
-                    <img v-if="item.ImagePath" :src="require(`@/assets/image/${item.ImagePath}`)" :alt="item.ItemName" class="coupon-item-image" />
+                    <img v-if="item.Image" :src="item.Image" :alt="item.ItemName" class="coupon-item-image" />
                   </div>
                 </b-col>
               </b-row>
@@ -92,7 +92,7 @@
                 <b-col v-for="item in coupon.items.filter(item => item.ItemType === 'beverage')" :key="item.ItemName" class="d-flex align-items-center item-col">
                   <div>
                     <p>{{ item.ItemName }} x {{ item.Quantity }}</p>
-                    <img v-if="item.ImagePath" :src="require(`@/assets/image/${item.ImagePath}`)" :alt="item.ItemName" class="coupon-item-image" />
+                    <img v-if="item.Image" :src="item.Image" :alt="item.ItemName" class="coupon-item-image" />
                   </div>
                 </b-col>
               </b-row>
@@ -105,7 +105,7 @@
                 <b-col v-for="item in coupon.items.filter(item => item.ItemType === 'snack')" :key="item.ItemName" class="d-flex align-items-center item-col">
                   <div>
                     <p>{{ item.ItemName }} x {{ item.Quantity }}</p>
-                    <img v-if="item.ImagePath" :src="require(`@/assets/image/${item.ImagePath}`)" :alt="item.ItemName" class="coupon-item-image" />
+                    <img v-if="item.Image" :src="item.Image" :alt="item.ItemName" class="coupon-item-image" />
                   </div>
                 </b-col>
               </b-row>
@@ -175,42 +175,42 @@ export default {
                 const itemName = course.split(' x ')[0];
                 const quantity = parseInt(course.split(' x ')[1]);
                 const mainCourse = this.mainCourses.find(mc => mc.brand_name === coupon.brand_name && mc.name === itemName);
-                const imagePath = mainCourse ? mainCourse.image_path : null;
-                // console.log('Main Course Image Path:', imagePath);
+                const image = mainCourse ? mainCourse.image : null;
+                // console.log('Main Course Image:', image);
                 return {
                   ItemType: 'mainCourse',
                   ItemName: itemName,
                   Quantity: quantity,
                   ItemBrand: coupon.brand_name,
-                  ImagePath: imagePath
+                  Image: image
                 };
               }),
               coupon.beverages.map(beverage => {
                 const itemName = beverage.split(' x ')[0];
                 const quantity = parseInt(beverage.split(' x ')[1]);
                 const beverageItem = this.beverages.find(b => b.brand_name === coupon.brand_name && b.name === itemName);
-                const imagePath = beverageItem ? beverageItem.image_path : null;
+                const image = beverageItem ? beverageItem.image : null;
                 // console.log('Beverage Image Path:', imagePath);
                 return {
                   ItemType: 'beverage',
                   ItemName: itemName,
                   Quantity: quantity,
                   ItemBrand: coupon.brand_name,
-                  ImagePath: imagePath
+                  Image: image
                 };
               }),
               coupon.snacks.map(snack => {
                 const itemName = snack.split(' x ')[0];
                 const quantity = parseInt(snack.split(' x ')[1]);
                 const snackItem = this.snacks.find(s => s.brand_name === coupon.brand_name && s.name === itemName);
-                const imagePath = snackItem ? snackItem.image_path : null;
+                const image = snackItem ? snackItem.image : null;
                 // console.log('Snack Image Path:', imagePath);
                 return {
                   ItemType: 'snack',
                   ItemName: itemName,
                   Quantity: quantity,
                   ItemBrand: coupon.brand_name,
-                  ImagePath: imagePath
+                  Image: image
                 };
               })
             )
