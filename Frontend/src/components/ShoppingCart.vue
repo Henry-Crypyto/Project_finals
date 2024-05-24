@@ -153,9 +153,6 @@ export default {
         this.$store.commit('setUserDeveloper', 'user');
         this.handleReset();
       }
-    },
-    totalPrice(newTotal) {
-      this.$store.commit('updateOriginalTotalPrice', newTotal);
     }
   },
   created(){

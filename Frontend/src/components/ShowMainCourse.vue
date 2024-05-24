@@ -59,33 +59,51 @@
       <b-row v-if="paginatedMainCourses.length > 0">
         <b-col cols="12" sm="6" md="4" lg="3" v-for="course in paginatedMainCourses" :key="course.id" class="mb-4">
           <b-card hover shadow class="h-100 custom-card">
-            <b-button v-if="userDeveloper === 'addOrDeleteItem'" variant="danger" class="position-absolute top-0 end-0 mt-2 me-2" @click="handleDeleteCourse(course)">
-              X
-            </b-button>
-            <img :src="getMainCourseImage(course.image)" alt="Main Course Image" class="card-img-top"/>
-            <b-card-title class="text-center mb-2">{{ course.name }}</b-card-title>
-            <b-card-text><strong>原價:</strong> {{ course.price }}</b-card-text>
-            <b-card-text><strong>肉類類型:</strong> {{ course.meat_type || '不詳' }}</b-card-text>
-            <b-card-text><strong>品牌:</strong> {{ course.brand_name }}</b-card-text>
-            <b-form-group label="數量" label-for="quantity-input-{{ course.id }}">
-              <b-form-input
-                id="quantity-input-{{ course.id }}"
-                type="number"
-                v-model="course.quantity"
-                min="1"
-                placeholder="數量"
-              ></b-form-input>
-            </b-form-group>
-            <b-row>
-              <b-col class="d-flex justify-content-center mt-2">
-                <b-button variant="primary" @click="handleAddLoveToCart(course)">喜歡</b-button>
-              </b-col>
-            </b-row>
-            <b-row>
-              <b-col class="d-flex justify-content-center mt-2">
-                <b-button variant="danger" @click="handleAddHateToCart(course)" v-if="userDeveloper === 'user'">討厭</b-button>
-              </b-col>
-            </b-row>
+            <div v-if="editingCourse && editingCourse.id === course.id">
+              <b-form-group label="品項名稱">
+                <b-form-input v-model="editingCourse.name" required></b-form-input>
+              </b-form-group>
+              <b-form-group label="單價">
+                <b-form-input type="number" v-model="editingCourse.price" required></b-form-input>
+              </b-form-group>
+              <b-form-group label="上傳圖片">
+                <input type="file" @change="handleEditImageUpload" accept="image/png" ref="editFileInput">
+              </b-form-group>
+              <b-button variant="success" @click="handleSaveEdit">保存編輯</b-button>
+            </div>
+            <div v-else>
+              <b-button v-if="userDeveloper === 'addOrDeleteItem'" variant="danger" class="position-absolute top-0 end-0 mt-2 me-2" @click="handleDeleteCourse(course)">
+                X
+              </b-button>
+              <b-button v-if="userDeveloper === 'updateItem'" variant="warning" class="position-absolute top-0 end-0 mt-5 me-2" @click="handleEditCourse(course)">
+                編輯
+              </b-button>
+              <img :src="getMainCourseImage(course.image)" alt="Main Course Image" class="card-img-top"/>
+              <b-card-title class="text-center mb-2">{{ course.name }}</b-card-title>
+              <b-card-text><strong>原價:</strong> {{ course.price }}</b-card-text>
+              <b-card-text><strong>肉類類型:</strong> {{ course.meat_type || '不詳' }}</b-card-text>
+              <b-card-text><strong>口味:</strong> {{ course.flavor_name || '不詳' }}</b-card-text>
+              <b-card-text><strong>品牌:</strong> {{ course.brand_name }}</b-card-text>
+              <b-form-group label="數量" label-for="quantity-input-{{ course.id }}">
+                <b-form-input
+                  id="quantity-input-{{ course.id }}"
+                  type="number"
+                  v-model="course.quantity"
+                  min="1"
+                  placeholder="數量"
+                ></b-form-input>
+              </b-form-group>
+              <b-row>
+                <b-col class="d-flex justify-content-center mt-2">
+                  <b-button variant="primary" @click="handleAddLoveToCart(course)" v-if="userDeveloper !== 'updateItem'">喜歡</b-button>
+                </b-col>
+              </b-row>
+              <b-row>
+                <b-col class="d-flex justify-content-center mt-2">
+                  <b-button variant="danger" @click="handleAddHateToCart(course)" v-if="userDeveloper === 'user'">討厭</b-button>
+                </b-col>
+              </b-row>
+            </div>
           </b-card>
         </b-col>
       </b-row>
@@ -131,6 +149,7 @@ export default {
         meatTypes: [], // 新增的肉类选择
         image: null
       },
+      editingCourse: null, // 用于编辑的课程对象
       flavorOptions: [
         { value: '辣', text: '辣' },
         { value: '甜', text: '甜' },
@@ -255,61 +274,90 @@ export default {
         });
     },
     handleAddCourse() {
-    const formData = new FormData();
-    formData.append('brand', this.newCourse.brand);
-    formData.append('name', this.newCourse.name);
-    formData.append('price', this.newCourse.price);
-    formData.append('flavor', this.newCourse.flavor);
+      const formData = new FormData();
+      formData.append('brand', this.newCourse.brand);
+      formData.append('name', this.newCourse.name);
+      formData.append('price', this.newCourse.price);
+      formData.append('flavor', this.newCourse.flavor);
 
-    // Convert meat types to numerical IDs
-    const meatTypeIds = this.newCourse.meatTypes.map(type => {
-      switch (type) {
-        case '牛':
-          return 1;
-        case '羊':
-          return 2;
-        case '豬':
-          return 3;
-        case '雞':
-          return 4;
-        case '海鮮':
-          return 5;
-        default:
-          return null;
-      }
-    }).filter(id => id !== null);
+      // Convert meat types to numerical IDs
+      const meatTypeIds = this.newCourse.meatTypes.map(type => {
+        switch (type) {
+          case '牛':
+            return 1;
+          case '羊':
+            return 2;
+          case '豬':
+            return 3;
+          case '雞':
+            return 4;
+          case '海鮮':
+            return 5;
+          default:
+            return null;
+        }
+      }).filter(id => id !== null);
 
-    formData.append('meatTypes', meatTypeIds.join(',')); // 将数组转换为逗号分隔的字符串
-    formData.append('image', this.newCourse.image);
+      formData.append('meatTypes', meatTypeIds.join(',')); // 将数组转换为逗号分隔的字符串
+      formData.append('image', this.newCourse.image);
 
-    axios.post(getFullApiUrl('/add_main_course'), formData)
-      .then(() => {
-        this.$store.dispatch('fetchMainCourses');
-        alert('Course added successfully');
-        // Reset the newCourse object to clear the input fields
-        this.newCourse = {
-          brand: '',
-          name: '',
-          price: '',
-          flavor: '',
-          meatTypes: [],
-          image: null
-        };
-        // Reset the file input
-        this.$refs.fileInput.value = '';
-      })
-      .catch(error => {
-        console.error('Error adding course:', error);
-        alert('Failed to add course: ' + error.message);
-      });
-  },
+      axios.post(getFullApiUrl('/add_main_course'), formData)
+        .then(() => {
+          this.$store.dispatch('fetchMainCourses');
+          alert('Course added successfully');
+          // Reset the newCourse object to clear the input fields
+          this.newCourse = {
+            brand: '',
+            name: '',
+            price: '',
+            flavor: '',
+            meatTypes: [],
+            image: null
+          };
+          // Reset the file input
+          this.$refs.fileInput.value = '';
+        })
+        .catch(error => {
+          console.error('Error adding course:', error);
+          alert('Failed to add course: ' + error.message);
+        });
+    },
     handleImageUpload(event) {
       const file = event.target.files[0];
       this.newCourse.image = file;
+    },
+    handleEditCourse(course) {
+      this.editingCourse = { ...course };
+    },
+    handleSaveEdit() {
+      const formData = new FormData();
+      formData.append('id', this.editingCourse.id);
+      formData.append('name', this.editingCourse.name);
+      formData.append('price', this.editingCourse.price);
+
+      if (this.editingCourse.image) {
+        formData.append('image', this.editingCourse.image);
+      }
+
+      axios.put(getFullApiUrl('/update_main_course'), formData)
+        .then(() => {
+          this.$store.dispatch('fetchMainCourses');
+          alert('Course updated successfully');
+          this.editingCourse = null;
+        })
+        .catch(error => {
+          console.error('Error updating course:', error);
+          alert('Failed to update course: ' + error.message);
+        });
+    },
+    handleEditImageUpload(event) {
+      const file = event.target.files[0];
+      this.editingCourse.image = file;
     }
   }
 }
 </script>
+
 
 
 

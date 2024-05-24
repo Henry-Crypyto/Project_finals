@@ -14,7 +14,6 @@ export default createStore({
       coupon_id: null,
       brand_name: '',
       coupon_name: '',
-      original_price: null,
       discount_price: null,
       start_date: '',
       expire_date: '',
@@ -76,7 +75,7 @@ export default createStore({
         state.newCoupon.brand_name = newBrandSelect; 
         console.log(state.brandSelect); // 同步更新 newCoupon 中的 brand_name
       },
-      decreaseFromCart(state, payload) {
+    decreaseFromCart(state, payload) {
         const { id, productType } = payload;
         const itemIndex = state.cartItems.findIndex(item => item.id === id && item.productType === productType);
         
@@ -92,9 +91,9 @@ export default createStore({
         if (state.cartItems.length === 0) {
           this.commit('setBrandSelect', 'all');  // Reset the brand select to 'all' if cart is empty
         }
-      },
+    },
       
-        increaseFromCart(state, payload) {
+    increaseFromCart(state, payload) {
           const { id, productType } = payload;
           const item = state.cartItems.find(item => item.id === id && item.productType === productType);
           
@@ -105,15 +104,15 @@ export default createStore({
             // This part is optional and depends on your application's requirements
             console.log("Item not found in cart, cannot increase quantity.");
           }
-        },
-        removeFromCart(state, payload) {
+    },
+    removeFromCart(state, payload) {
           const { id, productType } = payload;
           state.cartItems = state.cartItems.filter(item => !(item.id === id && item.productType === productType));
           // After removing the item, check if the cart is empty and update brand select if needed
           if (state.cartItems.length === 0) {
             this.commit('setBrandSelect', 'all');  // 使用commit调用另一个mutation
           }
-        },
+    },
     setNextCouponId(state, id) {
       state.nextCouponId = id;
       state.newCoupon.coupon_id = id;

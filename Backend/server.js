@@ -76,16 +76,38 @@ app.get('/all_coupons_with_items', (req, res) => {
     c.coupon_id, 
     c.brand_name,
     c.coupon_name, 
-    c.original_price, 
+    (
+        IFNULL(mc_total_price, 0) + 
+        IFNULL(cb_total_price, 0) + 
+        IFNULL(cs_total_price, 0)
+    ) AS original_price,
     c.discount_price, 
     c.start_date, 
     c.expire_date, 
     c.use_restriction, 
-   GROUP_CONCAT(DISTINCT CONCAT(h.name, ' x ', mc.quantity) ORDER BY h.name SEPARATOR ', ') AS main_courses,  
+    GROUP_CONCAT(DISTINCT CONCAT(h.name, ' x ', mc.quantity) ORDER BY h.name SEPARATOR ', ') AS main_courses,  
     GROUP_CONCAT(DISTINCT CONCAT(b.name, ' x ', cb.quantity) ORDER BY b.name SEPARATOR ', ') AS beverages, 
-     GROUP_CONCAT(DISTINCT CONCAT(s.name, ' x ', cs.quantity) ORDER BY s.name SEPARATOR ', ') AS snacks
+    GROUP_CONCAT(DISTINCT CONCAT(s.name, ' x ', cs.quantity) ORDER BY s.name SEPARATOR ', ') AS snacks
 FROM 
     coupon c 
+    LEFT JOIN (
+        SELECT mc.coupon_id, SUM(mc.quantity * h.price) AS mc_total_price
+        FROM coupon_main_course mc
+        JOIN main_course h ON mc.id = h.id
+        GROUP BY mc.coupon_id
+    ) mc_price ON mc_price.coupon_id = c.coupon_id
+    LEFT JOIN (
+        SELECT cb.coupon_id, SUM(cb.quantity * b.price) AS cb_total_price
+        FROM coupon_beverage cb
+        JOIN beverage b ON cb.id = b.id
+        GROUP BY cb.coupon_id
+    ) cb_price ON cb_price.coupon_id = c.coupon_id
+    LEFT JOIN (
+        SELECT cs.coupon_id, SUM(cs.quantity * s.price) AS cs_total_price
+        FROM coupon_snack cs
+        JOIN snack s ON cs.id = s.id
+        GROUP BY cs.coupon_id
+    ) cs_price ON cs_price.coupon_id = c.coupon_id
     LEFT JOIN coupon_main_course mc ON mc.coupon_id = c.coupon_id
     LEFT JOIN main_course h ON mc.id = h.id
     LEFT JOIN coupon_beverage cb ON cb.coupon_id = c.coupon_id
@@ -93,8 +115,9 @@ FROM
     LEFT JOIN coupon_snack cs ON cs.coupon_id = c.coupon_id
     LEFT JOIN snack s ON cs.id = s.id
 GROUP BY 
-    c.coupon_id, c.brand_name, c.coupon_name, c.original_price,
-    c.discount_price, c.start_date, c.expire_date, c.use_restriction;
+    c.coupon_id, c.brand_name, c.coupon_name, c.discount_price, 
+    c.start_date, c.expire_date, c.use_restriction, 
+    mc_total_price, cb_total_price, cs_total_price;
 `;
 
     db.query(query, (err, results) => {
@@ -192,6 +215,18 @@ app.get('/all_snack', (req, res) => {
         res.json(results);
     });
 });
+
+app.get('/all_snack_size', (req, res) => {
+    db.query(`SELECT * FROM size`, (err, results) => {
+        if (err) {
+            console.error('Error fetching data: ', err);
+            res.status(500).send('Error fetching data');
+            return;
+        }
+        console.log('Data retrieved from the database: ', results);
+        res.json(results);
+    });
+});
 app.get('/all_main_course_meat_type', (req, res) => {
     db.query(`SELECT 
     mc.id AS course_id,
@@ -219,19 +254,19 @@ GROUP BY
 app.post('/add_coupon', (req, res) => {
     // Destructure and validate required fields from the request body
     const {
-        coupon_id, brand_name, coupon_name, original_price, discount_price, start_date, expire_date, use_restriction
+        coupon_id, brand_name, coupon_name, discount_price, start_date, expire_date, use_restriction
     } = req.body;
 
     // Check if all required fields are present and not null
-    if (!coupon_id || !brand_name || !coupon_name || original_price === null || discount_price === null || !start_date || !expire_date) {
+    if (!coupon_id || !brand_name || !coupon_name|| discount_price === null || !start_date || !expire_date) {
         return res.status(400).send('All fields except use_restriction are required and must be valid.');
     }
 
     // Prepare the SQL query to insert the new coupon
-    const insertCouponQuery = `INSERT INTO ${couponTableName} (coupon_id, brand_name, coupon_name, original_price, discount_price, start_date, expire_date, use_restriction) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+    const insertCouponQuery = `INSERT INTO ${couponTableName} (coupon_id, brand_name, coupon_name, discount_price, start_date, expire_date, use_restriction) VALUES (?, ?, ?, ?, ?, ?, ?)`;
 
     // Execute the query
-    db.query(insertCouponQuery, [coupon_id, brand_name, coupon_name, original_price, discount_price, start_date, expire_date, use_restriction || null], (err, couponResult) => {
+    db.query(insertCouponQuery, [coupon_id, brand_name, coupon_name, discount_price, start_date, expire_date, use_restriction || null], (err, couponResult) => {
         if (err) {
             console.error('Error adding coupon:', err);
             return res.status(500).send('Error adding coupon: ' + err.message);
@@ -471,6 +506,38 @@ app.post('/add_main_course', (req, res) => {
   });
 });
 
+app.put('/update_main_course', (req, res) => {
+    const { id, name, price } = req.body;
+    
+    // 確認ID、名稱和價格都存在
+    if (!id || !name || !price) {
+      return res.status(400).send('ID, name, and price are required');
+    }
+  
+    // 構建更新資料
+    let updateData = [name, price];
+    let sql = 'UPDATE main_course SET name = ?, price = ?';
+  
+    // 確認文件是否已上傳
+    if (req.files && req.files.image) {
+      const image = req.files.image.data; // 獲取上傳的文件數據
+      sql += ', image = ?';
+      updateData.push(image);
+    }
+  
+    sql += ' WHERE id = ?';
+    updateData.push(id);
+  
+    // 更新資料庫中的資料
+    db.query(sql, updateData, (err, results) => {
+      if (err) {
+        console.error('Error updating course:', err);
+        return res.status(500).send('Error updating course');
+      }
+      res.send({ success: true, message: 'Course updated successfully' });
+    });
+  });
+
 app.delete('/delete_beverage/:itemId', (req, res) => {
     const itemId = req.params.itemId;
     db.query(`DELETE FROM ${beverageTableName} WHERE id = ?`, [itemId], (err, results) => {
@@ -482,29 +549,7 @@ app.delete('/delete_beverage/:itemId', (req, res) => {
     });
 });
 
-app.post('/add_beverage', (req, res) => {
-    const { brand, name, price, iced_hot, size } = req.body;
-  
-    // 确认文件已上传
-    if (!req.files || !req.files.image) {
-      return res.status(400).send('No image file uploaded');
-    }
-  
-    const image = req.files.image.data; // 获取上传的文件数据
-  
-    // 将饮料数据插入到 beverages 表中
-    db.query(
-      'INSERT INTO beverage (brand_name, name, price, iced_hot_name, beverage_size, image) VALUES (?, ?, ?, ?, ?, ?)',
-      [brand, name, price, iced_hot, size, image],
-      (err, results) => {
-        if (err) {
-          console.error('Error adding beverage:', err);
-          return res.status(500).send('Error adding beverage');
-        }
-        res.send({ success: true, message: 'Beverage added successfully', beverageId: results.insertId });
-      }
-    );
-  });
+
 
 app.delete('/delete_snack/:itemId', (req, res) => {
     const itemId = req.params.itemId;

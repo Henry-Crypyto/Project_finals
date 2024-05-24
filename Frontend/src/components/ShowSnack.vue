@@ -146,11 +146,7 @@ export default {
         { value: '辣', text: '辣' },
         { value: '鹹', text: '鹹' }
       ],
-      sizeOptions: [
-        { value: '大', text: '大' },
-        { value: '中', text: '中' },
-        { value: '小', text: '小' },
-      ], // Initialize as empty array
+      sizeOptions: [], // Initialize as empty array
       currentPage: 1, // Current page number
       itemsPerPage: 16 // Number of items per page
     };
@@ -285,7 +281,7 @@ export default {
       const url = getFullApiUrl('/all_snack_size');
       axios.get(url)
         .then(response => {
-          this.sizeOptions = response.data.map(size => ({ value: size.snack_size, text: size.snack_size }));
+          this.sizeOptions = response.data.map(size => ({ value: size.size_type, text: size.size_type }));
         })
         .catch(error => {
           console.error('Error fetching snack sizes:', error);
