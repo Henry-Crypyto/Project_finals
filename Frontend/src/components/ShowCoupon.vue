@@ -59,17 +59,17 @@
     <!-- Display Coupons Information for Selected Brand, Price, and Date Range -->
     <b-row>
       <b-col v-if="selectedCoupons.length > 0">
-        <b-card v-for="coupon in paginatedCoupons" :key="coupon.coupon_ID" class="mb-3 coupon-card">
+        <b-card v-for="coupon in paginatedCoupons" :key="coupon.coupon_ID" class="mb-3 coupon-card" @click="coupon.expanded = !coupon.expanded">
           <b-card-body class="d-flex justify-content-between align-items-center">
             <img :src="require('@/assets/image/icon/龍貓.png')" alt="Totoro" class="totoro-image" v-if="!coupon.expanded">
             <div class="card-title-container">
-              <h5 class="card-title" @click="coupon.expanded = !coupon.expanded">
+              <h5 class="card-title">
                 <span class="discount-price">$ {{ coupon.discount_price }}</span> {{ coupon.coupon_name }}
               </h5>
             </div>
             <div class="d-flex flex-column">
-              <b-button variant="danger" size="sm" class="mb-2" @click="deleteCoupon(coupon.coupon_id)" v-if="userDeveloper === 'add'">删除</b-button>
-              <b-button variant="primary" size="sm" @click="editCoupon(coupon)" v-if="userDeveloper === 'update'">编辑</b-button>
+              <b-button variant="danger" size="sm" class="mb-2" @click.stop="deleteCoupon(coupon.coupon_id)" v-if="userDeveloper === 'add'">删除</b-button>
+              <b-button variant="primary" size="sm" @click.stop="editCoupon(coupon)" v-if="userDeveloper === 'update'">编辑</b-button>
             </div>
           </b-card-body>
           <b-collapse :id="'coupon-collapse-' + coupon.coupon_id" v-model="coupon.expanded">
@@ -82,13 +82,13 @@
                   <b-row>
                     <b-col v-for="item in coupon.items.filter(item => item.ItemType === 'mainCourse')" :key="item.ItemName" class="d-flex align-items-center item-col">
                       <div>
-    <p>
-      <span class="item-name">{{ item.ItemName }}</span> 
-      <span class="item-separator">x</span> 
-      <span class="item-quantity">{{ item.Quantity }}</span>
-    </p>
-    <img v-if="item.Image" :src="item.Image" :alt="item.ItemName" class="coupon-item-image" />
-  </div>
+                        <p>
+                          <span class="item-name">{{ item.ItemName }}</span> 
+                          <span class="item-separator">x</span> 
+                          <span class="item-quantity">{{ item.Quantity }}</span>
+                        </p>
+                        <img v-if="item.Image" :src="item.Image" :alt="item.ItemName" class="coupon-item-image" />
+                      </div>
                     </b-col>
                   </b-row>
                 </div>
@@ -99,13 +99,13 @@
                   <b-row>
                     <b-col v-for="item in coupon.items.filter(item => item.ItemType === 'beverage')" :key="item.ItemName" class="d-flex align-items-center item-col">
                       <div>
-    <p>
-      <span class="item-name">{{ item.ItemName }}</span> 
-      <span class="item-separator">x</span> 
-      <span class="item-quantity">{{ item.Quantity }}</span>
-    </p>
-    <img v-if="item.Image" :src="item.Image" :alt="item.ItemName" class="coupon-item-image" />
-  </div>
+                        <p>
+                          <span class="item-name">{{ item.ItemName }}</span> 
+                          <span class="item-separator">x</span> 
+                          <span class="item-quantity">{{ item.Quantity }}</span>
+                        </p>
+                        <img v-if="item.Image" :src="item.Image" :alt="item.ItemName" class="coupon-item-image" />
+                      </div>
                     </b-col>
                   </b-row>
                 </div>
@@ -116,13 +116,13 @@
                   <b-row>
                     <b-col v-for="item in coupon.items.filter(item => item.ItemType === 'snack')" :key="item.ItemName" class="d-flex align-items-center item-col">
                       <div>
-    <p>
-      <span class="item-name">{{ item.ItemName }}</span> 
-      <span class="item-separator">x</span> 
-      <span class="item-quantity">{{ item.Quantity }}</span>
-    </p>
-    <img v-if="item.Image" :src="item.Image" :alt="item.ItemName" class="coupon-item-image" />
-  </div>
+                        <p>
+                          <span class="item-name">{{ item.ItemName }}</span> 
+                          <span class="item-separator">x</span> 
+                          <span class="item-quantity">{{ item.Quantity }}</span>
+                        </p>
+                        <img v-if="item.Image" :src="item.Image" :alt="item.ItemName" class="coupon-item-image" />
+                      </div>
                     </b-col>
                   </b-row>
                 </div>
@@ -152,6 +152,7 @@
     </b-row>
   </b-container>
 </template>
+
 
 <script>
 import axios from 'axios';
@@ -397,6 +398,7 @@ export default {
 }
 
 .coupon-card {
+  cursor: pointer;
   border: 2px dashed #dc3545; /* 红色虚线边框 */
   border-radius: 10px; /* 圆角 */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 卡片阴影 */

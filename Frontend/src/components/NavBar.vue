@@ -4,14 +4,26 @@
       <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
       <b-collapse id="nav-collapse" is-nav>
         <b-navbar-nav class="mx-auto d-flex align-items-center">
-          <b-nav-item href="#" class="nav-link" @click="emitChange('coupon')">折價券</b-nav-item>
-          <div class="divider"></div>
-          <b-nav-item href="#" class="nav-link" @click="emitChange('mainCourse')">主食</b-nav-item>
-          <div class="divider"></div>
-          <b-nav-item href="#" class="nav-link" @click="emitChange('beverage')">飲料</b-nav-item>
-          <div class="divider"></div>
-          <b-nav-item href="#" class="nav-link" @click="emitChange('snack')">點心</b-nav-item>
-          <div class="divider"></div>
+          <b-nav-item href="#" class="nav-link" @click="emitChange('coupon')">🎟️ 折價券</b-nav-item>
+          <div class="divider">
+            <span class="divider-line"></span>
+            <span class="divider-decoration"></span>
+          </div>
+          <b-nav-item href="#" class="nav-link" @click="emitChange('mainCourse')">🍔 主食</b-nav-item>
+          <div class="divider">
+            <span class="divider-line"></span>
+            <span class="divider-decoration"></span>
+          </div>
+          <b-nav-item href="#" class="nav-link" @click="emitChange('beverage')">🥤 飲料</b-nav-item>
+          <div class="divider">
+            <span class="divider-line"></span>
+            <span class="divider-decoration"></span>
+          </div>
+          <b-nav-item href="#" class="nav-link" @click="emitChange('snack')">🍪 點心</b-nav-item>
+          <div class="divider">
+            <span class="divider-line"></span>
+            <span class="divider-decoration"></span>
+          </div>
           <b-nav-item href="#" class="nav-link" @click="emitChange('shoppingCart')">{{ shoppingCartLabel }}</b-nav-item>
         </b-navbar-nav>
       </b-collapse>
@@ -31,7 +43,7 @@ export default {
   computed: {
     ...mapState(['cartItems']),
     shoppingCartLabel() {
-      return this.cartItems.length > 0 ? `購物車-${this.cartItems.length}項` : '購物車';
+      return this.cartItems.length > 0 ? `🛒 購物車-${this.cartItems.length}項` : '🛒 購物車';
     }
   }
 }
@@ -39,15 +51,12 @@ export default {
 
 <style scoped>
 .custom-navbar {
-  background-color: #e6e6fa; /* 淡紫色背景 */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
-  padding: 0.5rem;
+  background-image: linear-gradient(to top, #fff1eb 0%, #ace0f9 100%);  padding: 0.5rem;
 }
 
 .nav-link {
-  font-size: 1.5rem;
-  font-weight: 500;
+  font-size: 1.8rem;
+  font-weight: bold;
   color: #ffffff;
   transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease;
   padding: 0.75rem 1.5rem;
@@ -65,11 +74,23 @@ export default {
 }
 
 .divider {
+  display: flex;
+  align-items: center;
+  margin: 0 1rem;
+}
+
+.divider-line {
   width: 1px;
   height: 2rem;
   background-color: #0a0909;
-  margin: 0 1rem;
-  display: inline-block;
+}
+
+.divider-decoration {
+  width: 10px;
+  height: 10px;
+  background-color: #0a0909;
+  border-radius: 50%;
+  margin: 0 0.5rem;
 }
 
 .logo {
