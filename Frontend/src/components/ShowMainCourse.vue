@@ -3,7 +3,7 @@
     <b-container class="main-course-container">
       <b-row>
         <b-col>
-          <h1 class="text-center">主菜選單</h1>
+          <h1 class="text-center" style="text-align: center; ">主菜選單</h1>
           <div v-if="userDeveloper === 'addOrDeleteItem'" class="mb-4">
             <b-form @submit.prevent="handleAddCourse">
               <b-form-group label="品牌">
@@ -157,12 +157,12 @@ export default {
         { value: '酸', text: '酸' }
       ],
       meatOptions: [
-        { text: '不吃牛', value: '牛' },
-        { text: '不吃豬', value: '豬' },
-        { text: '不吃雞', value: '雞' },
-        { text: '不吃海鮮', value: '海鮮' },
-        { text: '不吃羊', value: '羊' }
-      ],
+      { text: '不吃🐄', value: '牛'},
+      { text: '不吃🐖', value: '豬'},
+      { text: '不吃🐔', value: '雞'},
+      { text: '不吃🐟', value: '海鮮'},
+      { text: '不吃🐑', value: '羊'}
+    ],
       meatSubmitOptions: [
         { text: '牛', value: '牛' },
         { text: '豬', value: '豬' },
@@ -171,7 +171,7 @@ export default {
         { text: '羊', value: '羊' }
       ],
       currentPage: 1, // 当前页数
-      itemsPerPage: 16 // 每页显示的项目数
+      itemsPerPage: 8 // 每页显示的项目数
     };
   },
   computed: {
@@ -368,6 +368,8 @@ export default {
 <style scoped>
 .page-container {
   border: 3px solid black;
+  background-image: linear-gradient(45deg, #93a5cf 0%, #e4efe9 100%); background-blend-mode: multiply,multiply; background-blend-mode: multiply,multiply;  
+
   padding: 20px;
   margin-top: 20px;
   margin-bottom: 20px;
@@ -375,13 +377,11 @@ export default {
 }
 
 .main-course-container {
-  background-color: #f8f9fa;
-  padding-top: 20px;
   padding-bottom: 20px;
 }
 
 .custom-card {
-  background-color: #ffffff;
+  background: linear-gradient(to bottom, #7FFFD4 7.5%, #AFCBD6 72.5%);
   padding: 20px;
   border-radius: 15px;
 }
@@ -391,7 +391,7 @@ export default {
   font-size: 30px; /* Larger font size for titles */
 }
 
-b-card-text {
+.b-card-text {
   padding-left: 20px; /* Better alignment for text */
   line-height: 1.5; /* Improved line spacing for readability */
 }
@@ -460,45 +460,14 @@ b-card-text {
 
 .custom-checkbox .custom-control-label {
   margin-left: 8px;
-  color: #333;
+  color: #ffe0e0; 
   font-size: 16px;
 }
 
-.custom-checkbox .custom-control-input {
-  display: none;
-}
 
-.custom-checkbox .custom-control-label::before {
-  content: '';
-  display: inline-block;
-  width: 20px;
-  height: 20px;
-  margin-right: 8px;
-  border: 2px solid #ccc;
-  border-radius: 3px;
-  transition: all 0.3s ease;
-  background-color: #fff;
-}
 
-.custom-checkbox .custom-control-input:checked ~ .custom-control-label::after {
-  content: '';
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-  margin-left: -20px;
-  margin-top: 5px;
-  border-left: 2px solid #fff;
-  border-bottom: 2px solid #fff;
-  transform: rotate(-45deg);
-  transition: all 0.3s ease;
-}
 
-.custom-checkbox .custom-control-label::after {
-  content: '';
-  display: inline-block;
-  width: 0;
-  height: 0;
-  transition: all 0.3s ease;
-}
+
+
 
 </style>

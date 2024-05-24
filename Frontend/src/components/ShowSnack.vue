@@ -344,16 +344,17 @@ export default {
   margin-top: 20px;
   margin-bottom: 20px;
   border-radius: 67px;
-  background-color: #f8f9fa;
+  background-image: linear-gradient(45deg, #93a5cf 0%, #e4efe9 100%); background-blend-mode: multiply,multiply; background-blend-mode: multiply,multiply;  
 }
 
 .snack-container {
+  background-image: linear-gradient(45deg, #93a5cf 0%, #e4efe9 100%); background-blend-mode: multiply,multiply; background-blend-mode: multiply,multiply;  
   padding-top: 20px;
   padding-bottom: 20px;
 }
 
 .custom-card {
-  background-color: #ffffff;
+  background: linear-gradient(to bottom, #7FFFD4 7.5%, #AFCBD6 72.5%);
   padding: 20px;
   border-radius: 15px;
 }
@@ -363,7 +364,7 @@ export default {
   font-size: 30px;
 }
 
-b-card-text {
+.b-card-text {
   padding-left: 20px;
   line-height: 1.5;
 }
