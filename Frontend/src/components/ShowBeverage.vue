@@ -162,7 +162,7 @@ export default {
       ],
       sizeOptions: [], // Initialize as empty array
       currentPage: 1, // Current page number
-      itemsPerPage: 16 // Number of items per page
+      itemsPerPage: 12 // Number of items per page
     };
   },
   computed: {

@@ -171,7 +171,7 @@ export default {
         { text: '羊', value: '羊' }
       ],
       currentPage: 1, // 当前页数
-      itemsPerPage: 8 // 每页显示的项目数
+      itemsPerPage: 12 // 每页显示的项目数
     };
   },
   computed: {
