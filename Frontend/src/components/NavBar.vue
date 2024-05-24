@@ -1,5 +1,5 @@
 <template>
-  <b-navbar toggleable="lg" type="light" variant="light" class="custom-navbar">
+  <b-navbar toggleable="lg" type="light" class="custom-navbar">
     <b-container class="justify-center">
       <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
       <b-collapse id="nav-collapse" is-nav>
@@ -29,7 +29,7 @@ export default {
     }
   },
   computed: {
-    ...mapState(['cartItems', 'userDeveloper']),
+    ...mapState(['cartItems']),
     shoppingCartLabel() {
       return this.cartItems.length > 0 ? `購物車-${this.cartItems.length}項` : '購物車';
     }
@@ -39,7 +39,7 @@ export default {
 
 <style scoped>
 .custom-navbar {
-  background-color: #2d3748; /* 深色背景 */
+  background-color: #e6e6fa; /* 淡紫色背景 */
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   border-radius: 8px;
   padding: 0.5rem;
@@ -49,7 +49,7 @@ export default {
   font-size: 1.5rem;
   font-weight: 500;
   color: #ffffff;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease;
   padding: 0.75rem 1.5rem;
   margin: 0 0.5rem;
   border-radius: 8px;
@@ -61,12 +61,13 @@ export default {
 
 .nav-link:hover, .nav-link:focus {
   color: #f6e05e;
+  transform: scale(1.25); /* 放大效果 */
 }
 
 .divider {
   width: 1px;
   height: 2rem;
-  background-color: #e0e0e0;
+  background-color: #0a0909;
   margin: 0 1rem;
   display: inline-block;
 }

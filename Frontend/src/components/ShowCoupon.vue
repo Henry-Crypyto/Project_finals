@@ -82,9 +82,13 @@
                   <b-row>
                     <b-col v-for="item in coupon.items.filter(item => item.ItemType === 'mainCourse')" :key="item.ItemName" class="d-flex align-items-center item-col">
                       <div>
-                        <p>{{ item.ItemName }} x {{ item.Quantity }}</p>
-                        <img v-if="item.Image" :src="item.Image" :alt="item.ItemName" class="coupon-item-image" />
-                      </div>
+    <p>
+      <span class="item-name">{{ item.ItemName }}</span> 
+      <span class="item-separator">x</span> 
+      <span class="item-quantity">{{ item.Quantity }}</span>
+    </p>
+    <img v-if="item.Image" :src="item.Image" :alt="item.ItemName" class="coupon-item-image" />
+  </div>
                     </b-col>
                   </b-row>
                 </div>
@@ -95,9 +99,13 @@
                   <b-row>
                     <b-col v-for="item in coupon.items.filter(item => item.ItemType === 'beverage')" :key="item.ItemName" class="d-flex align-items-center item-col">
                       <div>
-                        <p>{{ item.ItemName }} x {{ item.Quantity }}</p>
-                        <img v-if="item.Image" :src="item.Image" :alt="item.ItemName" class="coupon-item-image" />
-                      </div>
+    <p>
+      <span class="item-name">{{ item.ItemName }}</span> 
+      <span class="item-separator">x</span> 
+      <span class="item-quantity">{{ item.Quantity }}</span>
+    </p>
+    <img v-if="item.Image" :src="item.Image" :alt="item.ItemName" class="coupon-item-image" />
+  </div>
                     </b-col>
                   </b-row>
                 </div>
@@ -108,9 +116,13 @@
                   <b-row>
                     <b-col v-for="item in coupon.items.filter(item => item.ItemType === 'snack')" :key="item.ItemName" class="d-flex align-items-center item-col">
                       <div>
-                        <p>{{ item.ItemName }} x {{ item.Quantity }}</p>
-                        <img v-if="item.Image" :src="item.Image" :alt="item.ItemName" class="coupon-item-image" />
-                      </div>
+    <p>
+      <span class="item-name">{{ item.ItemName }}</span> 
+      <span class="item-separator">x</span> 
+      <span class="item-quantity">{{ item.Quantity }}</span>
+    </p>
+    <img v-if="item.Image" :src="item.Image" :alt="item.ItemName" class="coupon-item-image" />
+  </div>
                     </b-col>
                   </b-row>
                 </div>
@@ -388,7 +400,7 @@ export default {
   border: 2px dashed #dc3545; /* 红色虚线边框 */
   border-radius: 10px; /* 圆角 */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 卡片阴影 */
-  background: linear-gradient(to bottom, #FFFFE0 12.5%, #6c6f8e 20.5%); /* 上1/8部分使用指定的顏色，下7/8部分为白色 */
+  background: linear-gradient(to bottom, #FFFFE0 12.5%, #6c6f8e 12.5%); /* 上1/8部分使用指定的顏色，下7/8部分为白色 */
   transition: transform 0.3s ease-in-out; /* 鼠标悬浮效果 */
   overflow: hidden; /* 防止内容溢出 */
   position: relative; /* 相对定位，用于标记 */
@@ -432,7 +444,7 @@ export default {
 }
 
 .card-text {
-  color: #333; /* 正文颜色 */
+  color: #e6e6fa; /* 正文颜色 */
   padding-left: 20px; /* 左侧内边距 */
 }
 
@@ -485,4 +497,16 @@ export default {
 .item-col {
   margin-bottom: 1rem; /* 项目之间的间距 */
 }
+.item-name {
+  color: #e6e6fa; /* 淡紫色 */
+}
+
+.item-separator {
+  color: #d8bfd8; /* 淡色系顏色，這裡用的是薰衣草紫色 */
+}
+
+.item-quantity {
+  color: #add8e6; /* 水藍色 */
+}
+
 </style>
