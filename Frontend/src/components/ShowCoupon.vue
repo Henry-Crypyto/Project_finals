@@ -59,7 +59,9 @@
     <!-- Display Coupons Information for Selected Brand, Price, and Date Range -->
     <b-row>
       <b-col v-if="selectedCoupons.length > 0">
-      <b-card v-for="coupon in paginatedCoupons" :key="coupon.coupon_ID" class="mb-3 custom-card">          <b-card-body class="d-flex justify-content-between align-items-center">
+        <b-card v-for="coupon in paginatedCoupons" :key="coupon.coupon_ID" class="mb-3 coupon-card">
+          <b-card-body class="d-flex justify-content-between align-items-center">
+            <img :src="require('@/assets/image/icon/龍貓.png')" alt="Totoro" class="totoro-image" v-if="!coupon.expanded">
             <div class="card-title-container">
               <h5 class="card-title" @click="coupon.expanded = !coupon.expanded">
                 <span class="discount-price">$ {{ coupon.discount_price }}</span> {{ coupon.coupon_name }}
@@ -70,54 +72,58 @@
               <b-button variant="primary" size="sm" @click="editCoupon(coupon)" v-if="userDeveloper === 'update'">编辑</b-button>
             </div>
           </b-card-body>
-          <b-card-body v-if="coupon.items && coupon.items.length">
-            <div v-if="coupon.items.some(item => item.ItemType === 'mainCourse')" class="item-section">
-              <div class="item-type-title-container">
-                <h6 class="item-type-title">主食</h6>
-              </div>
-              <b-row>
-                <b-col v-for="item in coupon.items.filter(item => item.ItemType === 'mainCourse')" :key="item.ItemName" class="d-flex align-items-center item-col">
-                  <div>
-                    <p>{{ item.ItemName }} x {{ item.Quantity }}</p>
-                    <img v-if="item.Image" :src="item.Image" :alt="item.ItemName" class="coupon-item-image" />
+          <b-collapse :id="'coupon-collapse-' + coupon.coupon_id" v-model="coupon.expanded">
+            <b-card-body>
+              <div v-if="coupon.items && coupon.items.length">
+                <div v-if="coupon.items.some(item => item.ItemType === 'mainCourse')" class="item-section">
+                  <div class="item-type-title-container">
+                    <h6 class="item-type-title">主食</h6>
                   </div>
-                </b-col>
-              </b-row>
-            </div>
-            <div v-if="coupon.items.some(item => item.ItemType === 'beverage')" class="item-section">
-              <div class="item-type-title-container">
-                <h6 class="item-type-title">飲料</h6>
-              </div>
-              <b-row>
-                <b-col v-for="item in coupon.items.filter(item => item.ItemType === 'beverage')" :key="item.ItemName" class="d-flex align-items-center item-col">
-                  <div>
-                    <p>{{ item.ItemName }} x {{ item.Quantity }}</p>
-                    <img v-if="item.Image" :src="item.Image" :alt="item.ItemName" class="coupon-item-image" />
+                  <b-row>
+                    <b-col v-for="item in coupon.items.filter(item => item.ItemType === 'mainCourse')" :key="item.ItemName" class="d-flex align-items-center item-col">
+                      <div>
+                        <p>{{ item.ItemName }} x {{ item.Quantity }}</p>
+                        <img v-if="item.Image" :src="item.Image" :alt="item.ItemName" class="coupon-item-image" />
+                      </div>
+                    </b-col>
+                  </b-row>
+                </div>
+                <div v-if="coupon.items.some(item => item.ItemType === 'beverage')" class="item-section">
+                  <div class="item-type-title-container">
+                    <h6 class="item-type-title">飲料</h6>
                   </div>
-                </b-col>
-              </b-row>
-            </div>
-            <div v-if="coupon.items.some(item => item.ItemType === 'snack')" class="item-section">
-              <div class="item-type-title-container">
-                <h6 class="item-type-title">點心</h6>
-              </div>
-              <b-row>
-                <b-col v-for="item in coupon.items.filter(item => item.ItemType === 'snack')" :key="item.ItemName" class="d-flex align-items-center item-col">
-                  <div>
-                    <p>{{ item.ItemName }} x {{ item.Quantity }}</p>
-                    <img v-if="item.Image" :src="item.Image" :alt="item.ItemName" class="coupon-item-image" />
+                  <b-row>
+                    <b-col v-for="item in coupon.items.filter(item => item.ItemType === 'beverage')" :key="item.ItemName" class="d-flex align-items-center item-col">
+                      <div>
+                        <p>{{ item.ItemName }} x {{ item.Quantity }}</p>
+                        <img v-if="item.Image" :src="item.Image" :alt="item.ItemName" class="coupon-item-image" />
+                      </div>
+                    </b-col>
+                  </b-row>
+                </div>
+                <div v-if="coupon.items.some(item => item.ItemType === 'snack')" class="item-section">
+                  <div class="item-type-title-container">
+                    <h6 class="item-type-title">點心</h6>
                   </div>
-                </b-col>
-              </b-row>
-            </div>
-          </b-card-body>
-          <b-card-text class="pl-8" v-if="coupon.expanded">
-            {{ coupon.coupon_content }}<br>
-            開始日期: {{ new Date(coupon.start_date).toLocaleDateString() }}<br>
-            原價: {{ coupon.original_price }}, 折扣價: {{ coupon.discount_price }}<br>
-            到期日期: {{ new Date(coupon.expire_date).toLocaleDateString() }}<br>
-            使用限制: {{ coupon.use_restriction || '無特别限制' }}
-          </b-card-text>
+                  <b-row>
+                    <b-col v-for="item in coupon.items.filter(item => item.ItemType === 'snack')" :key="item.ItemName" class="d-flex align-items-center item-col">
+                      <div>
+                        <p>{{ item.ItemName }} x {{ item.Quantity }}</p>
+                        <img v-if="item.Image" :src="item.Image" :alt="item.ItemName" class="coupon-item-image" />
+                      </div>
+                    </b-col>
+                  </b-row>
+                </div>
+              </div>
+              <b-card-text class="pl-8">
+                {{ coupon.coupon_content }}<br>
+                開始日期: {{ new Date(coupon.start_date).toLocaleDateString() }}<br>
+                原價: {{ coupon.original_price }}, 折扣價: {{ coupon.discount_price }}<br>
+                到期日期: {{ new Date(coupon.expire_date).toLocaleDateString() }}<br>
+                使用限制: {{ coupon.use_restriction || '無特别限制' }}
+              </b-card-text>
+            </b-card-body>
+          </b-collapse>
         </b-card>
       </b-col>
     </b-row>
@@ -134,7 +140,6 @@
     </b-row>
   </b-container>
 </template>
-
 
 <script>
 import axios from 'axios';
@@ -379,15 +384,35 @@ export default {
   border-color: #0056b3; /* 悬停时边框颜色变化 */
 }
 
-.custom-card {
-  border: 3px solid black; /* 黑色粗线 */
-  border-radius: 30px; /* 圆角 */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 添加卡片阴影 */
-  transition: transform 0.3s ease-in-out; /* 鼠标悬浮时的变换效果 */
+.coupon-card {
+  border: 2px dashed #dc3545; /* 红色虚线边框 */
+  border-radius: 10px; /* 圆角 */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 卡片阴影 */
+  background: linear-gradient(to bottom, #FFFFE0 12.5%, #6c6f8e 20.5%); /* 上1/8部分使用指定的顏色，下7/8部分为白色 */
+  transition: transform 0.3s ease-in-out; /* 鼠标悬浮效果 */
+  overflow: hidden; /* 防止内容溢出 */
+  position: relative; /* 相对定位，用于标记 */
 }
 
-.custom-card:hover {
-  transform: translateY(-5px); /* 轻微上移，增加交互感 */
+
+
+.coupon-card::before {
+  content: "折價券"; /* 标签内容 */
+  position: absolute;
+  top: 0px;
+  left: -10px;
+  background: #dc3545;
+  color: #fff;
+  padding: 5px 10px;
+  transform: rotate(-45deg);
+  font-weight: bold;
+}
+
+
+
+.coupon-card:hover {
+  transform: translateY(-5px); /* 鼠标悬浮时上移 */
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* 加强阴影效果 */
 }
 
 .card-body {
@@ -395,25 +420,26 @@ export default {
 }
 
 .card-title-container {
-  text-align: center; /* Center the title within its container */
-  flex-grow: 1; /* Ensure the container takes up available space */
+  text-align: center; /* 标题居中 */
+  flex-grow: 1; /* 使容器占用可用空间 */
 }
 
 .card-title {
-  display: inline-block; /* Center the element within the container */
-  cursor: pointer; /* Add a pointer cursor for interactivity */
-  font-size: 1.25rem; /* Card title font size */
-  color: #0056b3; /* Title color */
+  display: inline-block; /* 居中标题 */
+  cursor: pointer; /* 指针样式 */
+  font-size: 1.25rem; /* 标题字体大小 */
+  color: #E6E6FA; /* 标题颜色 */
 }
 
 .card-text {
-  color: #333; /* 正文颜色，提高可读性 */
+  color: #333; /* 正文颜色 */
+  padding-left: 20px; /* 左侧内边距 */
 }
 
 .discount-price {
   background-color: #dc3545; /* 红色背景 */
   color: #fff; /* 白色文字 */
-  padding: 2px 6px; /* 填充 */
+  padding: 2px 6px; /* 内边距 */
   border-radius: 4px; /* 圆角 */
   font-weight: bold; /* 加粗字体 */
   margin-left: 10px; /* 左边距 */
@@ -429,35 +455,34 @@ export default {
 
 .coupon-item-image {
   display: block;
-  max-width: 100px; /* Set a max width for the image */
-  max-height: 100px; /* Set a max height for the image */
+  max-width: 100px; /* 设置图像的最大宽度 */
+  max-height: 100px; /* 设置图像的最大高度 */
   margin-top: 10px;
 }
 
 .item-section {
-  margin-bottom: 2rem; /* Add spacing between sections */
+  margin-bottom: 2rem; /* 添加节之间的间距 */
 }
 
 .item-type-title-container {
-  text-align: center; /* Center the title within its container */
+  text-align: center; /* 标题居中 */
 }
 
 .item-type-title {
-  display: inline-block; /* Makes the border match the width of the text */
-  font-size: 2.25rem;
+  display: inline-block; /* 使边框匹配文本的宽度 */
+  font-size: 1.25rem; /* 标题字体大小 */
   font-weight: bold;
-  color: #0056b3;
-  margin: 0 auto 1rem auto; /* Center the element and add bottom margin */
+  color: #dc3545; /* 标题颜色 */
+  margin: 0 auto 1rem auto; /* 居中元素并添加底部间距 */
   text-align: center;
-  border: 2px solid #0056b3; /* Add border around the text */
-  padding: 10px 20px; /* Increase padding for better spacing */
-  border-radius: 12px; /* Add more rounded corners */
-  background: linear-gradient(to right, #e0f7ff, #f1f9ff); /* Add a subtle gradient background */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Add a subtle shadow for depth */
+  border: 2px solid #dc3545; /* 添加边框 */
+  padding: 5px 10px; /* 内边距 */
+  border-radius: 10px; /* 圆角 */
+  background: linear-gradient(to right, #ffe5e5, #ffcccc); /* 渐变背景 */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 添加阴影 */
 }
 
 .item-col {
-  margin-bottom: 1rem; /* Add spacing between items */
+  margin-bottom: 1rem; /* 项目之间的间距 */
 }
-
 </style>
