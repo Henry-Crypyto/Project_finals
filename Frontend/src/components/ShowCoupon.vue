@@ -400,25 +400,14 @@ export default {
   border: 2px dashed #dc3545; /* 红色虚线边框 */
   border-radius: 10px; /* 圆角 */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 卡片阴影 */
-  background: linear-gradient(to bottom, #FFFFE0 12.5%, #6c6f8e 12.5%); /* 上1/8部分使用指定的顏色，下7/8部分为白色 */
-  transition: transform 0.3s ease-in-out; /* 鼠标悬浮效果 */
+  background-image: linear-gradient(to top, #30cfd0 0%, #330867 100%);  transition: transform 0.3s ease-in-out; /* 鼠标悬浮效果 */
   overflow: hidden; /* 防止内容溢出 */
   position: relative; /* 相对定位，用于标记 */
 }
 
 
 
-.coupon-card::before {
-  content: "折價券"; /* 标签内容 */
-  position: absolute;
-  top: 0px;
-  left: -10px;
-  background: #dc3545;
-  color: #fff;
-  padding: 5px 10px;
-  transform: rotate(-45deg);
-  font-weight: bold;
-}
+
 
 
 
