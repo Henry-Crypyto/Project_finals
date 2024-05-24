@@ -538,6 +538,7 @@ app.put('/update_main_course', (req, res) => {
     });
   });
 
+
 app.delete('/delete_beverage/:itemId', (req, res) => {
     const itemId = req.params.itemId;
     db.query(`DELETE FROM ${beverageTableName} WHERE id = ?`, [itemId], (err, results) => {
@@ -549,7 +550,62 @@ app.delete('/delete_beverage/:itemId', (req, res) => {
     });
 });
 
-
+app.post('/add_beverage', (req, res) => {
+    const { brand, name, price, iced_hot, size } = req.body;
+  
+    // 確認文件已上傳
+    if (!req.files || !req.files.image) {
+      return res.status(400).send('No image file uploaded');
+    }
+  
+    const image = req.files.image.data; // 獲取上傳的文件數據
+  
+    // 將飲料數據插入到 beverage 表中
+    db.query(
+      'INSERT INTO beverage (name, price, beverage_size, iced_hot_name, brand_name, image) VALUES (?, ?, ?, ?, ?, ?)',
+      [name, price, size, iced_hot, brand, image],
+      (err, results) => {
+        if (err) {
+          console.error('Error adding beverage:', err);
+          return res.status(500).send('Error adding beverage');
+        }
+  
+        res.send({ success: true, message: 'Beverage added successfully' });
+      }
+    );
+  });
+  
+app.put('/update_beverage', (req, res) => {
+    const { id, name, price } = req.body;
+    
+    // 確認ID、名稱和價格都存在
+    if (!id || !name || !price) {
+      return res.status(400).send('ID, name, and price are required');
+    }
+  
+    // 構建更新資料
+    let updateData = [name, price];
+    let sql = 'UPDATE beverage SET name = ?, price = ?';
+  
+    // 確認文件是否已上傳
+    if (req.files && req.files.image) {
+      const image = req.files.image.data; // 獲取上傳的文件數據
+      sql += ', image = ?';
+      updateData.push(image);
+    }
+  
+    sql += ' WHERE id = ?';
+    updateData.push(id);
+  
+    // 更新資料庫中的資料
+    db.query(sql, updateData, (err, results) => {
+      if (err) {
+        console.error('Error updating course:', err);
+        return res.status(500).send('Error updating course');
+      }
+      res.send({ success: true, message: 'Course updated successfully' });
+    });
+  });
 
 app.delete('/delete_snack/:itemId', (req, res) => {
     const itemId = req.params.itemId;
@@ -585,7 +641,38 @@ app.post('/add_snack', (req, res) => {
       }
     );
   });
+
+app.put('/update_snack', (req, res) => {
+    const { id, name, price } = req.body;
+    
+    // 確認ID、名稱和價格都存在
+    if (!id || !name || !price) {
+      return res.status(400).send('ID, name, and price are required');
+    }
   
+    // 構建更新資料
+    let updateData = [name, price];
+    let sql = 'UPDATE snack SET name = ?, price = ?';
+  
+    // 確認文件是否已上傳
+    if (req.files && req.files.image) {
+      const image = req.files.image.data; // 獲取上傳的文件數據
+      sql += ', image = ?';
+      updateData.push(image);
+    }
+  
+    sql += ' WHERE id = ?';
+    updateData.push(id);
+  
+    // 更新資料庫中的資料
+    db.query(sql, updateData, (err, results) => {
+      if (err) {
+        console.error('Error updating course:', err);
+        return res.status(500).send('Error updating course');
+      }
+      res.send({ success: true, message: 'Course updated successfully' });
+    });
+  });  
 
 app.put('/update_all_coupon_original_price', (req, res) => {
     const updateQuery = `

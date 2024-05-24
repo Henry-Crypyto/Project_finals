@@ -63,34 +63,51 @@
       <b-row v-if="paginatedBeverages.length > 0">
         <b-col cols="12" sm="6" md="4" lg="3" v-for="beverage in paginatedBeverages" :key="beverage.id" class="mb-4">
           <b-card hover shadow class="h-100 custom-card">
-            <b-button v-if="userDeveloper === 'addOrDeleteItem'" variant="danger" class="position-absolute top-0 end-0 mt-2 me-2" @click="handleDeleteBeverage(beverage)">
-              X
-            </b-button>
-            <img :src="getBeverageImage(beverage.image)" alt="Beverage Image" class="card-img-top"/>
-            <b-card-title class="text-center mb-2">{{ beverage.name.trim() }}</b-card-title>
-            <b-card-text><strong>原價:</strong> {{ beverage.price }}</b-card-text>
-            <b-card-text><strong>容量:</strong> {{ beverage.beverage_size }}</b-card-text>
-            <b-card-text><strong>類型:</strong> {{ beverage.iced_hot_name }}</b-card-text>
-            <b-card-text><strong>品牌:</strong> {{ beverage.brand_name }}</b-card-text>
-            <b-form-group label="數量" label-for="quantity-input-{{ beverage.id }}">
-              <b-form-input
-                id="quantity-input-{{ beverage.id }}"
-                type="number"
-                v-model="beverage.quantity"
-                min="1"
-                placeholder="數量"
-              ></b-form-input>
-            </b-form-group>
-            <b-row>
-              <b-col class="d-flex justify-content-center mt-2">
-                <b-button variant="primary" @click="handleAddLoveToCart(beverage)">喜歡</b-button>
-              </b-col>
-            </b-row>
-            <b-row>
-              <b-col class="d-flex justify-content-center mt-2">
-                <b-button variant="danger" @click="handleAddHateToCart(beverage)" v-if="userDeveloper === 'user'">討厭</b-button>
-              </b-col>
-            </b-row>
+            <div v-if="editingBeverage && editingBeverage.id === beverage.id">
+              <b-form-group label="品項名稱">
+                <b-form-input v-model="editingBeverage.name" required></b-form-input>
+              </b-form-group>
+              <b-form-group label="單價">
+                <b-form-input type="number" v-model="editingBeverage.price" required></b-form-input>
+              </b-form-group>
+              <b-form-group label="上傳圖片">
+                <input type="file" @change="handleEditImageUpload" accept="image/png" ref="editFileInput">
+              </b-form-group>
+              <b-button variant="success" @click="handleSaveEdit">保存編輯</b-button>
+            </div>
+            <div v-else>
+              <b-button v-if="userDeveloper === 'addOrDeleteItem'" variant="danger" class="position-absolute top-0 end-0 mt-2 me-2" @click="handleDeleteBeverage(beverage)">
+                X
+              </b-button>
+              <b-button v-if="userDeveloper === 'updateItem'" variant="warning" class="position-absolute top-0 end-0 mt-5 me-2" @click="handleEditBeverage(beverage)">
+                編輯
+              </b-button>
+              <img :src="getBeverageImage(beverage.image)" alt="Beverage Image" class="card-img-top"/>
+              <b-card-title class="text-center mb-2">{{ beverage.name.trim() }}</b-card-title>
+              <b-card-text><strong>原價:</strong> {{ beverage.price }}</b-card-text>
+              <b-card-text><strong>容量:</strong> {{ beverage.beverage_size }}</b-card-text>
+              <b-card-text><strong>類型:</strong> {{ beverage.iced_hot_name }}</b-card-text>
+              <b-card-text><strong>品牌:</strong> {{ beverage.brand_name }}</b-card-text>
+              <b-form-group label="數量" label-for="quantity-input-{{ beverage.id }}">
+                <b-form-input
+                  id="quantity-input-{{ beverage.id }}"
+                  type="number"
+                  v-model="beverage.quantity"
+                  min="1"
+                  placeholder="數量"
+                ></b-form-input>
+              </b-form-group>
+              <b-row>
+                <b-col class="d-flex justify-content-center mt-2">
+                  <b-button variant="primary" @click="handleAddLoveToCart(beverage)">喜歡</b-button>
+                </b-col>
+              </b-row>
+              <b-row>
+                <b-col class="d-flex justify-content-center mt-2">
+                  <b-button variant="danger" @click="handleAddHateToCart(beverage)" v-if="userDeveloper === 'user'">討厭</b-button>
+                </b-col>
+              </b-row>
+            </div>
           </b-card>
         </b-col>
       </b-row>
@@ -138,6 +155,7 @@ export default {
         size: '',
         image: null
       },
+      editingBeverage: null, // 用於編輯的飲料對象
       icedHotOptions: [
         { value: '冰', text: '冰' },
         { value: '熱', text: '熱' }
@@ -256,6 +274,34 @@ export default {
       const file = event.target.files[0];
       this.newBeverage.image = file;
     },
+    handleEditBeverage(beverage) {
+      this.editingBeverage = { ...beverage };
+    },
+    handleSaveEdit() {
+      const formData = new FormData();
+      formData.append('id', this.editingBeverage.id);
+      formData.append('name', this.editingBeverage.name);
+      formData.append('price', this.editingBeverage.price);
+
+      if (this.editingBeverage.image) {
+        formData.append('image', this.editingBeverage.image);
+      }
+
+      axios.put(getFullApiUrl('/update_beverage'), formData)
+        .then(() => {
+          this.$store.dispatch('fetchBeverages');
+          alert('Beverage updated successfully');
+          this.editingBeverage = null;
+        })
+        .catch(error => {
+          console.error('Error updating beverage:', error);
+          alert('Failed to update beverage: ' + error.message);
+        });
+    },
+    handleEditImageUpload(event) {
+      const file = event.target.files[0];
+      this.editingBeverage.image = file;
+    },
     handleDeleteBeverage(beverage) {
       if (confirm(`Are you sure you want to delete ${beverage.name}?`)) {
         this.deleteBeverage(beverage.id);
@@ -286,6 +332,7 @@ export default {
   }
 }
 </script>
+
 
 
 

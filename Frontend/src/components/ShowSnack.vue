@@ -64,34 +64,51 @@
       <b-row v-if="paginatedSnacks.length > 0">
         <b-col cols="12" sm="6" md="4" lg="3" v-for="snack in paginatedSnacks" :key="snack.id" class="mb-4">
           <b-card hover shadow class="h-100 custom-card">
-            <b-button v-if="userDeveloper === 'addOrDeleteItem'" variant="danger" class="position-absolute top-0 end-0 mt-2 me-2" @click="handleDeleteSnack(snack)">
-              X
-            </b-button>
-            <img :src="getSnackImage(snack.image)" alt="Snack Image" class="card-img-top"/>
-            <b-card-title class="text-center mb-2">{{ snack.name.trim() }}</b-card-title>
-            <b-card-text><strong>原價:</strong> {{ snack.price }}</b-card-text>
-            <b-card-text><strong>大小:</strong> {{ snack.snack_size || '無' }}</b-card-text>
-            <b-card-text><strong>口味:</strong> {{ snack.flavor_name }}</b-card-text>
-            <b-card-text><strong>品牌:</strong> {{ snack.brand_name }}</b-card-text>
-            <b-form-group label="數量" label-for="quantity-input-{{ snack.id }}">
-              <b-form-input
-                id="quantity-input-{{ snack.id }}"
-                type="number"
-                v-model="snack.quantity"
-                min="1"
-                placeholder="數量"
-              ></b-form-input>
-            </b-form-group>
-            <b-row>
-              <b-col class="d-flex justify-content-center mt-2">
-                <b-button variant="primary" @click="handleAddLoveToCart(snack)">喜歡</b-button>
-              </b-col>
-            </b-row>
-            <b-row>
-              <b-col class="d-flex justify-content-center mt-2">
-                <b-button variant="danger" @click="handleAddHateToCart(snack)" v-if="userDeveloper === 'user'">討厭</b-button>
-              </b-col>
-            </b-row>
+            <div v-if="editingSnack && editingSnack.id === snack.id">
+              <b-form-group label="品項名稱">
+                <b-form-input v-model="editingSnack.name" required></b-form-input>
+              </b-form-group>
+              <b-form-group label="單價">
+                <b-form-input type="number" v-model="editingSnack.price" required></b-form-input>
+              </b-form-group>
+              <b-form-group label="上傳圖片">
+                <input type="file" @change="handleEditImageUpload" accept="image/png" ref="editFileInput">
+              </b-form-group>
+              <b-button variant="success" @click="handleSaveEdit">保存編輯</b-button>
+            </div>
+            <div v-else>
+              <b-button v-if="userDeveloper === 'addOrDeleteItem'" variant="danger" class="position-absolute top-0 end-0 mt-2 me-2" @click="handleDeleteSnack(snack)">
+                X
+              </b-button>
+              <b-button v-if="userDeveloper === 'updateItem'" variant="warning" class="position-absolute top-0 end-0 mt-5 me-2" @click="handleEditSnack(snack)">
+                編輯
+              </b-button>
+              <img :src="getSnackImage(snack.image)" alt="Snack Image" class="card-img-top"/>
+              <b-card-title class="text-center mb-2">{{ snack.name.trim() }}</b-card-title>
+              <b-card-text><strong>原價:</strong> {{ snack.price }}</b-card-text>
+              <b-card-text><strong>大小:</strong> {{ snack.snack_size || '無' }}</b-card-text>
+              <b-card-text><strong>口味:</strong> {{ snack.flavor_name }}</b-card-text>
+              <b-card-text><strong>品牌:</strong> {{ snack.brand_name }}</b-card-text>
+              <b-form-group label="數量" label-for="quantity-input-{{ snack.id }}">
+                <b-form-input
+                  id="quantity-input-{{ snack.id }}"
+                  type="number"
+                  v-model="snack.quantity"
+                  min="1"
+                  placeholder="數量"
+                ></b-form-input>
+              </b-form-group>
+              <b-row>
+                <b-col class="d-flex justify-content-center mt-2">
+                  <b-button variant="primary" @click="handleAddLoveToCart(snack)">喜歡</b-button>
+                </b-col>
+              </b-row>
+              <b-row>
+                <b-col class="d-flex justify-content-center mt-2">
+                  <b-button variant="danger" @click="handleAddHateToCart(snack)" v-if="userDeveloper === 'user'">討厭</b-button>
+                </b-col>
+              </b-row>
+            </div>
           </b-card>
         </b-col>
       </b-row>
@@ -139,6 +156,7 @@ export default {
         size: '',
         image: null
       },
+      editingSnack: null, // 用於編輯的小吃對象
       flavorOptions: [
         { value: '酸', text: '酸' },
         { value: '甜', text: '甜' },
@@ -260,6 +278,33 @@ export default {
       const file = event.target.files[0];
       this.newSnack.image = file;
     },
+    handleEditSnack(snack) {
+      this.editingSnack = { ...snack };
+    },
+    handleSaveEdit() {
+      const formData = new FormData();
+      formData.append('id', this.editingSnack.id);
+      formData.append('name', this.editingSnack.name);
+      formData.append('price', this.editingSnack.price);
+      if (this.editingSnack.image) {
+        formData.append('image', this.editingSnack.image);
+      }
+
+      axios.put(getFullApiUrl('/update_snack'), formData)
+        .then(() => {
+          this.$store.dispatch('fetchSnacks');
+          alert('Snack updated successfully');
+          this.editingSnack = null;
+        })
+        .catch(error => {
+          console.error('Error updating snack:', error);
+          alert('Failed to update snack: ' + error.message);
+        });
+    },
+    handleEditImageUpload(event) {
+      const file = event.target.files[0];
+      this.editingSnack.image = file;
+    },
     handleDeleteSnack(snack) {
       if (confirm(`Are you sure you want to delete ${snack.name}?`)) {
         this.deleteSnack(snack.id);
@@ -290,6 +335,7 @@ export default {
   }
 }
 </script>
+
 
 <style scoped>
 .page-container {
