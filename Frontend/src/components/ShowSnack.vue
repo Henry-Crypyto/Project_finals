@@ -113,7 +113,7 @@
                 <b-col class="d-flex justify-content-center mt-2">
                   <b-button 
                      class="custom-hate-button" 
-                     @click="handleAddHateToCart(course)" 
+                     @click="handleAddHateToCart(snack)" 
                      v-if="userDeveloper === 'user'">
                      🤮討厭
                    </b-button>  
