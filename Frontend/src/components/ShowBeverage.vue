@@ -102,7 +102,7 @@
                   <b-button 
                       class="custom-love-button" 
                       variant="primary" 
-                      @click="handleAddLoveToCart(course)" 
+                      @click="handleAddLoveToCart(beverage)" 
                       v-if="userDeveloper !== 'updateItem'">
                       😍喜歡
                    </b-button>
