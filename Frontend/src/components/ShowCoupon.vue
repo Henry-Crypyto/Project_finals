@@ -180,7 +180,7 @@ export default {
     endDate: '',
     minEndDate: '',
     currentPage: 1,
-    pageSize: 12,
+    pageSize: 8,
     pageCount: 0 // 用于存储最小结束日期
   }),
   created() {
@@ -234,6 +234,7 @@ export default {
                 const quantity = parseInt(snack.split(' x ')[1]);
                 const snackItem = this.snacks.find(s => s.brand_name === coupon.brand_name && s.name === itemName);
                 const image = snackItem ? snackItem.image : null;
+               
                 // console.log('Snack Image Path:', imagePath);
                 return {
                   ItemType: 'snack',

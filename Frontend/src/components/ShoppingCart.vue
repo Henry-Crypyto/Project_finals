@@ -95,7 +95,7 @@ export default {
     }
   },
   methods: {
-    ...mapMutations(['removeFromCart', 'updateOriginalTotalPrice', 'setUserDeveloper', 'setView']),
+    ...mapMutations(['removeFromCart', 'updateOriginalTotalPrice', 'setUserDeveloper']),
     increaseQuantity(item) {
       this.$store.commit('increaseFromCart', {
         id: item.id,

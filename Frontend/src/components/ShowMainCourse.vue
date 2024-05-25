@@ -81,8 +81,8 @@
               <img :src="getMainCourseImage(course.image)" alt="Main Course Image" class="card-img-top"/>
               <b-card-title class="text-center mb-2">{{ course.name }}</b-card-title>
               <b-card-text><strong>原價:</strong> {{ course.price }}</b-card-text>
-              <b-card-text><strong>肉類類型:</strong> {{ course.meat_type || '不詳' }}</b-card-text>
-              <b-card-text><strong>口味:</strong> {{ course.flavor_name || '不詳' }}</b-card-text>
+              <b-card-text><strong>肉類類型:</strong> {{ course.meat_type || '無' }}</b-card-text>
+              <b-card-text><strong>口味:</strong> {{ course.flavor_name || '無' }}</b-card-text>
               <b-card-text><strong>品牌:</strong> {{ course.brand_name }}</b-card-text>
               <b-form-group label="數量" label-for="quantity-input-{{ course.id }}">
                 <b-form-input
@@ -146,6 +146,8 @@ import axios from 'axios';
 export default {
   created() {
     this.$store.dispatch('fetchMainCourses');
+    this.$store.dispatch('fetchBeverages');
+    this.$store.dispatch('fetchSnacks');    
     this.$store.dispatch('fetchBrandOptions');
   },
   data() {
