@@ -28,7 +28,7 @@ const db = mysql.createConnection({
     host: '127.0.0.1',
     user: 'root',
     password: 'root',
-    database: 'mydb',
+    database: 'test_main_course',
     port: 8889 // MAMP MySQL端口，根据实际情况更改
 });
 

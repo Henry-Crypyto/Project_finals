@@ -3,7 +3,10 @@
     <b-row class="justify-content-center mb-4">
       <!-- Brand Selection Menu -->
       <b-col md="2" class="mb-3">
-        <b-form-group label="品牌:" label-for="brand-select" class="custom-form-group">
+        <b-form-group label-for="brand-select" class="custom-form-group">
+          <template #label>
+            <font-awesome-icon :icon="['fas', 'tag']" bounce  />品牌   
+          </template>
           <b-form-select id="brand-select" v-model="selectedBrand" class="custom-select">
             <b-form-select-option value="">所有品牌</b-form-select-option>
             <b-form-select-option v-for="brand in brandOptions" :key="brand.brand_id" :value="brand.brand_name">
@@ -15,7 +18,10 @@
 
       <!-- Price Filter Menu -->
       <b-col md="2" class="mb-3">
-        <b-form-group label="价格:" label-for="price-select" class="custom-form-group">
+        <b-form-group  label-for="price-select" class="custom-form-group">
+          <template #label>
+            <font-awesome-icon :icon="['fas', 'dollar-sign']" bounce />價格
+          </template>
           <b-form-select id="price-select" v-model="selectedPrice" class="custom-select">
             <b-form-select-option value="">所有價格</b-form-select-option>
             <b-form-select-option value="0-300">0~300元</b-form-select-option>
@@ -29,7 +35,10 @@
 
       <!-- Date Range Selection -->
       <b-col md="3" class="mb-3">
-        <b-form-group label="开始日期:" label-for="startDate" class="custom-form-group">
+        <b-form-group label-for="startDate" class="custom-form-group">
+          <template #label>
+            <font-awesome-icon :icon="['fas', 'calendar-days']" /> 開始日期
+          </template>
           <b-input-group>
             <b-form-input id="startDate" type="date" v-model="startDate" class="custom-date"></b-form-input>
             <b-input-group-append>
@@ -40,7 +49,10 @@
       </b-col>
       
       <b-col md="3" class="mb-3">
-        <b-form-group label="结束日期:" label-for="endDate" class="custom-form-group">
+        <b-form-group  label-for="endDate" class="custom-form-group">
+          <template #label>
+            <font-awesome-icon :icon="['fas', 'calendar-days']" /> 結束日期
+          </template>
           <b-input-group>
             <b-form-input id="endDate" type="date" v-model="endDate" :min="minEndDate" class="custom-date"></b-form-input>
             <b-input-group-append>
@@ -375,15 +387,24 @@ export default {
   width: 100%;
   padding: 10px 15px;
   font-size: 16px;
+  font-weight: bold; /* 添加字體加粗 */
+  color: white; /* 設置文字顏色為白色 */
+  text-shadow: 0 1px 2px rgba(0,0,0,0.2); /* 添加文字陰影以增加可讀性 */
+  background-image: linear-gradient(to right, #007BFF, #0056b3); /* 藍色漸變背景 */
+  border: none; /* 移除邊框 */
   border-radius: 8px;
   box-shadow: 0 2px 5px rgba(0,0,0,0.1);
   transition: background-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+  cursor: pointer; /* 當鼠標懸停時顯示指針，增加用戶互動性 */
+  outline: none; /* 移除焦點時的輪廓 */
 }
 
 .search-button:hover {
-  background-color: #004494;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  background-image: linear-gradient(to right, #0056b3, #004494); /* 懸停時的背景漸變 */
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3); /* 增加懸停時的陰影以產生深度感 */
+  transform: translateY(-2px); /* 懸停時微小上移效果，增加動感 */
 }
+
 
 .b-button {
   border-radius: 0.25rem; /* 圆角边框 */
@@ -407,7 +428,18 @@ export default {
   position: relative; /* 相对定位，用于标记 */
 }
 
-
+.coupon-card::before {
+  content: ""; /* 必须有内容才能显示 */
+  position: absolute; /* 绝对定位 */
+  top: 20px;
+  left: -30px;
+  width: 150px; /* 緞帶宽度 */
+  height: 44px; /* 緞帶高度 */
+  background-color: #dc3545; /* 緞帶颜色 */
+  border-radius: 0 0 5px 0; /* 圆角调整 */
+  transform: rotate(-45deg); /* 旋转45度 */
+  transform-origin: left top; /* 设置旋转的基点 */
+}
 
 
 

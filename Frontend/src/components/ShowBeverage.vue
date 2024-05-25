@@ -99,12 +99,23 @@
               </b-form-group>
               <b-row>
                 <b-col class="d-flex justify-content-center mt-2">
-                  <b-button variant="primary" @click="handleAddLoveToCart(beverage)">喜歡</b-button>
+                  <b-button 
+                      class="custom-love-button" 
+                      variant="primary" 
+                      @click="handleAddLoveToCart(course)" 
+                      v-if="userDeveloper !== 'updateItem'">
+                      😍喜歡
+                   </b-button>
                 </b-col>
               </b-row>
               <b-row>
                 <b-col class="d-flex justify-content-center mt-2">
-                  <b-button variant="danger" @click="handleAddHateToCart(beverage)" v-if="userDeveloper === 'user'">討厭</b-button>
+                  <b-button 
+                     class="custom-hate-button" 
+                     @click="handleAddHateToCart(course)" 
+                     v-if="userDeveloper === 'user'">
+                     🤮討厭
+                   </b-button>  
                 </b-col>
               </b-row>
             </div>
@@ -337,6 +348,52 @@ export default {
 
 
 <style scoped>
+.custom-hate-button {
+  background-image: linear-gradient(to right, #ff416c, #ff4b2b); /* 漸變背景色 */
+  color: white; /* 文字顏色 */
+  padding: 10px 20px; /* 內邊距 */
+  border: none; /* 無邊框 */
+  border-radius: 25px; /* 圓角 */
+  font-size: 16px; /* 字體大小 */
+  font-weight: bold; /* 字體粗細 */
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16); /* 盒子陰影 */
+  cursor: pointer; /* 鼠標指標 */
+  transition: all 0.3s ease; /* 過渡動畫 */
+  outline: none; /* 去除點擊後的輪廓 */
+}
+
+.custom-hate-button:hover {
+  background-image: linear-gradient(to right, #ff4b2b, #ff416c); /* 懸停時的漸變背景色 */
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.25); /* 懸停時的陰影 */
+  transform: scale(1.05); /* 懸停時稍微放大 */
+}
+
+.custom-hate-button:focus {
+  box-shadow: 0 0 0 2px rgba(255, 0, 0, 0.5); /* 焦點時的外框陰影 */
+}
+.custom-love-button {
+  background-image: linear-gradient(to right, #ff7e5f, #feb47b); /* 漸變背景色 */
+  color: white; /* 文字顏色 */
+  padding: 10px 20px; /* 內邊距 */
+  border: none; /* 無邊框 */
+  border-radius: 25px; /* 圓角 */
+  font-size: 16px; /* 字體大小 */
+  font-weight: bold; /* 字體粗細 */
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16); /* 盒子陰影 */
+  cursor: pointer; /* 鼠標指標 */
+  transition: all 0.3s ease; /* 過渡動畫 */
+  outline: none; /* 去除點擊後的輪廓 */
+}
+
+.custom-love-button:hover {
+  background-image: linear-gradient(to right, #feb47b, #ff7e5f); /* 懸停時的漸變背景色 */
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2); /* 懸停時的陰影 */
+  transform: scale(1.05); /* 懸停時稍微放大 */
+}
+
+.custom-love-button:focus {
+  box-shadow: 0 0 0 2px rgba(255, 105, 135, 0.5); /* 焦點時的外框陰影 */
+}
 .page-container {
   border: 3px solid black; /* Bold rectangular border around the page */
   padding: 20px;
