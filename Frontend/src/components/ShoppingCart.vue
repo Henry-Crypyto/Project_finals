@@ -71,7 +71,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(['cartItems', 'brandSelect', 'newCoupon', 'nextCouponId', 'userDeveloper', 'currentView']),
+    ...mapState(['cartItems', 'brandSelect', 'newCoupon', 'nextCouponId', 'userDeveloper', 'currentView','allCoupons','newCoupon']),
     totalPrice() {
       return this.cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
     },
@@ -121,6 +121,11 @@ export default {
       this.$store.dispatch('updateCoupon');
     },
     handleSubmit() {
+      const isDuplicate = this.allCoupons.some(coupon => coupon.coupon_name === this.newCoupon.coupon_name);
+        if (isDuplicate) {
+        alert('折扣券名稱已存在，請使用其他名稱。');
+        return;
+        }
       if (this.userDeveloper === 'add') {
         this.submitCoupon();
       } else if (this.userDeveloper === 'update') {
@@ -134,10 +139,7 @@ export default {
       if (new Date(this.newCoupon.expire_date) < new Date(this.newCoupon.start_date)) {
         this.newCoupon.expire_date = this.newCoupon.start_date;
       }
-    },
-    handleUpdateOriginalPrice(newTotal){
-    this.$store.commit('updateOriginalTotalPrice', newTotal);
-  }
+    }
   },
  
   watch: {
@@ -154,9 +156,6 @@ export default {
         this.handleReset();
       }
     }
-  },
-  created(){
-    this.handleUpdateOriginalPrice(this.totalPrice);
   }
 }
 </script>

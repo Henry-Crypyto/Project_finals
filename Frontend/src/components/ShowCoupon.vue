@@ -64,7 +64,7 @@
 
       <!-- Search Button -->
       <b-col md="2" class="mb-3 align-self-end">
-        <b-button variant="primary" class="search-button" @click="fetchCoupons">搜尋</b-button>
+        <b-button variant="primary" class="search-button" @click="handleFetchCoupons">搜尋</b-button>
       </b-col>
     </b-row>
 
@@ -73,7 +73,7 @@
       <b-col v-if="selectedCoupons.length > 0">
         <b-card v-for="coupon in paginatedCoupons" :key="coupon.coupon_ID" class="mb-3 coupon-card" @click="coupon.expanded = !coupon.expanded">
           <b-card-body class="d-flex justify-content-between align-items-center">
-            <img :src="require('@/assets/image/icon/龍貓.png')" alt="Totoro" class="totoro-image" v-if="!coupon.expanded">
+            <img :src="require('@/assets/image/icon/龍貓.png')" alt="Totoro" class="totoro-image" v-show="!coupon.expanded">
             <div class="card-title-container">
               <h5 class="card-title">
                 <span class="discount-price">$ {{ coupon.discount_price }}</span> {{ coupon.coupon_name }}
@@ -184,77 +184,17 @@ export default {
     pageCount: 0 // 用于存储最小结束日期
   }),
   created() {
-    this.$store.dispatch('fetchBrandOptions');
-    this.$store.dispatch('fetchMainCourses');
-    this.$store.dispatch('fetchBeverages');
-    this.$store.dispatch('fetchSnacks');
-    this.fetchCoupons();
+    this.handleFetchCoupons();
   },
   methods: {
     ...mapMutations(['setBrandOptions', 'dulplicateInfoToNewCoupon', 'setUserDeveloper']),
 
-    fetchCoupons() {
-      const url = getFullApiUrl('/all_coupons_with_items');
-      axios.get(url)
-        .then(response => {
-          let allCoupons = response.data.map(coupon => ({
-            ...coupon,
-            expanded: false, // Track whether the coupon details are shown
-            items: [].concat(
-              coupon.main_courses.map(course => {
-                const itemName = course.split(' x ')[0];
-                const quantity = parseInt(course.split(' x ')[1]);
-                const mainCourse = this.mainCourses.find(mc => mc.brand_name === coupon.brand_name && mc.name === itemName);
-                const image = mainCourse ? mainCourse.image : null;
-                // console.log('Main Course Image:', image);
-                return {
-                  ItemType: 'mainCourse',
-                  ItemName: itemName,
-                  Quantity: quantity,
-                  ItemBrand: coupon.brand_name,
-                  Image: image
-                };
-              }),
-              coupon.beverages.map(beverage => {
-                const itemName = beverage.split(' x ')[0];
-                const quantity = parseInt(beverage.split(' x ')[1]);
-                const beverageItem = this.beverages.find(b => b.brand_name === coupon.brand_name && b.name === itemName);
-                const image = beverageItem ? beverageItem.image : null;
-                // console.log('Beverage Image Path:', imagePath);
-                return {
-                  ItemType: 'beverage',
-                  ItemName: itemName,
-                  Quantity: quantity,
-                  ItemBrand: coupon.brand_name,
-                  Image: image
-                };
-              }),
-              coupon.snacks.map(snack => {
-                const itemName = snack.split(' x ')[0];
-                const quantity = parseInt(snack.split(' x ')[1]);
-                const snackItem = this.snacks.find(s => s.brand_name === coupon.brand_name && s.name === itemName);
-                const image = snackItem ? snackItem.image : null;
-               
-                // console.log('Snack Image Path:', imagePath);
-                return {
-                  ItemType: 'snack',
-                  ItemName: itemName,
-                  Quantity: quantity,
-                  ItemBrand: coupon.brand_name,
-                  Image: image
-                };
-              })
-            )
-          }));
-          this.selectedCoupons = this.filterCoupons(allCoupons);
-          this.pageCount = Math.ceil(this.selectedCoupons.length / this.pageSize);
-        })
-        .catch(error => {
-          console.error('Error fetching coupons:', error);
-          this.selectedCoupons = [];
-        });
+    handleFetchCoupons() {
+     this.$store.dispatch('fetchCoupons');
+     this.selectedCoupons = this.filterCoupons(this.allCoupons);
+     this.pageCount = Math.ceil(this.selectedCoupons.length / this.pageSize);
     },
-
+            
     deleteCoupon(couponId) {
       // 提示用户确认删除
       if (confirm("确定要删除此折扣券吗？")) {
@@ -262,8 +202,7 @@ export default {
         axios.delete(url)
           .then(() => {
             // 删除成功后重新获取折扣券信息
-            this.fetchCoupons();
-            // 显示删除成功的提示框
+            this.$store.dispatch('fetchCoupons');
             alert("折扣券删除成功！");
           })
           .catch(error => {
@@ -335,7 +274,7 @@ export default {
     }
   },
   computed: {
-    ...mapState(['brandOptions', 'newCoupon', 'nextCouponId', 'userDeveloper', 'cartItems', 'mainCourses', 'beverages', 'snacks']),
+    ...mapState(['brandOptions', 'newCoupon', 'nextCouponId', 'userDeveloper', 'cartItems', 'mainCourses', 'beverages', 'snacks','allCoupons']),
     paginatedCoupons() {
     const start = (this.currentPage - 1) * this.pageSize;
     const end = start + this.pageSize;
@@ -350,6 +289,9 @@ export default {
           this.endDate = '';  // 如果当前结束日期小于新的开始日期，则清空结束日期
         }
       }
+    },
+    allCoupons(){
+     this.handleFetchCoupons();
     }
   }
 }
@@ -532,5 +474,15 @@ export default {
 .item-quantity {
   color: #add8e6; /* 水藍色 */
 }
+.collapse:not(.show) {
+  display: block;
+  overflow: hidden;
+  height: 0;
+  transition: height 0.6s ease;
+}
 
+.collapse.show {
+  height: auto; /* Adjust this depending on your content */
+  transition: height 0.6s ease;
+}
 </style>

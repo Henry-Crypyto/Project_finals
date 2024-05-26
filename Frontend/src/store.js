@@ -4,7 +4,7 @@ import { getFullApiUrl } from '../config.js';
 
 export default createStore({
   state: {
-    currentView: 'ShowMainCourse',
+    currentView: 'ShowCoupon',
     brandSelect: 'all',
     brandOptions: [],
     cartItems: [],
@@ -19,7 +19,7 @@ export default createStore({
       expire_date: '',
       use_restriction: ''
     },
-    selectedCoupons: [],
+    allCoupons:[],
     mainCourses: [],
     mainCoursesMeatType:[],
     beverages:[],
@@ -27,6 +27,9 @@ export default createStore({
     userDeveloper:'user'
   },
   mutations: {
+    setAllCoupons(state,allCoupons){
+      state.allCoupons= allCoupons;
+    },
     setUserDeveloper(state, value) {
       state.userDeveloper= value;
       console.log(state.userDeveloper);
@@ -332,6 +335,64 @@ export default createStore({
           .catch(error => {
             console.error('Error fetching brands:', error);
           });
+      },
+      fetchCoupons({ commit, state }) {
+        const url = getFullApiUrl('/all_coupons_with_items');
+        axios.get(url)
+          .then(response => {
+            let allCoupons = response.data.map(coupon => ({
+              ...coupon,
+              expanded: false, // Track whether the coupon details are shown
+              items: [].concat(
+                coupon.main_courses.map(course => {
+                  const itemName = course.split(' x ')[0];
+                  const quantity = parseInt(course.split(' x ')[1]);
+                  const mainCourse = state.mainCourses.find(mc => mc.brand_name === coupon.brand_name && mc.name === itemName);
+                  const image = mainCourse ? mainCourse.image : null;
+                  return {
+                    ItemType: 'mainCourse',
+                    ItemName: itemName,
+                    Quantity: quantity,
+                    ItemBrand: coupon.brand_name,
+                    Image: image
+                  };
+                }),
+                coupon.beverages.map(beverage => {
+                  const itemName = beverage.split(' x ')[0];
+                  const quantity = parseInt(beverage.split(' x ')[1]);
+                  const beverageItem = state.beverages.find(b => b.brand_name === coupon.brand_name && b.name === itemName);
+                  const image = beverageItem ? beverageItem.image : null;
+                  return {
+                    ItemType: 'beverage',
+                    ItemName: itemName,
+                    Quantity: quantity,
+                    ItemBrand: coupon.brand_name,
+                    Image: image
+                  };
+                }),
+                coupon.snacks.map(snack => {
+                  const itemName = snack.split(' x ')[0];
+                  const quantity = parseInt(snack.split(' x ')[1]);
+                  const snackItem = state.snacks.find(s => s.brand_name === coupon.brand_name && s.name === itemName);
+                  const image = snackItem ? snackItem.image : null;
+                  if (snackItem && snackItem.image) {
+                    console.log('我有喔');
+                  }
+                  return {
+                    ItemType: 'snack',
+                    ItemName: itemName,
+                    Quantity: quantity,
+                    ItemBrand: coupon.brand_name,
+                    Image: image
+                  };
+                })
+              )
+            }));
+            commit('setAllCoupons', allCoupons);
+          })
+          .catch(error => {
+            console.error('Error fetching coupons:', error);
+          });
       }
-  }
+    }
 });

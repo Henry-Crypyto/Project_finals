@@ -86,6 +86,11 @@ export default {
   },
   created() {
     this.$store.dispatch('fetchNextCouponId');
+    this.$store.dispatch('fetchBrandOptions');
+    this.$store.dispatch('fetchMainCourses');
+    this.$store.dispatch('fetchBeverages');
+    this.$store.dispatch('fetchSnacks');
+    this.$store.dispatch('fetchCoupons');
   }
 }
 </script>

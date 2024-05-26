@@ -144,10 +144,8 @@ import { getFullApiUrl } from '../../config.js';
 import axios from 'axios';
 
 export default {
-  created() {
+  created() {    
     this.$store.dispatch('fetchMainCourses');
-    this.$store.dispatch('fetchBeverages');
-    this.$store.dispatch('fetchSnacks');    
     this.$store.dispatch('fetchBrandOptions');
   },
   data() {
