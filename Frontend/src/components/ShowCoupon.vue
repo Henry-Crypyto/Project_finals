@@ -5,7 +5,7 @@
       <b-col md="2" class="mb-3">
         <b-form-group label-for="brand-select" class="custom-form-group">
           <template #label>
-            <font-awesome-icon :icon="['fas', 'tag']" bounce  />品牌   
+            <font-awesome-icon :icon="['fas', 'tag']"  />品牌   
           </template>
           <b-form-select id="brand-select" v-model="selectedBrand" class="custom-select">
             <b-form-select-option value="">所有品牌</b-form-select-option>
@@ -20,7 +20,7 @@
       <b-col md="2" class="mb-3">
         <b-form-group  label-for="price-select" class="custom-form-group">
           <template #label>
-            <font-awesome-icon :icon="['fas', 'dollar-sign']" bounce />價格
+            <font-awesome-icon :icon="['fas', 'dollar-sign']"/>價格
           </template>
           <b-form-select id="price-select" v-model="selectedPrice" class="custom-select">
             <b-form-select-option value="">所有價格</b-form-select-option>
@@ -64,8 +64,10 @@
 
       <!-- Search Button -->
       <b-col md="2" class="mb-3 align-self-end">
-        <b-button variant="primary" class="search-button" @click="handleFetchCoupons">搜尋</b-button>
-      </b-col>
+        <button class="search-button" @click="handleFetchCoupons">
+       <font-awesome-icon :icon="['fas', 'search']" /> 搜索
+         </button>   
+       </b-col>
     </b-row>
 
     <!-- Display Coupons Information for Selected Brand, Price, and Date Range -->
@@ -73,7 +75,7 @@
       <b-col v-if="selectedCoupons.length > 0">
         <b-card v-for="coupon in paginatedCoupons" :key="coupon.coupon_ID" class="mb-3 coupon-card" @click="coupon.expanded = !coupon.expanded">
           <b-card-body class="d-flex justify-content-between align-items-center">
-            <img :src="require('@/assets/image/icon/龍貓.png')" alt="Totoro" class="totoro-image" v-show="!coupon.expanded">
+               <img :src="require('@/assets/image/icon/龍貓.png')" alt="Totoro" class="totoro-image">
             <div class="card-title-container">
               <h5 class="card-title">
                 <span class="discount-price">$ {{ coupon.discount_price }}</span> {{ coupon.coupon_name }}
@@ -99,7 +101,10 @@
                           <span class="item-separator">x</span> 
                           <span class="item-quantity">{{ item.Quantity }}</span>
                         </p>
-                        <img v-if="item.Image" :src="item.Image" :alt="item.ItemName" class="coupon-item-image" />
+                        <img v-if="getImageById(item.ItemId, item.ItemType)" 
+                        :src="getImageById(item.ItemId, item.ItemType)" 
+                        :alt="item.ItemName" 
+                        class="coupon-item-image" />                      
                       </div>
                     </b-col>
                   </b-row>
@@ -116,8 +121,10 @@
                           <span class="item-separator">x</span> 
                           <span class="item-quantity">{{ item.Quantity }}</span>
                         </p>
-                        <img v-if="item.Image" :src="item.Image" :alt="item.ItemName" class="coupon-item-image" />
-                      </div>
+                        <img v-if="getImageById(item.ItemId, item.ItemType)" 
+                        :src="getImageById(item.ItemId, item.ItemType)" 
+                        :alt="item.ItemName" 
+                        class="coupon-item-image" />                      </div>
                     </b-col>
                   </b-row>
                 </div>
@@ -133,8 +140,10 @@
                           <span class="item-separator">x</span> 
                           <span class="item-quantity">{{ item.Quantity }}</span>
                         </p>
-                        <img v-if="item.Image" :src="item.Image" :alt="item.ItemName" class="coupon-item-image" />
-                      </div>
+                        <img v-if="getImageById(item.ItemId, item.ItemType)" 
+                        :src="getImageById(item.ItemId, item.ItemType)" 
+                        :alt="item.ItemName" 
+                        class="coupon-item-image" />                      </div>
                     </b-col>
                   </b-row>
                 </div>
@@ -184,17 +193,30 @@ export default {
     pageCount: 0 // 用于存储最小结束日期
   }),
   created() {
+    this.$store.dispatch('fetchCoupons');
     this.handleFetchCoupons();
   },
   methods: {
     ...mapMutations(['setBrandOptions', 'dulplicateInfoToNewCoupon', 'setUserDeveloper']),
 
+    getImageById(itemId, itemType) {
+      if (itemType === 'mainCourse') {
+        const item = this.mainCourses.find(mc => mc.id === itemId);
+        return item ? item.image : null;
+      } else if (itemType === 'beverage') {
+        const item = this.beverages.find(b => b.id === itemId);
+        return item ? item.image : null;
+      } else if (itemType === 'snack') {
+        const item = this.snacks.find(s => s.id === itemId);
+        return item ? item.image : null;
+      }
+      return null;
+    },
     handleFetchCoupons() {
      this.$store.dispatch('fetchCoupons');
      this.selectedCoupons = this.filterCoupons(this.allCoupons);
      this.pageCount = Math.ceil(this.selectedCoupons.length / this.pageSize);
     },
-            
     deleteCoupon(couponId) {
       // 提示用户确认删除
       if (confirm("确定要删除此折扣券吗？")) {
@@ -289,9 +311,6 @@ export default {
           this.endDate = '';  // 如果当前结束日期小于新的开始日期，则清空结束日期
         }
       }
-    },
-    allCoupons(){
-     this.handleFetchCoupons();
     }
   }
 }
@@ -327,25 +346,42 @@ export default {
 }
 
 .search-button {
-  width: 100%;
-  padding: 10px 15px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 20px;
   font-size: 16px;
-  font-weight: bold; /* 添加字體加粗 */
-  color: white; /* 設置文字顏色為白色 */
-  text-shadow: 0 1px 2px rgba(0,0,0,0.2); /* 添加文字陰影以增加可讀性 */
-  background-image: linear-gradient(to right, #007BFF, #0056b3); /* 藍色漸變背景 */
-  border: none; /* 移除邊框 */
-  border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  transition: background-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-  cursor: pointer; /* 當鼠標懸停時顯示指針，增加用戶互動性 */
-  outline: none; /* 移除焦點時的輪廓 */
+  color: white;
+  background-image: linear-gradient(145deg, #00c6ff, #0072ff);
+  border: none;
+  border-radius: 20px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  outline: none;
+  transition: background-color 0.3s, box-shadow 0.3s, transform 0.3s;
 }
 
 .search-button:hover {
-  background-image: linear-gradient(to right, #0056b3, #004494); /* 懸停時的背景漸變 */
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3); /* 增加懸停時的陰影以產生深度感 */
-  transform: translateY(-2px); /* 懸停時微小上移效果，增加動感 */
+  background-image: linear-gradient(145deg, #0072ff, #0052D4);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  transform: scale(1.05);
+}
+
+.search-button i {
+  margin-right: 5px; /* 确保图标和文字之间有适当的空间 */
+}
+
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 
@@ -383,11 +419,12 @@ export default {
   transform: rotate(-45deg); /* 旋转45度 */
   transform-origin: left top; /* 设置旋转的基点 */
 }
-
-
-
-
-
+.fade-enter-active, .fade-leave-active {
+  transition: opacity .5s;
+}
+.fade-enter, .fade-leave-to /* .fade-leave-active in <2.1.8 */ {
+  opacity: 0;
+}
 .coupon-card:hover {
   transform: translateY(-5px); /* 鼠标悬浮时上移 */
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* 加强阴影效果 */
