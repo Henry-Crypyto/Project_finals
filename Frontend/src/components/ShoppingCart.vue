@@ -121,12 +121,12 @@ export default {
       this.$store.dispatch('updateCoupon');
     },
     handleSubmit() {
-      const isDuplicate = this.allCoupons.some(coupon => coupon.coupon_name === this.newCoupon.coupon_name);
+      if (this.userDeveloper === 'add') {
+        const isDuplicate = this.allCoupons.some(coupon => coupon.coupon_name === this.newCoupon.coupon_name);
         if (isDuplicate) {
         alert('折扣券名稱已存在，請使用其他名稱。');
         return;
         }
-      if (this.userDeveloper === 'add') {
         this.submitCoupon();
       } else if (this.userDeveloper === 'update') {
         this.updateCoupon();

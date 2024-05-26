@@ -3,7 +3,7 @@
     <b-container class="main-course-container">
       <b-row>
         <b-col>
-          <h1 class="text-center" style="text-align: center; ">主菜選單</h1>
+          <h1 class="text-center" style="color: ivory; text-align: center;">主菜選單</h1>
           <div v-if="userDeveloper === 'addOrDeleteItem'" class="mb-4">
             <b-form @submit.prevent="handleAddCourse">
               <b-form-group label="品牌">
@@ -168,11 +168,11 @@ export default {
         { value: '酸', text: '酸' }
       ],
       meatOptions: [
-      { text: '不吃🐄', value: '牛'},
-      { text: '不吃🐖', value: '豬'},
-      { text: '不吃🐔', value: '雞'},
-      { text: '不吃🐟', value: '海鮮'},
-      { text: '不吃🐑', value: '羊'}
+      { text: '🚫 🐄', value: '牛'},
+      { text: '🚫 🐖', value: '豬'},
+      { text: '🚫 🐔', value: '雞'},
+      { text: '🚫 🐟', value: '海鮮'},
+      { text: '🚫 🐑', value: '羊'}
     ],
       meatSubmitOptions: [
         { text: '牛', value: '牛' },
@@ -425,9 +425,7 @@ export default {
 }
 .page-container {
   border: 3px solid black;
-  background-image: linear-gradient(45deg, #93a5cf 0%, #e4efe9 100%); background-blend-mode: multiply,multiply; background-blend-mode: multiply,multiply;  
-
-  padding: 20px;
+  background-image: linear-gradient(to top, #fcc5e4 0%, #fda34b 15%, #ff7882 35%, #c8699e 52%, #7046aa 71%, #0c1db8 87%, #020f75 100%);   min-height: 100vh; /* 确保背景覆盖整个页面 */
   margin-top: 20px;
   margin-bottom: 20px;
   border-radius: 67px;

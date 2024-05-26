@@ -5,7 +5,9 @@
       <b-col md="2" class="mb-3">
         <b-form-group label-for="brand-select" class="custom-form-group">
           <template #label>
-            <font-awesome-icon :icon="['fas', 'tag']"  />品牌   
+              <span style="color: white;">
+                 <font-awesome-icon :icon="['fas', 'tag']" />品牌
+              </span>
           </template>
           <b-form-select id="brand-select" v-model="selectedBrand" class="custom-select">
             <b-form-select-option value="">所有品牌</b-form-select-option>
@@ -20,7 +22,9 @@
       <b-col md="2" class="mb-3">
         <b-form-group  label-for="price-select" class="custom-form-group">
           <template #label>
-            <font-awesome-icon :icon="['fas', 'dollar-sign']"/>價格
+            <span style="color: white;">
+              <font-awesome-icon :icon="['fas', 'dollar-sign']" />價格
+            </span>
           </template>
           <b-form-select id="price-select" v-model="selectedPrice" class="custom-select">
             <b-form-select-option value="">所有價格</b-form-select-option>
@@ -37,7 +41,10 @@
       <b-col md="3" class="mb-3">
         <b-form-group label-for="startDate" class="custom-form-group">
           <template #label>
-            <font-awesome-icon :icon="['fas', 'calendar-days']" /> 開始日期
+            <span style="color: white;">            
+              <font-awesome-icon :icon="['fas', 'calendar-days']" /> 開始日期
+            </span>
+
           </template>
           <b-input-group>
             <b-form-input id="startDate" type="date" v-model="startDate" class="custom-date"></b-form-input>
@@ -51,7 +58,9 @@
       <b-col md="3" class="mb-3">
         <b-form-group  label-for="endDate" class="custom-form-group">
           <template #label>
+            <span style="color: white;">            
             <font-awesome-icon :icon="['fas', 'calendar-days']" /> 結束日期
+            </span>
           </template>
           <b-input-group>
             <b-form-input id="endDate" type="date" v-model="endDate" :min="minEndDate" class="custom-date"></b-form-input>
@@ -345,6 +354,7 @@ export default {
 }
 
 .search-button {
+  animation: pulse 1.5s infinite;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -395,13 +405,16 @@ export default {
   background-color: #0056b3; /* 悬停时背景颜色变化 */
   border-color: #0056b3; /* 悬停时边框颜色变化 */
 }
-
+.white-text {
+  color: white;
+}
 .coupon-card {
   cursor: pointer;
-  border: 2px dashed #dc3545; /* 红色虚线边框 */
-  border-radius: 10px; /* 圆角 */
+  border: 2px inset #dc3545; /* 红色虚线边框 */
+  border-radius: 70px; /* 圆角 */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 卡片阴影 */
-  background-image: linear-gradient(to top, #30cfd0 0%, #330867 100%);  transition: transform 0.3s ease-in-out; /* 鼠标悬浮效果 */
+  background-image: linear-gradient(to top, #30cfd0 0%, #330867 100%);  
+  transition: transform 0.3s ease-in-out; /* 鼠标悬浮效果 */
   overflow: hidden; /* 防止内容溢出 */
   position: relative; /* 相对定位，用于标记 */
 }
@@ -409,7 +422,7 @@ export default {
 .coupon-card::before {
   content: ""; /* 必须有内容才能显示 */
   position: absolute; /* 绝对定位 */
-  top: 20px;
+  top: 60px;
   left: -30px;
   width: 150px; /* 緞帶宽度 */
   height: 44px; /* 緞帶高度 */

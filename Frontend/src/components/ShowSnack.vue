@@ -3,7 +3,7 @@
     <b-container class="snack-container">
       <b-row>
         <b-col>
-          <h1 class="text-center">小吃選單</h1>
+          <h1 class="text-center" style="color: ivory; text-align: center;">小吃選單</h1>
           <div v-if="userDeveloper === 'addOrDeleteItem'" class="mb-4">
             <b-form @submit.prevent="handleAddSnack">
               <b-form-group label="品牌">
@@ -401,11 +401,10 @@ export default {
   margin-top: 20px;
   margin-bottom: 20px;
   border-radius: 67px;
-  background-image: linear-gradient(45deg, #93a5cf 0%, #e4efe9 100%); background-blend-mode: multiply,multiply; background-blend-mode: multiply,multiply;  
+  background-image: linear-gradient(to top, #fcc5e4 0%, #fda34b 15%, #ff7882 35%, #c8699e 52%, #7046aa 71%, #0c1db8 87%, #020f75 100%);   min-height: 100vh; /* 确保背景覆盖整个页面 */
 }
 
 .snack-container {
-  background-image: linear-gradient(45deg, #93a5cf 0%, #e4efe9 100%); background-blend-mode: multiply,multiply; background-blend-mode: multiply,multiply;  
   padding-top: 20px;
   padding-bottom: 20px;
 }

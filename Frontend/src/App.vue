@@ -1,6 +1,6 @@
 <template>
-  <div>
-    <!-- 标题栏 -->
+ <div class="app-container">
+      <!-- 标题栏 -->
     <NavBar @change-section="handleSectionChange" />
 
     <!-- 下拉式選單 -->
@@ -104,6 +104,11 @@ export default {
 
 <style scoped>
 /* Add your styles here */
+.app-container {
+  background-image: linear-gradient(to top, #fcc5e4 0%, #fda34b 15%, #ff7882 35%, #c8699e 52%, #7046aa 71%, #0c1db8 87%, #020f75 100%);   min-height: 100vh; /* 确保背景覆盖整个页面 */
+  padding: 20px;
+}
+
 .custom-select {
   width: 200px;
   padding: 10px 15px;
