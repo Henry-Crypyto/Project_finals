@@ -338,55 +338,59 @@ export default createStore({
       },
       fetchCoupons({ commit, state }) {
         const url = getFullApiUrl('/all_coupons_with_items');
-        axios.get(url)
-          .then(response => {
-            let allCoupons = response.data.map(coupon => ({
-              ...coupon,
-              expanded: false, // Track whether the coupon details are shown
-              items: [].concat(
-                coupon.main_courses.map(course => {
-                  const itemName = course.split(' x ')[0];
-                  const quantity = parseInt(course.split(' x ')[1]);
-                  const mainCourse = state.mainCourses.find(mc => mc.brand_name === coupon.brand_name && mc.name === itemName);
-                  return {
-                    ItemType: 'mainCourse',
-                    ItemName: itemName,
-                    Quantity: quantity,
-                    ItemBrand: coupon.brand_name,
-                    ItemId: mainCourse.id
-                  };
-                }),
-                coupon.beverages.map(beverage => {
-                  const itemName = beverage.split(' x ')[0];
-                  const quantity = parseInt(beverage.split(' x ')[1]);
-                  const beverageItem = state.beverages.find(b => b.brand_name === coupon.brand_name && b.name === itemName);
-                  return {
-                    ItemType: 'beverage',
-                    ItemName: itemName,
-                    Quantity: quantity,
-                    ItemBrand: coupon.brand_name,
-                    ItemId: beverageItem.id
-                  };
-                }),
-                coupon.snacks.map(snack => {
-                  const itemName = snack.split(' x ')[0];
-                  const quantity = parseInt(snack.split(' x ')[1]);
-                  const snackItem = state.snacks.find(s => s.brand_name === coupon.brand_name && s.name === itemName);
-                  return {
-                    ItemType: 'snack',
-                    ItemName: itemName,
-                    Quantity: quantity,
-                    ItemBrand: coupon.brand_name,
-                    ItemId: snackItem.id
-                  };
-                })
-              )
-            }));
-            commit('setAllCoupons', allCoupons);
-          })
-          .catch(error => {
-            console.error('Error fetching coupons:', error);
-          });
+        return new Promise((resolve, reject) => {
+          axios.get(url)
+            .then(response => {
+              let allCoupons = response.data.map(coupon => ({
+                ...coupon,
+                expanded: false, // Track whether the coupon details are shown
+                items: [].concat(
+                  coupon.main_courses.map(course => {
+                    const itemName = course.split(' x ')[0];
+                    const quantity = parseInt(course.split(' x ')[1]);
+                    const mainCourse = state.mainCourses.find(mc => mc.brand_name === coupon.brand_name && mc.name === itemName);
+                    return {
+                      ItemType: 'mainCourse',
+                      ItemName: itemName,
+                      Quantity: quantity,
+                      ItemBrand: coupon.brand_name,
+                      ItemId: mainCourse ? mainCourse.id : null
+                    };
+                  }),
+                  coupon.beverages.map(beverage => {
+                    const itemName = beverage.split(' x ')[0];
+                    const quantity = parseInt(beverage.split(' x ')[1]);
+                    const beverageItem = state.beverages.find(b => b.brand_name === coupon.brand_name && b.name === itemName);
+                    return {
+                      ItemType: 'beverage',
+                      ItemName: itemName,
+                      Quantity: quantity,
+                      ItemBrand: coupon.brand_name,
+                      ItemId: beverageItem ? beverageItem.id : null
+                    };
+                  }),
+                  coupon.snacks.map(snack => {
+                    const itemName = snack.split(' x ')[0];
+                    const quantity = parseInt(snack.split(' x ')[1]);
+                    const snackItem = state.snacks.find(s => s.brand_name === coupon.brand_name && s.name === itemName);
+                    return {
+                      ItemType: 'snack',
+                      ItemName: itemName,
+                      Quantity: quantity,
+                      ItemBrand: coupon.brand_name,
+                      ItemId: snackItem ? snackItem.id : null
+                    };
+                  })
+                )
+              }));
+              commit('setAllCoupons', allCoupons);
+              resolve(); // Resolve the Promise when the operation is successful
+            })
+            .catch(error => {
+              console.error('Error fetching coupons:', error);
+              reject(error); // Reject the Promise in case of an error
+            });
+        });
       }
     }
 });

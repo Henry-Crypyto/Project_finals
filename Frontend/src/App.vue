@@ -82,15 +82,22 @@ export default {
     updateUserDeveloper() {
       this.$store.commit('setUserDeveloper', this.localUserDeveloper);
       this.$store.commit('clearCartItems');
+    },
+    async initializeData() {
+    try {
+      await this.$store.dispatch('fetchNextCouponId');
+      await this.$store.dispatch('fetchBrandOptions');
+      await this.$store.dispatch('fetchMainCourses');
+      await this.$store.dispatch('fetchBeverages');
+      await this.$store.dispatch('fetchSnacks');
+      await this.$store.dispatch('fetchCoupons');
+    } catch (error) {
+      console.error('Error initializing data:', error);
     }
+  }
   },
   created() {
-    this.$store.dispatch('fetchNextCouponId');
-    this.$store.dispatch('fetchBrandOptions');
-    this.$store.dispatch('fetchMainCourses');
-    this.$store.dispatch('fetchBeverages');
-    this.$store.dispatch('fetchSnacks');
-    this.$store.dispatch('fetchCoupons');
+    this.initializeData();
   }
 }
 </script>

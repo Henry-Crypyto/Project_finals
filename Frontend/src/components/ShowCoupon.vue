@@ -193,7 +193,6 @@ export default {
     pageCount: 0 // 用于存储最小结束日期
   }),
   created() {
-    this.$store.dispatch('fetchCoupons');
     this.handleFetchCoupons();
   },
   methods: {
@@ -212,10 +211,10 @@ export default {
       }
       return null;
     },
-    handleFetchCoupons() {
-     this.$store.dispatch('fetchCoupons');
-     this.selectedCoupons = this.filterCoupons(this.allCoupons);
-     this.pageCount = Math.ceil(this.selectedCoupons.length / this.pageSize);
+    async handleFetchCoupons() {
+      await this.$store.dispatch('fetchCoupons');
+      this.selectedCoupons = this.filterCoupons(this.allCoupons);
+      this.pageCount = Math.ceil(this.selectedCoupons.length / this.pageSize);
     },
     deleteCoupon(couponId) {
       // 提示用户确认删除
@@ -224,7 +223,7 @@ export default {
         axios.delete(url)
           .then(() => {
             // 删除成功后重新获取折扣券信息
-            this.$store.dispatch('fetchCoupons');
+            this.handleFetchCoupons();
             alert("折扣券删除成功！");
           })
           .catch(error => {
