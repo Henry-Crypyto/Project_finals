@@ -83,7 +83,7 @@
               <b-button v-if="userDeveloper === 'updateItem'" variant="warning" class="position-absolute top-0 end-0 mt-5 me-2" @click="handleEditSnack(snack)">
                 編輯
               </b-button>
-              <img :src="getSnackImage(snack.image)" alt="Snack Image" class="card-img-top"/>
+              <img :src="getSnackImage(snack.image_path)" alt="Snack Image" class="card-img-top"/>
               <b-card-title class="text-center mb-2">{{ snack.name.trim() }}</b-card-title>
               <b-card-text><strong>原價:</strong> {{ snack.price }}</b-card-text>
               <b-card-text><strong>大小:</strong> {{ snack.snack_size || '無' }}</b-card-text>
@@ -165,7 +165,7 @@ export default {
         price: '',
         flavor: '',
         size: '',
-        image: null
+        image_path: null
       },
       editingSnack: null, // 用於編輯的小吃對象
       flavorOptions: [
@@ -181,7 +181,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(['snacks', 'brandOptions', 'brandSelect', 'cartItems', 'userDeveloper']),
+    ...mapState(['snacks', 'brandOptions', 'brandSelect', 'cartItems', 'userDeveloper','apiUrl']),
     filteredSnacks() {
       return this.snacks.filter(snack => {
         const brandMatch = this.localBrandSelect === '' || snack.brand_name === this.localBrandSelect;
@@ -213,11 +213,12 @@ export default {
   },
   methods: {
     ...mapMutations(['addToCart', 'setBrandSelect']),
-    getSnackImage(image64) {
-      if (!image64) {
-        return require('@/assets/image/default.png'); // 預設圖片路徑
-      }
-      return image64;
+    getSnackImage(imagePath) {
+      const baseUrl=this.apiUrl;
+      if (!imagePath) {
+       return require('@/assets/image/default.png'); // 预设图片路径
+    }
+  return `${baseUrl}${imagePath}`;
     },
     handleAddLoveToCart(snack) {
       if (this.cartItems.some(item => item.id === snack.id && item.preference === 0 && item.productType === this.$store.state.productType[2])) {
@@ -294,23 +295,51 @@ export default {
     },
     handleSaveEdit() {
       const formData = new FormData();
-      formData.append('id', this.editingSnack.id);
-      formData.append('name', this.editingSnack.name);
-      formData.append('price', this.editingSnack.price);
-      if (this.editingSnack.image) {
-        formData.append('image', this.editingSnack.image);
-      }
+    formData.append('id', this.editingSnack.id);
+    formData.append('name', this.editingSnack.name);
+    formData.append('price', this.editingSnack.price);
 
-      axios.put(getFullApiUrl('/update_snack'), formData)
+    let url = getFullApiUrl('/update_snack');  // Use a general endpoint like /update_item
+    const category = encodeURIComponent('snack');  // Add category field
+
+    if (this.editingSnack.image) {
+        const customFilename = `${category}_${this.editingSnack.id}.png`;  // Use category in the filename
+        formData.append('image', this.editingSnack.image, customFilename);  // Ensure this doesn't need changes
+        const brand = encodeURIComponent(this.editingSnack.brand_name);  // Assume `brand_name` is the brand field
+        url += `?brand=${brand}&category=${category}&filename=${encodeURIComponent(customFilename)}`;  // Include category and encoded filename in URL parameters
+
+        axios.put(url, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
         .then(() => {
-          this.$store.dispatch('fetchSnacks');
-          alert('Snack updated successfully');
-          this.editingSnack = null;
+            this.$store.dispatch('fetchSnacks');  // Use a general fetch action like fetchItems
+            alert('Item updated successfully');
+            this.editingSnack = null;  // Clear the editing item data
         })
         .catch(error => {
-          console.error('Error updating snack:', error);
-          alert('Failed to update snack: ' + error.message);
+            console.error('Error updating item:', error);
+            alert('Failed to update item: ' + error.message);
         });
+    } else {
+        // Perform the update operation even if there is no image
+        url += `?brand=${encodeURIComponent(this.editingSnack.brand_name)}&category=${category}`;  // Add category to URL
+        axios.put(url, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
+        .then(() => {
+            this.$store.dispatch('fetchSnacks');  // Use a general fetch action like fetchItems
+            alert('Item updated successfully');
+            this.editingSnack = null;  // Clear the editing item data
+        })
+        .catch(error => {
+            console.error('Error updating item:', error);
+            alert('Failed to update item: ' + error.message);
+        });
+    }
     },
     handleEditImageUpload(event) {
       const file = event.target.files[0];

@@ -82,7 +82,7 @@
               <b-button v-if="userDeveloper === 'updateItem'" variant="warning" class="position-absolute top-0 end-0 mt-5 me-2" @click="handleEditBeverage(beverage)">
                 編輯
               </b-button>
-              <img :src="getBeverageImage(beverage.image)" alt="Beverage Image" class="card-img-top"/>
+              <img :src="getBeverageImage(beverage.image_path)" alt="Beverage Image" class="card-img-top"/>
               <b-card-title class="text-center mb-2">{{ beverage.name.trim() }}</b-card-title>
               <b-card-text><strong>原價:</strong> {{ beverage.price }}</b-card-text>
               <b-card-text><strong>容量:</strong> {{ beverage.beverage_size }}</b-card-text>
@@ -164,7 +164,7 @@ export default {
         price: '',
         iced_hot: '',
         size: '',
-        image: null
+        image_path: null
       },
       editingBeverage: null, // 用於編輯的飲料對象
       icedHotOptions: [
@@ -177,7 +177,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(['beverages', 'brandOptions', 'brandSelect', 'cartItems', 'userDeveloper']),
+    ...mapState(['beverages', 'brandOptions', 'brandSelect', 'cartItems', 'userDeveloper','apiUrl']),
     filteredBeverages() {
       return this.beverages.filter(beverage => {
         const brandMatch = this.localBrandSelect === '' || beverage.brand_name === this.localBrandSelect;
@@ -209,11 +209,12 @@ export default {
   },
   methods: {
     ...mapMutations(['addToCart', 'setBrandSelect']),
-    getBeverageImage(image64) {
-      if (!image64) {
-        return require('@/assets/image/default.png'); // 預設圖片路徑
-      }
-      return image64;
+    getBeverageImage(imagePath) {
+      const baseUrl=this.apiUrl;
+      if (!imagePath) {
+    return require('@/assets/image/default.png'); // 预设图片路径
+    }
+  return `${baseUrl}${imagePath}`;
     },
     handleAddLoveToCart(beverage) {
       if (this.cartItems.some(item => item.id === beverage.id && item.preference === 0 && item.productType === this.$store.state.productType[1])) {
@@ -271,7 +272,7 @@ export default {
             price: '',
             iced_hot: '',
             size: '',
-            image: null
+            image_path: null
           };
           // Reset the file input
           this.$refs.fileInput.value = '';
@@ -294,20 +295,47 @@ export default {
       formData.append('name', this.editingBeverage.name);
       formData.append('price', this.editingBeverage.price);
 
-      if (this.editingBeverage.image) {
-        formData.append('image', this.editingBeverage.image);
-      }
+      let url = getFullApiUrl('/update_beverage');
+      const category = encodeURIComponent('beverage');  // Add category field
 
-      axios.put(getFullApiUrl('/update_beverage'), formData)
+      if (this.editingBeverage.image) {
+        const customFilename = `${category}_${this.editingBeverage.id}.png`;
+        formData.append('image', this.editingBeverage.image, customFilename);  // 確保這裡不需要做改動
+        const brand = encodeURIComponent(this.editingBeverage.brand_name);  // 假设 `brand_name` 是品牌字段
+        url += `?brand=${brand}&category=${category}&filename=${encodeURIComponent(customFilename)}`;  // Include category and encoded filename in URL parameters
+        
+        axios.put(url, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
         .then(() => {
-          this.$store.dispatch('fetchBeverages');
-          alert('Beverage updated successfully');
-          this.editingBeverage = null;
+            this.$store.dispatch('fetchBeverages');
+            alert('Course updated successfully');
+            this.editingBeverage = null;  // 清空正在编辑的课程数据
         })
         .catch(error => {
-          console.error('Error updating beverage:', error);
-          alert('Failed to update beverage: ' + error.message);
+            console.error('Error updating beverage:', error);
+            alert('Failed to update beverage: ' + error.message);
         });
+      }else {
+        // 如果没有图片也进行更新操作
+        url += `?brand=${encodeURIComponent(this.editingBeverage.brand_name)}&category=${category}`;  // Add category to URL
+        axios.put(url, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
+        .then(() => {
+            this.$store.dispatch('fetchBeverages');
+            alert('Course updated successfully');
+            this.editingBeverage = null;  // 清空正在编辑的课程数据
+        })
+        .catch(error => {
+            console.error('Error updating beverage:', error);
+            alert('Failed to update beverage: ' + error.message);
+        });
+    }
     },
     handleEditImageUpload(event) {
       const file = event.target.files[0];

@@ -208,18 +208,20 @@ export default {
     ...mapMutations(['setBrandOptions', 'dulplicateInfoToNewCoupon', 'setUserDeveloper']),
 
     getImageById(itemId, itemType) {
-      if (itemType === 'mainCourse') {
-        const item = this.mainCourses.find(mc => mc.id === itemId);
-        return item ? item.image : null;
-      } else if (itemType === 'beverage') {
-        const item = this.beverages.find(b => b.id === itemId);
-        return item ? item.image : null;
-      } else if (itemType === 'snack') {
-        const item = this.snacks.find(s => s.id === itemId);
-        return item ? item.image : null;
-      }
-      return null;
-    },
+  let item;
+  if (itemType === 'mainCourse') {
+    item = this.mainCourses.find(mc => mc.id === itemId);
+  } else if (itemType === 'beverage') {
+    item = this.beverages.find(b => b.id === itemId);
+  } else if (itemType === 'snack') {
+    item = this.snacks.find(s => s.id === itemId);
+  }
+
+  if (item && item.image_path) {
+    return `${this.apiUrl}/${item.image_path}`;
+  }
+  return null;
+},
     async handleFetchCoupons() {
       await this.$store.dispatch('fetchCoupons');
       this.selectedCoupons = this.filterCoupons(this.allCoupons);
@@ -304,7 +306,7 @@ export default {
     }
   },
   computed: {
-    ...mapState(['brandOptions', 'newCoupon', 'nextCouponId', 'userDeveloper', 'cartItems', 'mainCourses', 'beverages', 'snacks','allCoupons']),
+    ...mapState(['brandOptions', 'newCoupon', 'nextCouponId', 'userDeveloper', 'cartItems', 'mainCourses', 'beverages', 'snacks','allCoupons','apiUrl']),
     paginatedCoupons() {
     const start = (this.currentPage - 1) * this.pageSize;
     const end = start + this.pageSize;

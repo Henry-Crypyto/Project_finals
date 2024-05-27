@@ -18,7 +18,7 @@
 
     <!-- 主内容区域 -->
     <b-container class="my-3">
-      <!-- <ShoppingCart :items="cartItems" /> -->
+      <UploadImage/>
       <component :is="currentView" @add-to-cart="addToCart" />
     </b-container>
 
@@ -33,6 +33,7 @@ import ShowCoupon from './components/ShowCoupon.vue';
 import ShowMainCourse from './components/ShowMainCourse.vue';
 import ShowBeverage from './components/ShowBeverage.vue';
 import ShowSnack from './components/ShowSnack.vue';
+
 import { mapState } from 'vuex';
 
 export default {
@@ -85,11 +86,6 @@ export default {
     },
     async initializeData() {
     try {
-      await this.$store.dispatch('fetchNextCouponId');
-      await this.$store.dispatch('fetchBrandOptions');
-      await this.$store.dispatch('fetchMainCourses');
-      await this.$store.dispatch('fetchBeverages');
-      await this.$store.dispatch('fetchSnacks');
       await this.$store.dispatch('fetchCoupons');
     } catch (error) {
       console.error('Error initializing data:', error);
@@ -98,6 +94,11 @@ export default {
   },
   created() {
     this.initializeData();
+    this.$store.dispatch('fetchNextCouponId');
+      this.$store.dispatch('fetchBrandOptions');
+      this.$store.dispatch('fetchMainCourses');
+      this.$store.dispatch('fetchBeverages');
+      this.$store.dispatch('fetchSnacks');
   }
 }
 </script>

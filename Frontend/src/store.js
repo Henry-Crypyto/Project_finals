@@ -1,9 +1,10 @@
 import { createStore } from 'vuex';
 import axios from 'axios';
-import { getFullApiUrl } from '../config.js';
+import { API_URL,getFullApiUrl } from '../config.js';
 
 export default createStore({
   state: {
+    apiUrl: API_URL,
     currentView: 'ShowMainCourse',
     brandSelect: 'all',
     brandOptions: [],

@@ -6,3 +6,6 @@ export function getFullApiUrl(path) {
 }
 
 
+//ngrok指令 ngrok http --domain=terrier-apt-honestly.ngrok-free.app https://localhost:8080 
+
+

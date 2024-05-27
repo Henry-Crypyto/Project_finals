@@ -78,7 +78,7 @@
               <b-button v-if="userDeveloper === 'updateItem'" variant="warning" class="position-absolute top-0 end-0 mt-5 me-2" @click="handleEditCourse(course)">
                 編輯
               </b-button>
-              <img :src="getMainCourseImage(course.image)" alt="Main Course Image" class="card-img-top"/>
+              <img :src="getMainCourseImage(course.image_path)" alt="Main Course Image" class="card-img-top"/>
               <b-card-title class="text-center mb-2">{{ course.name }}</b-card-title>
               <b-card-text><strong>原價:</strong> {{ course.price }}</b-card-text>
               <b-card-text><strong>肉類類型:</strong> {{ course.meat_type || '無' }}</b-card-text>
@@ -158,7 +158,7 @@ export default {
         price: '',
         flavor: '',
         meatTypes: [], // 新增的肉类选择
-        image: null
+        image_path: null
       },
       editingCourse: null, // 用于编辑的课程对象
       flavorOptions: [
@@ -186,7 +186,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(['mainCourses', 'brandOptions', 'brandSelect', 'cartItems', 'userDeveloper']),
+    ...mapState(['mainCourses', 'brandOptions', 'brandSelect', 'cartItems', 'userDeveloper','apiUrl']),
     filteredMainCourses() {
       return this.mainCourses.filter(course => {
         const brandMatch = this.localBrandSelect === '' || this.localBrandSelect === 'all' || course.brand_name === this.localBrandSelect;
@@ -221,11 +221,12 @@ export default {
         this.localMeatSelect.push(meat); // 如果未选中，则添加到数组中
       }
     },
-    getMainCourseImage(base64) {
-      if (!base64) {
-        return require('@/assets/image/default.png'); // 预设图片路径
-      }
-      return base64; // base64 字符串已经包含 "data:image/png;base64,"
+    getMainCourseImage(imagePath) {
+      const baseUrl=this.apiUrl;
+      if (!imagePath) {
+    return require('@/assets/image/default.png'); // 预设图片路径
+    }
+  return `${baseUrl}${imagePath}`;  
     },
     handleAddLoveToCart(course) {
       if (this.cartItems.some(item => item.id === course.id && item.preference === 0 && item.productType === this.$store.state.productType[0])) {
@@ -341,26 +342,53 @@ export default {
       this.editingCourse = { ...course };
     },
     handleSaveEdit() {
-      const formData = new FormData();
-      formData.append('id', this.editingCourse.id);
-      formData.append('name', this.editingCourse.name);
-      formData.append('price', this.editingCourse.price);
+    const formData = new FormData();
+    formData.append('id', this.editingCourse.id);
+    formData.append('name', this.editingCourse.name);
+    formData.append('price', this.editingCourse.price);
 
-      if (this.editingCourse.image) {
-        formData.append('image', this.editingCourse.image);
-      }
+    let url = getFullApiUrl('/update_main_course');  // Use a general endpoint like /update_item
+    const category = encodeURIComponent('main_course');  // Add category field
 
-      axios.put(getFullApiUrl('/update_main_course'), formData)
+    if (this.editingCourse.image) {
+        const customFilename = `${category}_${this.editingCourse.id}.png`;  // Use category in the filename
+        formData.append('image', this.editingCourse.image, customFilename);  // Ensure this doesn't need changes
+        const brand = encodeURIComponent(this.editingCourse.brand_name);  // Assume `brand_name` is the brand field
+        url += `?brand=${brand}&category=${category}&filename=${encodeURIComponent(customFilename)}`;  // Include category and encoded filename in URL parameters
+
+        axios.put(url, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
         .then(() => {
-          this.$store.dispatch('fetchMainCourses');
-          alert('Course updated successfully');
-          this.editingCourse = null;
+            this.$store.dispatch('fetchMainCourses');  // Use a general fetch action like fetchItems
+            alert('Item updated successfully');
+            this.editingCourse = null;  // Clear the editing item data
         })
         .catch(error => {
-          console.error('Error updating course:', error);
-          alert('Failed to update course: ' + error.message);
+            console.error('Error updating item:', error);
+            alert('Failed to update item: ' + error.message);
         });
-    },
+    } else {
+        // Perform the update operation even if there is no image
+        url += `?brand=${encodeURIComponent(this.editingCourse.brand_name)}&category=${category}`;  // Add category to URL
+        axios.put(url, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
+        .then(() => {
+            this.$store.dispatch('fetchMainCourses');  // Use a general fetch action like fetchItems
+            alert('Item updated successfully');
+            this.editingCourse = null;  // Clear the editing item data
+        })
+        .catch(error => {
+            console.error('Error updating item:', error);
+            alert('Failed to update item: ' + error.message);
+        });
+    }
+},
     handleEditImageUpload(event) {
       const file = event.target.files[0];
       this.editingCourse.image = file;

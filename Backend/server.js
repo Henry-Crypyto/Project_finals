@@ -2,15 +2,14 @@ const express = require('express');
 const mysql = require('mysql');
 const cors = require('cors');
 const app = express();
-const fileUpload = require('express-fileupload');
-
+const fs = require('fs');
+const path = require('path');
+const multer = require('multer');
 app.use(cors());
 app.use(express.json()); // 用于解析JSON格式的请求体
-app.use(fileUpload());
 
 // 假设你的表名为 user，根据你真实的表名修改此处
 const userTableName = 'all_user';
-
 const brandTableName = 'all_brand_name';
 const mainCourseTableName='main_course';
 const beverageTableName='beverage';
@@ -20,9 +19,27 @@ const couponBeverageTableName='coupon_beverage'
 const couponSnackTableName='coupon_snack'
 const couponTableName = 'coupon';
 const mainCourseMeatTypeTableName='main_course_meat_type'
+app.use(express.json());
+
+const storage = multer.diskStorage({
+    destination: function(req, file, cb) {
+        const brand = decodeURIComponent(req.query.brand);
+        const category = decodeURIComponent(req.query.category);
+        const dir = path.join(__dirname, 'image', brand, category);
+        fs.mkdir(dir, { recursive: true }, error => cb(error, dir));
+    },
+    filename: function(req, file, cb) {
+        const filename = decodeURIComponent(req.query.filename || file.originalname);
+        cb(null, filename);
+    }
+});
 
 
+const upload = multer({ storage: storage });
 
+
+  
+  
 
 const db = mysql.createConnection({
     host: '127.0.0.1',
@@ -42,6 +59,21 @@ db.connect(err => {
 
 
 
+// 在你的Express应用中添加这一行，假设`app`是你的Express实例
+app.use('/image', express.static(path.join(__dirname, 'image')));
+
+
+
+app.post('/upload', upload.single('image'), (req, res) => {
+    if (req.file) {
+      res.send(`File uploaded successfully: ${req.file.filename}`);
+    } else {
+      res.status(400).send('No file uploaded.');
+    }
+  });
+
+
+
 app.get('/brand_append', (req, res) => {
     db.query(`SELECT * FROM ${brandTableName}`, (err, results) => {
         if (err) {
@@ -49,7 +81,7 @@ app.get('/brand_append', (req, res) => {
             res.status(500).send('Error fetching data');
             return;
         }
-        console.log('Data retrieved from the database: ', results);
+        // console.log('Data retrieved from the database: ', results);
         res.json(results);
     });
 });
@@ -165,7 +197,7 @@ GROUP BY
               course.image = `data:image/png;base64,${course.image.toString('base64')}`; // 确保image字段是base64字符串
             }
           });
-        console.log('Data retrieved from the database: ', results);
+        // console.log('Data retrieved from the database: ', results);
         res.json(results);
     });
 });
@@ -182,7 +214,7 @@ app.get('/all_beverage', (req, res) => {
               beverage.image = `data:image/png;base64,${beverage.image.toString('base64')}`; // 确保image字段是base64字符串
             }
           });
-        console.log('Data retrieved from the database: ', results);
+        // console.log('Data retrieved from the database: ', results);
         res.json(results);
     });
 });
@@ -194,7 +226,7 @@ app.get('/all_beverage_size', (req, res) => {
             res.status(500).send('Error fetching data');
             return;
         }
-        console.log('Data retrieved from the database: ', results);
+        // console.log('Data retrieved from the database: ', results);
         res.json(results);
     });
 });
@@ -211,7 +243,7 @@ app.get('/all_snack', (req, res) => {
               snack.image = `data:image/png;base64,${snack.image.toString('base64')}`; // 确保image字段是base64字符串
             }
           });
-        console.log('Data retrieved from the database: ', results);
+        // console.log('Data retrieved from the database: ', results);
         res.json(results);
     });
 });
@@ -223,7 +255,7 @@ app.get('/all_snack_size', (req, res) => {
             res.status(500).send('Error fetching data');
             return;
         }
-        console.log('Data retrieved from the database: ', results);
+        // console.log('Data retrieved from the database: ', results);
         res.json(results);
     });
 });
@@ -246,7 +278,7 @@ GROUP BY
             res.status(500).send('Error fetching data');
             return;
         }
-        console.log('Data retrieved from the database: ', results);
+        // console.log('Data retrieved from the database: ', results);
         res.json(results);
     });
 });
@@ -506,37 +538,28 @@ app.post('/add_main_course', (req, res) => {
   });
 });
 
-app.put('/update_main_course', (req, res) => {
+app.put('/update_main_course', upload.single('image'), (req, res) => {
     const { id, name, price } = req.body;
+
+    let imagePath = req.file ? req.file.path : null; // 获取上传文件的路径
+    if (imagePath) {
+        imagePath = path.relative(__dirname, imagePath);
+        console.log("Relative imagePath:", imagePath);  // 打印相对路径以调试
+    }
+    // 如果没有新的图片上传，则不更新图片路径
+    let sql = 'UPDATE main_course SET name = ?, price = ?' + (imagePath ? ', image_path = ?' : '') + ' WHERE id = ?';
+    let updateData = imagePath ? [name, price, imagePath, id] : [name, price, id];
     
-    // 確認ID、名稱和價格都存在
-    if (!id || !name || !price) {
-      return res.status(400).send('ID, name, and price are required');
-    }
-  
-    // 構建更新資料
-    let updateData = [name, price];
-    let sql = 'UPDATE main_course SET name = ?, price = ?';
-  
-    // 確認文件是否已上傳
-    if (req.files && req.files.image) {
-      const image = req.files.image.data; // 獲取上傳的文件數據
-      sql += ', image = ?';
-      updateData.push(image);
-    }
-  
-    sql += ' WHERE id = ?';
-    updateData.push(id);
-  
-    // 更新資料庫中的資料
     db.query(sql, updateData, (err, results) => {
-      if (err) {
-        console.error('Error updating course:', err);
-        return res.status(500).send('Error updating course');
-      }
-      res.send({ success: true, message: 'Course updated successfully' });
+        if (err) {
+            console.error('Error updating course:', err);
+            return res.status(500).send('Error updating course');
+        }
+        res.send({ success: true, message: 'Course updated successfully', imagePath: imagePath || 'No image updated' });
     });
-  });
+});
+
+
 
 
 app.delete('/delete_beverage/:itemId', (req, res) => {
@@ -575,37 +598,26 @@ app.post('/add_beverage', (req, res) => {
     );
   });
   
-app.put('/update_beverage', (req, res) => {
+app.put('/update_beverage', upload.single('image'), (req, res) => {
     const { id, name, price } = req.body;
+
+    let imagePath = req.file ? req.file.path : null; // 获取上传文件的路径
+    if (imagePath) {
+        imagePath = path.relative(__dirname, imagePath);
+        console.log("Relative imagePath:", imagePath);  // 打印相对路径以调试
+    }
+    // 如果没有新的图片上传，则不更新图片路径
+    let sql = 'UPDATE beverage SET name = ?, price = ?' + (imagePath ? ', image_path = ?' : '') + ' WHERE id = ?';
+    let updateData = imagePath ? [name, price, imagePath, id] : [name, price, id];
     
-    // 確認ID、名稱和價格都存在
-    if (!id || !name || !price) {
-      return res.status(400).send('ID, name, and price are required');
-    }
-  
-    // 構建更新資料
-    let updateData = [name, price];
-    let sql = 'UPDATE beverage SET name = ?, price = ?';
-  
-    // 確認文件是否已上傳
-    if (req.files && req.files.image) {
-      const image = req.files.image.data; // 獲取上傳的文件數據
-      sql += ', image = ?';
-      updateData.push(image);
-    }
-  
-    sql += ' WHERE id = ?';
-    updateData.push(id);
-  
-    // 更新資料庫中的資料
     db.query(sql, updateData, (err, results) => {
-      if (err) {
-        console.error('Error updating course:', err);
-        return res.status(500).send('Error updating course');
-      }
-      res.send({ success: true, message: 'Course updated successfully' });
+        if (err) {
+            console.error('Error updating beverage:', err);
+            return res.status(500).send('Error updating beverage');
+        }
+        res.send({ success: true, message: 'Course updated successfully', imagePath: imagePath || 'No image updated' });
     });
-  });
+});
 
 app.delete('/delete_snack/:itemId', (req, res) => {
     const itemId = req.params.itemId;
@@ -642,35 +654,24 @@ app.post('/add_snack', (req, res) => {
     );
   });
 
-app.put('/update_snack', (req, res) => {
+app.put('/update_snack', upload.single('image'), (req, res) => {
     const { id, name, price } = req.body;
+
+    let imagePath = req.file ? req.file.path : null; // 获取上传文件的路径
+    if (imagePath) {
+        imagePath = path.relative(__dirname, imagePath);
+        console.log("Relative imagePath:", imagePath);  // 打印相对路径以调试
+    }
+    // 如果没有新的图片上传，则不更新图片路径
+    let sql = 'UPDATE snack SET name = ?, price = ?' + (imagePath ? ', image_path = ?' : '') + ' WHERE id = ?';
+    let updateData = imagePath ? [name, price, imagePath, id] : [name, price, id];
     
-    // 確認ID、名稱和價格都存在
-    if (!id || !name || !price) {
-      return res.status(400).send('ID, name, and price are required');
-    }
-  
-    // 構建更新資料
-    let updateData = [name, price];
-    let sql = 'UPDATE snack SET name = ?, price = ?';
-  
-    // 確認文件是否已上傳
-    if (req.files && req.files.image) {
-      const image = req.files.image.data; // 獲取上傳的文件數據
-      sql += ', image = ?';
-      updateData.push(image);
-    }
-  
-    sql += ' WHERE id = ?';
-    updateData.push(id);
-  
-    // 更新資料庫中的資料
     db.query(sql, updateData, (err, results) => {
-      if (err) {
-        console.error('Error updating course:', err);
-        return res.status(500).send('Error updating course');
-      }
-      res.send({ success: true, message: 'Course updated successfully' });
+        if (err) {
+            console.error('Error updating snack:', err);
+            return res.status(500).send('Error updating snack');
+        }
+        res.send({ success: true, message: 'Course updated successfully', imagePath: imagePath || 'No image updated' });
     });
   });  
 
@@ -825,3 +826,5 @@ const PORT = 3000;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
+
+
