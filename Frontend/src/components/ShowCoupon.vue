@@ -74,7 +74,7 @@
       <!-- Search Button -->
       <b-col md="2" class="mb-3 align-self-end">
         <button class="search-button" @click="handleFetchCoupons">
-       <font-awesome-icon :icon="['fas', 'search']" /> 搜索
+       <font-awesome-icon :icon="['fas', 'search']" /> 搜尋
          </button>   
        </b-col>
     </b-row>

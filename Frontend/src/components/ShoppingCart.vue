@@ -12,7 +12,6 @@
           <b-form-group class="d-flex justify-content-center">
           </b-form-group>
           <b-form-group>
-            <b-form-input type="text" :value="nextCouponId" placeholder="折價券ID" readonly v-if="userDeveloper !== 'user'"></b-form-input>
             <b-form-input type="text" v-model="brandSelect" readonly v-if="userDeveloper !== 'user'"></b-form-input>
             <b-form-input type="text" v-model="newCoupon.coupon_name" placeholder="折價券名稱" required v-if="userDeveloper !== 'user'"></b-form-input>
           </b-form-group>

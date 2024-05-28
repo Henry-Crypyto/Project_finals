@@ -18,7 +18,11 @@ const couponMainCourseTableName='coupon_main_course'
 const couponBeverageTableName='coupon_beverage'
 const couponSnackTableName='coupon_snack'
 const couponTableName = 'coupon';
-const mainCourseMeatTypeTableName='main_course_meat_type'
+const meatTypeTableName = 'meat_type';
+const flavorTableName = 'flavor';
+const icedHotTableName = 'iced_hot';
+const beverageSizeTableName = 'size_beverage';
+const snackSizeTableName = 'size';
 app.use(express.json());
 
 const storage = multer.diskStorage({
@@ -759,6 +763,472 @@ app.put('/update_all_coupon_original_price', (req, res) => {
     });
 });
 
+//Developer----------------------------------------------------------------
+app.get('/all_brand', (req, res) => {
+    db.query(`SELECT * FROM ${brandTableName}`, (err, results) => {
+        if (err) {
+            console.error('Error fetching data: ', err);
+            res.status(500).send('Error fetching data');
+            return;
+        }
+        // console.log('Data retrieved from the database: ', results);
+        res.json(results);
+    });
+});
+
+app.delete('/delete_brand/:brand_id', (req, res) => {
+    const brandId = req.params.brand_id;
+    const query = `DELETE FROM ${brandTableName} WHERE brand_id = ?`;
+
+    db.query(query, [brandId], (err, results) => {
+        if (err) {
+            console.error('Error deleting data: ', err);
+            res.status(500).send('Error deleting data');
+            return;
+        }
+
+        if (results.affectedRows === 0) {
+            res.status(404).send('Brand not found');
+        } else {
+            res.send('Brand deleted successfully');
+        }
+    });
+});
+
+app.post('/add_brand', (req, res) => {
+    const { brand_name } = req.body;
+
+    if (!brand_name) {
+        return res.status(400).send('Brand name is required');
+    }
+
+    const query = `INSERT INTO ${brandTableName} (brand_name) VALUES (?)`;
+    db.query(query, [brand_name], (err, results) => {
+        if (err) {
+            console.error('Error adding brand: ', err);
+            res.status(500).send('Error adding brand');
+            return;
+        }
+        res.status(201).send('Brand added successfully');
+    });
+});
+
+app.put('/update_brand/:brand_id', (req, res) => {
+    const brandId = req.params.brand_id;
+    const { brand_name } = req.body;
+
+    if (!brand_name) {
+        return res.status(400).send('Brand name is required');
+    }
+
+    const query = `UPDATE ${brandTableName} SET brand_name = ? WHERE brand_id = ?`;
+    db.query(query, [brand_name, brandId], (err, results) => {
+        if (err) {
+            console.error('Error updating brand: ', err);
+            res.status(500).send('Error updating brand');
+            return;
+        }
+
+        if (results.affectedRows === 0) {
+            res.status(404).send('Brand not found');
+        } else {
+            res.send('Brand updated successfully');
+        }
+    });
+});
+
+
+
+app.delete('/delete_flavor/:flavor_id', (req, res) => {
+    const flavorId = req.params.flavor_id;
+    const query = `DELETE FROM ${flavorTableName} WHERE flavor_id = ?`;
+
+    db.query(query, [flavorId], (err, results) => {
+        if (err) {
+            console.error('Error deleting data: ', err);
+            res.status(500).send('Error deleting data');
+            return;
+        }
+
+        if (results.affectedRows === 0) {
+            res.status(404).send('Flavor not found');
+        } else {
+            res.send('Flavor deleted successfully');
+        }
+    });
+});
+
+// Add flavor
+app.post('/add_flavor', (req, res) => {
+    const { flavor_name } = req.body;
+
+    if (!flavor_name) {
+        return res.status(400).send('Flavor name is required');
+    }
+
+    const query = `INSERT INTO ${flavorTableName} (flavor_name) VALUES (?)`;
+    db.query(query, [flavor_name], (err, results) => {
+        if (err) {
+            console.error('Error adding flavor: ', err);
+            res.status(500).send('Error adding flavor');
+            return;
+        }
+        res.status(201).send('Flavor added successfully');
+    });
+});
+
+// Update flavor
+app.put('/update_flavor/:flavor_id', (req, res) => {
+    const flavorId = req.params.flavor_id;
+    const { flavor_name } = req.body;
+
+    if (!flavor_name) {
+        return res.status(400).send('Flavor name is required');
+    }
+
+    const query = `UPDATE ${flavorTableName} SET flavor_name = ? WHERE flavor_id = ?`;
+    db.query(query, [flavor_name, flavorId], (err, results) => {
+        if (err) {
+            console.error('Error updating flavor: ', err);
+            res.status(500).send('Error updating flavor');
+            return;
+        }
+
+        if (results.affectedRows === 0) {
+            res.status(404).send('Flavor not found');
+        } else {
+            res.send('Flavor updated successfully');
+        }
+    });
+});
+
+// Get all flavors
+app.get('/all_flavor', (req, res) => {
+    const query = `SELECT * FROM ${flavorTableName}`;
+
+    db.query(query, (err, results) => {
+        if (err) {
+            console.error('Error fetching flavors: ', err);
+            res.status(500).send('Error fetching flavors');
+            return;
+        }
+        res.send(results);
+    });
+});
+
+
+
+app.delete('/delete_meat_type/:meat_type_id', (req, res) => {
+    const meatTypeId = req.params.meat_type_id;
+    const query = `DELETE FROM ${meatTypeTableName} WHERE meat_type_id = ?`;
+
+    db.query(query, [meatTypeId], (err, results) => {
+        if (err) {
+            console.error('Error deleting data: ', err);
+            res.status(500).send('Error deleting data');
+            return;
+        }
+
+        if (results.affectedRows === 0) {
+            res.status(404).send('Meat type not found');
+        } else {
+            res.send('Meat type deleted successfully');
+        }
+    });
+});
+
+// 添加肉类类型
+app.post('/add_meat_type', (req, res) => {
+    const { meat_type_name } = req.body;
+
+    if (!meat_type_name) {
+        return res.status(400).send('Meat type name is required');
+    }
+
+    const query = `INSERT INTO ${meatTypeTableName} (meat_type_name) VALUES (?)`;
+    db.query(query, [meat_type_name], (err, results) => {
+        if (err) {
+            console.error('Error adding meat type: ', err);
+            res.status(500).send('Error adding meat type');
+            return;
+        }
+        res.status(201).send('Meat type added successfully');
+    });
+});
+
+// 更新肉类类型
+app.put('/update_meat_type/:meat_type_id', (req, res) => {
+    const meatTypeId = req.params.meat_type_id;
+    const { meat_type_name } = req.body;
+
+    if (!meat_type_name) {
+        return res.status(400).send('Meat type name is required');
+    }
+
+    const query = `UPDATE ${meatTypeTableName} SET meat_type_name = ? WHERE meat_type_id = ?`;
+    db.query(query, [meat_type_name, meatTypeId], (err, results) => {
+        if (err) {
+            console.error('Error updating meat type: ', err);
+            res.status(500).send('Error updating meat type');
+            return;
+        }
+
+        if (results.affectedRows === 0) {
+            res.status(404).send('Meat type not found');
+        } else {
+            res.send('Meat type updated successfully');
+        }
+    });
+});
+
+// 获取所有肉类类型
+app.get('/all_meat_type', (req, res) => {
+    const query = `SELECT * FROM ${meatTypeTableName}`;
+
+    db.query(query, (err, results) => {
+        if (err) {
+            console.error('Error fetching meat types: ', err);
+            res.status(500).send('Error fetching meat types');
+            return;
+        }
+        res.send(results);
+    });
+});
+
+
+app.delete('/delete_iced_hot/:id', (req, res) => {
+    const id = req.params.id;
+    const query = `DELETE FROM ${icedHotTableName} WHERE iced_hot_id = ?`;
+
+    db.query(query, [id], (err, results) => {
+        if (err) {
+            console.error('Error deleting data: ', err);
+            res.status(500).send('Error deleting data');
+            return;
+        }
+
+        if (results.affectedRows === 0) {
+            res.status(404).send('Iced/Hot option not found');
+        } else {
+            res.send('Iced/Hot option deleted successfully');
+        }
+    });
+});
+
+// 添加冷/热选项
+app.post('/add_iced_hot', (req, res) => {
+    const { name } = req.body;
+
+    if (!name) {
+        return res.status(400).send('Iced/Hot option name is required');
+    }
+
+    const query = `INSERT INTO ${icedHotTableName} (iced_hot_name) VALUES (?)`;
+    db.query(query, [name], (err, results) => {
+        if (err) {
+            console.error('Error adding iced/hot option: ', err);
+            res.status(500).send('Error adding iced/hot option');
+            return;
+        }
+        res.status(201).send('Iced/Hot option added successfully');
+    });
+});
+
+
+app.put('/update_iced_hot/:id', (req, res) => {
+    const id = req.params.id;
+    const { name } = req.body;
+
+    if (!name) {
+        return res.status(400).send('Iced/Hot option name is required');
+    }
+    const query = `UPDATE ${icedHotTableName} SET iced_hot_name = ? WHERE iced_hot_id = ?`;
+    db.query(query, [name, id], (err, results) => {
+        if (err) {
+            console.error('Error updating iced/hot option: ', err);
+            res.status(500).send('Error updating iced/hot option');
+            return;
+        }
+
+        if (results.affectedRows === 0) {
+            res.status(404).send('Iced/Hot option not found');
+        } else {
+            res.send('Iced/Hot option updated successfully');
+        }
+    });
+});
+
+// 获取所有冷/热选项
+app.get('/all_iced_hot', (req, res) => {
+    const query = `SELECT * FROM ${icedHotTableName}`;
+
+    db.query(query, (err, results) => {
+        if (err) {
+            console.error('Error fetching iced/hot options: ', err);
+            res.status(500).send('Error fetching iced/hot options');
+            return;
+        }
+        res.send(results);
+    });
+});
+
+app.delete('/delete_beverage_size/:id', (req, res) => {
+    const id = req.params.id;
+    const query = `DELETE FROM ${beverageSizeTableName} WHERE id = ?`;
+
+    db.query(query, [id], (err, results) => {
+        if (err) {
+            console.error('Error deleting data: ', err);
+            res.status(500).send('Error deleting data');
+            return;
+        }
+
+        if (results.affectedRows === 0) {
+            res.status(404).send('Beverage size not found');
+        } else {
+            res.send('Beverage size deleted successfully');
+        }
+    });
+});
+
+// 添加饮料容量选项
+app.post('/add_beverage_size', (req, res) => {
+    const { name } = req.body;
+
+    if (!name) {
+        return res.status(400).send('Beverage size name is required');
+    }
+
+    const query = `INSERT INTO ${beverageSizeTableName} (beverage_size) VALUES (?)`;
+    db.query(query, [name], (err, results) => {
+        if (err) {
+            console.error('Error adding beverage size: ', err);
+            res.status(500).send('Error adding beverage size');
+            return;
+        }
+        res.status(201).send('Beverage size added successfully');
+    });
+});
+
+// 更新饮料容量选项
+app.put('/update_beverage_size/:id', (req, res) => {
+    const id = req.params.id;
+    const { name } = req.body;
+
+    if (!name) {
+        return res.status(400).send('Beverage size name is required');
+    }
+
+    const query = `UPDATE ${beverageSizeTableName} SET beverage_size = ? WHERE id = ?`;
+    db.query(query, [name, id], (err, results) => {
+        if (err) {
+            console.error('Error updating beverage size: ', err);
+            res.status(500).send('Error updating beverage size');
+            return;
+        }
+
+        if (results.affectedRows === 0) {
+            res.status(404).send('Beverage size not found');
+        } else {
+            res.send('Beverage size updated successfully');
+        }
+    });
+});
+
+// 获取所有饮料容量选项
+app.get('/all_beverage_size', (req, res) => {
+    const query = `SELECT * FROM ${beverageSizeTableName}`;
+
+    db.query(query, (err, results) => {
+        if (err) {
+            console.error('Error fetching beverage sizes: ', err);
+            res.status(500).send('Error fetching beverage sizes');
+            return;
+        }
+        res.send(results);
+    });
+});
+
+
+app.delete('/delete_snack_size/:id', (req, res) => {
+    const id = req.params.id;
+    const query = `DELETE FROM ${snackSizeTableName} WHERE size_id = ?`;
+
+    db.query(query, [id], (err, results) => {
+        if (err) {
+            console.error('Error deleting data: ', err);
+            res.status(500).send('Error deleting data');
+            return;
+        }
+
+        if (results.affectedRows === 0) {
+            res.status(404).send('Snack size not found');
+        } else {
+            res.send('Snack size deleted successfully');
+        }
+    });
+});
+
+// 添加点心大小选项
+app.post('/add_snack_size', (req, res) => {
+    const { name } = req.body;
+
+    if (!name) {
+        return res.status(400).send('Snack size name is required');
+    }
+
+    const query = `INSERT INTO ${snackSizeTableName} (size_type) VALUES (?)`;
+    db.query(query, [name], (err, results) => {
+        if (err) {
+            console.error('Error adding snack size: ', err);
+            res.status(500).send('Error adding snack size');
+            return;
+        }
+        res.status(201).send('Snack size added successfully');
+    });
+});
+
+// 更新点心大小选项
+app.put('/update_snack_size/:id', (req, res) => {
+    const id = req.params.id;
+    const { name } = req.body;
+
+    if (!name) {
+        return res.status(400).send('Snack size name is required');
+    }
+
+    const query = `UPDATE ${snackSizeTableName} SET size_type = ? WHERE size_id = ?`;
+    db.query(query, [name, id], (err, results) => {
+        if (err) {
+            console.error('Error updating snack size: ', err);
+            res.status(500).send('Error updating snack size');
+            return;
+        }
+        if (results.affectedRows === 0) {
+            res.status(404).send('Snack size not found');
+        } else {
+            res.send('Snack size updated successfully');
+        }
+    });
+});
+
+// 获取所有点心大小选项
+app.get('/all_snack_size', (req, res) => {
+    const query = `SELECT * FROM ${snackSizeTableName}`;
+
+    db.query(query, (err, results) => {
+        if (err) {
+            console.error('Error fetching snack sizes: ', err);
+            res.status(500).send('Error fetching snack sizes');
+            return;
+        }
+        res.send(results);
+    });
+});
+
+
+
+
 
 
 
@@ -861,6 +1331,11 @@ app.post('/login', (req, res) => {
        
     });
 });
+
+
+
+
+
 const PORT = 3000;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);

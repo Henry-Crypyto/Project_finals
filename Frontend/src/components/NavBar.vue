@@ -25,6 +25,11 @@
             <span class="divider-decoration"></span>
           </div>
           <b-nav-item href="#" class="nav-link" @click="emitChange('shoppingCart')">{{ shoppingCartLabel }}</b-nav-item>
+          <div class="divider">
+            <span class="divider-line"></span>
+            <span class="divider-decoration"></span>
+          </div>
+          <b-nav-item href="#" class="nav-link" @click="emitChange('developer')">管理者頁面</b-nav-item>
         </b-navbar-nav>
       </b-collapse>
     </b-container>

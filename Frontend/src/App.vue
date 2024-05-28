@@ -33,6 +33,7 @@ import ShowCoupon from './components/ShowCoupon.vue';
 import ShowMainCourse from './components/ShowMainCourse.vue';
 import ShowBeverage from './components/ShowBeverage.vue';
 import ShowSnack from './components/ShowSnack.vue';
+import DeveloperPage from './components/DeveloperPage.vue';
 
 import { mapState } from 'vuex';
 
@@ -43,7 +44,8 @@ export default {
     ShowCoupon,
     ShowMainCourse,
     ShowBeverage,
-    ShowSnack
+    ShowSnack,
+    DeveloperPage
   },
   data() {
     return {
@@ -73,7 +75,8 @@ export default {
         'beverage': 'ShowBeverage',
         'snack': 'ShowSnack',
         'coupon': 'ShowCoupon',
-        'shoppingCart': 'ShoppingCart'
+        'shoppingCart': 'ShoppingCart',
+        'developer':'DeveloperPage'
       };
       this.$store.commit('setView', viewMap[section] || 'ShowCoupon');
     },
