@@ -5,28 +5,47 @@
         <b-col>
           <h1 class="text-center" style="color: ivory; text-align: center;">小吃選單</h1>
           <div v-if="userDeveloper === 'addOrDeleteItem'" class="mb-4">
-            <b-form @submit.prevent="handleAddSnack">
-              <b-form-group label="品牌">
-                <b-form-select v-model="newSnack.brand" :options="brandOptions.map(brand => ({ value: brand.brand_name, text: brand.brand_name }))" required></b-form-select>
-              </b-form-group>
-              <b-form-group label="品項名稱">
-                <b-form-input v-model="newSnack.name" required></b-form-input>
-              </b-form-group>
-              <b-form-group label="單價">
-                <b-form-input type="number" v-model="newSnack.price" required></b-form-input>
-              </b-form-group>
-              <b-form-group label="口味">
-                <b-form-select v-model="newSnack.flavor" :options="flavorOptions" required></b-form-select>
-              </b-form-group>
-              <b-form-group label="大小">
-                <b-form-select v-model="newSnack.size" :options="sizeOptions" required></b-form-select>
-              </b-form-group>
-              <b-form-group label="上傳圖片">
-                <input type="file" @change="handleImageUpload" accept="image/png" ref="fileInput" required>
-              </b-form-group>
-              <b-button type="submit" variant="success">新增品項</b-button>
-            </b-form>
-          </div>
+  <b-form @submit.prevent="handleAddSnack">
+    <b-form-group label-for="snack-brand">
+      <template #label>
+        <span style="color: white;">品牌</span>
+      </template>
+      <b-form-select id="snack-brand" v-model="newSnack.brand" :options="brandOptions.map(brand => ({ value: brand.brand_name, text: brand.brand_name }))" required></b-form-select>
+    </b-form-group>
+    <b-form-group label-for="snack-name">
+      <template #label>
+        <span style="color: white;">品項名稱</span>
+      </template>
+      <b-form-input id="snack-name" v-model="newSnack.name" required></b-form-input>
+    </b-form-group>
+    <b-form-group label-for="snack-price">
+      <template #label>
+        <span style="color: white;">單價</span>
+      </template>
+      <b-form-input type="number" id="snack-price" v-model="newSnack.price" required></b-form-input>
+    </b-form-group>
+    <b-form-group label-for="snack-flavor">
+      <template #label>
+        <span style="color: white;">口味</span>
+      </template>
+      <b-form-select id="snack-flavor" v-model="newSnack.flavor" :options="flavorOptions" required></b-form-select>
+    </b-form-group>
+    <b-form-group label-for="snack-size">
+      <template #label>
+        <span style="color: white;">大小</span>
+      </template>
+      <b-form-select id="snack-size" v-model="newSnack.size" :options="sizeOptions" required></b-form-select>
+    </b-form-group>
+    <b-form-group label-for="snack-image">
+      <template #label>
+        <span style="color: white;">上傳圖片</span>
+      </template>
+      <input type="file" id="snack-image" @change="handleImageUpload" accept="image/png" ref="fileInput" required>
+    </b-form-group>
+    <b-button type="submit" variant="success">新增品項</b-button>
+  </b-form>
+</div>
+
           <div class="d-flex flex-column align-items-center mb-4">
             <div class="col-md-2 mb-3">
               <div class="form-group">
@@ -153,6 +172,7 @@ export default {
     this.$store.dispatch('fetchSnacks');
     this.$store.dispatch('fetchBrandOptions');
     this.fetchSnackSize();
+    this.fetchNextSnackId();
   },
   data() {
     return {
@@ -160,6 +180,7 @@ export default {
       localFlavorSelect: '', // This will be used for the flavor select input
       localSizeSelect: '', // This will be used for the size select input
       newSnack: {
+        id:null,
         brand: '',
         name: '',
         price: '',
@@ -213,6 +234,18 @@ export default {
   },
   methods: {
     ...mapMutations(['addToCart', 'setBrandSelect']),
+    fetchNextSnackId() {
+        const url = getFullApiUrl('/next_snack_id');
+        axios.get(url)
+          .then(response => {
+            // 假设响应是一个数组，并且我们需要第一个元素的 next_coupon_id
+            const nextSnackId = response.data[0].next_snack_id; 
+            this.newSnack.id=nextSnackId;
+          })
+          .catch(error => {
+            console.error('Error fetching next snack ID:', error);
+          });
+    },
     getSnackImage(imagePath) {
       const baseUrl=this.apiUrl;
       if (!imagePath) {
@@ -220,6 +253,7 @@ export default {
     }
   return `${baseUrl}${imagePath}`;
     },
+    
     handleAddLoveToCart(snack) {
       if (this.cartItems.some(item => item.id === snack.id && item.preference === 0 && item.productType === this.$store.state.productType[2])) {
         alert('小兄弟，你不能同時喜歡和討厭，你那叫愛');
@@ -263,28 +297,71 @@ export default {
       formData.append('price', this.newSnack.price);
       formData.append('flavor', this.newSnack.flavor);
       formData.append('size', this.newSnack.size);
-      formData.append('image', this.newSnack.image);
+      
 
-      axios.post(getFullApiUrl('/add_snack'), formData)
+
+      let url = getFullApiUrl('/add_snack');
+      const category = encodeURIComponent('snack');
+
+      if(this.newSnack.image){
+        const customFilename = `${category}_${this.newSnack.id}.png`;
+        formData.append('image', this.newSnack.image,customFilename);
+        const brand = encodeURIComponent(this.newSnack.brand);
+        url += `?brand=${brand}&category=${category}&filename=${encodeURIComponent(customFilename)}`;  // Include category and encoded filename in URL parameters
+
+        axios.post(url, formData,{
+          headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
         .then(() => {
           this.$store.dispatch('fetchSnacks');
-          alert('Snack added successfully');
+          alert('Snackadded successfully');
           // Reset the newSnack object to clear the input fields
           this.newSnack = {
             brand: '',
-            name: '',
-            price: '',
-            flavor: '',
-            size: '',
-            image: null
+        name: '',
+        price: '',
+        flavor: '',
+        size: '',
+        image_path: null
           };
           // Reset the file input
           this.$refs.fileInput.value = '';
+          this.fetchNextSnackId();
         })
         .catch(error => {
-          console.error('Error adding snack:', error);
-          alert('Failed to add snack: ' + error.message);
+          console.error('Error adding Snack:', error);
+          alert('Failed to add Snack: ' + error.message);
         });
+      }else{
+        url += `?brand=${encodeURIComponent(this.newSnack.brand)}&category=${category}`;  // Add category to URL
+        axios.post(url, formData,{
+          headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
+        .then(() => {
+          this.$store.dispatch('fetchSnacks');
+          alert('Course added successfully');
+          // Reset the newSnack object to clear the input fields
+          this.newSnack = {
+            brand: '',
+        name: '',
+        price: '',
+        flavor: '',
+        size: '',
+        image_path: null
+          };
+          // Reset the file input
+          this.$refs.fileInput.value = '';
+          this.fetchNextSnackId();
+        })
+        .catch(error => {
+          console.error('Error adding Snack:', error);
+          alert('Failed to add Snack: ' + error.message);
+        });
+      }
     },
     handleImageUpload(event) {
       const file = event.target.files[0];

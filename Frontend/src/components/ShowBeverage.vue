@@ -5,28 +5,47 @@
         <b-col>
           <h1 class="text-center" style="color: ivory; text-align: center;">飲料選單</h1>
           <div v-if="userDeveloper === 'addOrDeleteItem'" class="mb-4">
-            <b-form @submit.prevent="handleAddBeverage">
-              <b-form-group label="品牌">
-                <b-form-select v-model="newBeverage.brand" :options="brandOptions.map(brand => ({ value: brand.brand_name, text: brand.brand_name }))" required></b-form-select>
-              </b-form-group>
-              <b-form-group label="品項名稱">
-                <b-form-input v-model="newBeverage.name" required></b-form-input>
-              </b-form-group>
-              <b-form-group label="單價">
-                <b-form-input type="number" v-model="newBeverage.price" required></b-form-input>
-              </b-form-group>
-              <b-form-group label="類型">
-                <b-form-select v-model="newBeverage.iced_hot" :options="icedHotOptions" required></b-form-select>
-              </b-form-group>
-              <b-form-group label="容量">
-                <b-form-select v-model="newBeverage.size" :options="sizeOptions" required></b-form-select>
-              </b-form-group>
-              <b-form-group label="上傳圖片">
-                <input type="file" @change="handleImageUpload" accept="image/png" ref="fileInput" required>
-              </b-form-group>
-              <b-button type="submit" variant="success">新增品項</b-button>
-            </b-form>
-          </div>
+  <b-form @submit.prevent="handleAddBeverage">
+    <b-form-group label-for="beverage-brand">
+      <template #label>
+        <span style="color: white;">品牌</span>
+      </template>
+      <b-form-select id="beverage-brand" v-model="newBeverage.brand" :options="brandOptions.map(brand => ({ value: brand.brand_name, text: brand.brand_name }))" required></b-form-select>
+    </b-form-group>
+    <b-form-group label-for="beverage-name">
+      <template #label>
+        <span style="color: white;">品項名稱</span>
+      </template>
+      <b-form-input id="beverage-name" v-model="newBeverage.name" required></b-form-input>
+    </b-form-group>
+    <b-form-group label-for="beverage-price">
+      <template #label>
+        <span style="color: white;">單價</span>
+      </template>
+      <b-form-input type="number" id="beverage-price" v-model="newBeverage.price" required></b-form-input>
+    </b-form-group>
+    <b-form-group label-for="beverage-iced-hot">
+      <template #label>
+        <span style="color: white;">類型</span>
+      </template>
+      <b-form-select id="beverage-iced-hot" v-model="newBeverage.iced_hot" :options="icedHotOptions" required></b-form-select>
+    </b-form-group>
+    <b-form-group label-for="beverage-size">
+      <template #label>
+        <span style="color: white;">容量</span>
+      </template>
+      <b-form-select id="beverage-size" v-model="newBeverage.size" :options="sizeOptions" required></b-form-select>
+    </b-form-group>
+    <b-form-group label-for="beverage-image">
+      <template #label>
+        <span style="color: white;">上傳圖片</span>
+      </template>
+      <input type="file" id="beverage-image" @change="handleImageUpload" accept="image/png" ref="fileInput" required>
+    </b-form-group>
+    <b-button type="submit" variant="success">新增品項</b-button>
+  </b-form>
+</div>
+
           <div class="d-flex flex-column align-items-center mb-4">
             <div class="col-md-2 mb-3">
               <div class="form-group">
@@ -152,6 +171,7 @@ export default {
     this.$store.dispatch('fetchBeverages');
     this.$store.dispatch('fetchBrandOptions');
     this.fetchBeverageSize();
+    this.fetchNextBeverageId();
   },
   data() {
     return {
@@ -159,6 +179,7 @@ export default {
       localIcedHotSelect: '', // This will be used for the iced/hot select input
       localSizeSelect: '', // This will be used for the size select input
       newBeverage: {
+        id:null,
         brand: '',
         name: '',
         price: '',
@@ -209,6 +230,18 @@ export default {
   },
   methods: {
     ...mapMutations(['addToCart', 'setBrandSelect']),
+    fetchNextBeverageId() {
+        const url = getFullApiUrl('/next_beverage_id');
+        axios.get(url)
+          .then(response => {
+            // 假设响应是一个数组，并且我们需要第一个元素的 next_coupon_id
+            const nextBeverageId = response.data[0].next_beverage_id; 
+            this.newBeverage.id=nextBeverageId;
+          })
+          .catch(error => {
+            console.error('Error fetching next coupon ID:', error);
+          });
+    },
     getBeverageImage(imagePath) {
       const baseUrl=this.apiUrl;
       if (!imagePath) {
@@ -259,28 +292,74 @@ export default {
       formData.append('price', this.newBeverage.price);
       formData.append('iced_hot', this.newBeverage.iced_hot);
       formData.append('size', this.newBeverage.size);
-      formData.append('image', this.newBeverage.image);
 
-      axios.post(getFullApiUrl('/add_beverage'), formData)
+      let url = getFullApiUrl('/add_beverage');
+      const category = encodeURIComponent('beverage');
+      
+      
+ 
+
+      if(this.newBeverage.image){
+        const customFilename = `${category}_${this.newBeverage.id}.png`;
+        formData.append('image', this.newBeverage.image,customFilename);
+        const brand = encodeURIComponent(this.newBeverage.brand);
+        url += `?brand=${brand}&category=${category}&filename=${encodeURIComponent(customFilename)}`;  // Include category and encoded filename in URL parameters
+
+        axios.post(url, formData,{
+          headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
         .then(() => {
           this.$store.dispatch('fetchBeverages');
           alert('Beverage added successfully');
           // Reset the newBeverage object to clear the input fields
           this.newBeverage = {
-            brand: '',
-            name: '',
-            price: '',
-            iced_hot: '',
-            size: '',
-            image_path: null
+            id:null,
+        brand: '',
+        name: '',
+        price: '',
+        iced_hot: '',
+        size: '',
+        image_path: null
           };
           // Reset the file input
           this.$refs.fileInput.value = '';
+          this.fetchNextBeverageId();
         })
         .catch(error => {
           console.error('Error adding beverage:', error);
           alert('Failed to add beverage: ' + error.message);
         });
+      }else{
+        url += `?brand=${encodeURIComponent(this.newBeverage.brand)}&category=${category}`;  // Add category to URL
+        axios.post(url, formData,{
+          headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
+        .then(() => {
+          this.$store.dispatch('fetchBeverages');
+          alert('Course added successfully');
+          // Reset the newBeverage object to clear the input fields
+          this.newBeverage = {
+            id:null,
+        brand: '',
+        name: '',
+        price: '',
+        iced_hot: '',
+        size: '',
+        image_path: null
+          };
+          // Reset the file input
+          this.$refs.fileInput.value = '';
+          this.fetchNextBeverageId();
+        })
+        .catch(error => {
+          console.error('Error adding beverage:', error);
+          alert('Failed to add beverage: ' + error.message);
+        });
+      }
     },
     handleImageUpload(event) {
       const file = event.target.files[0];

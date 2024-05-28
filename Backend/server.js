@@ -99,6 +99,42 @@ app.get('/next_coupon_id', (req, res) => {
     });
 });
 
+app.get('/next_main_course_id', (req, res) => {
+    db.query(`SELECT MAX(id) + 1 AS next_main_course_id FROM ${mainCourseTableName}`, (err, results) => {
+        if (err) {
+            console.error('Error fetching data: ', err);
+            res.status(500).send('Error fetching data');
+            return;
+        }
+        console.log('Data retrieved from the database: ', results);
+        res.json(results);
+    });
+});
+
+app.get('/next_beverage_id', (req, res) => {
+    db.query(`SELECT MAX(id) + 1 AS next_beverage_id FROM ${beverageTableName}`, (err, results) => {
+        if (err) {
+            console.error('Error fetching data: ', err);
+            res.status(500).send('Error fetching data');
+            return;
+        }
+        console.log('Data retrieved from the database: ', results);
+        res.json(results);
+    });
+});
+
+app.get('/next_snack_id', (req, res) => {
+    db.query(`SELECT MAX(id) + 1 AS next_snack_id FROM ${snackTableName}`, (err, results) => {
+        if (err) {
+            console.error('Error fetching data: ', err);
+            res.status(500).send('Error fetching data');
+            return;
+        }
+        console.log('Data retrieved from the database: ', results);
+        res.json(results);
+    });
+});
+
 
 
 
@@ -472,17 +508,18 @@ app.delete('/delete_main_course/:itemId', (req, res) => {
     });
 });
 
-app.post('/add_main_course', (req, res) => {
+app.post('/add_main_course', upload.single('image'), (req, res) => {
   const { brand, name, price, flavor, meatTypes } = req.body;
 
-  // 确认文件已上传
-  if (!req.files || !req.files.image) {
-    return res.status(400).send('No image file uploaded');
-  }
+  let imagePath = req.file ? req.file.path : null; // 获取上传文件的路径
+    if (imagePath) {
+        imagePath = path.relative(__dirname, imagePath);
+        console.log("Relative imagePath:", imagePath);  // 打印相对路径以调试
+    }
 
-  const image = req.files.image.data; // 获取上传的文件数据
+    let sql = 'INSERT INTO main_course (brand_name, name, price, flavor_name, image_path) VALUES (?, ?, ?, ?, ?)';
+    let insertData = [brand, name, price, flavor, imagePath];
 
-  // 开始一个事务
   db.beginTransaction(err => {
     if (err) {
       console.error('Error starting transaction:', err);
@@ -490,9 +527,7 @@ app.post('/add_main_course', (req, res) => {
     }
 
     // 将主菜数据插入到 main_course 表中
-    db.query(
-      'INSERT INTO main_course (brand_name, name, price, flavor_name, image) VALUES (?, ?, ?, ?, ?)',
-      [brand, name, price, flavor, image],
+    db.query(sql,insertData,
       (err, results) => {
         if (err) {
           console.error('Error adding main course:', err);
@@ -573,20 +608,21 @@ app.delete('/delete_beverage/:itemId', (req, res) => {
     });
 });
 
-app.post('/add_beverage', (req, res) => {
+app.post('/add_beverage', upload.single('image'), (req, res) => {
     const { brand, name, price, iced_hot, size } = req.body;
   
     // 確認文件已上傳
-    if (!req.files || !req.files.image) {
-      return res.status(400).send('No image file uploaded');
+    let imagePath = req.file ? req.file.path : null; // 获取上传文件的路径
+    if (imagePath) {
+        imagePath = path.relative(__dirname, imagePath);
+        console.log("Relative imagePath:", imagePath);  // 打印相对路径以调试
     }
   
-    const image = req.files.image.data; // 獲取上傳的文件數據
+    let sql = 'INSERT INTO beverage (brand_name, name, price, iced_hot_name, beverage_size,image_path) VALUES (?, ?, ?, ?, ?,?)';
+    let insertData = [brand, name, price, iced_hot, size, imagePath]; // 獲取上傳的文件數據
   
     // 將飲料數據插入到 beverage 表中
-    db.query(
-      'INSERT INTO beverage (name, price, beverage_size, iced_hot_name, brand_name, image) VALUES (?, ?, ?, ?, ?, ?)',
-      [name, price, size, iced_hot, brand, image],
+    db.query(sql,insertData,
       (err, results) => {
         if (err) {
           console.error('Error adding beverage:', err);
@@ -630,29 +666,32 @@ app.delete('/delete_snack/:itemId', (req, res) => {
     });
 });
 
-app.post('/add_snack', (req, res) => {
+app.post('/add_snack', upload.single('image'), (req, res) => {
     const { brand, name, price, flavor, size } = req.body;
   
-    // 确认文件已上传
-    if (!req.files || !req.files.image) {
-      return res.status(400).send('No image file uploaded');
+    // 確認文件已上傳
+    let imagePath = req.file ? req.file.path : null; // 获取上传文件的路径
+    if (imagePath) {
+        imagePath = path.relative(__dirname, imagePath);
+        console.log("Relative imagePath:", imagePath);  // 打印相对路径以调试
     }
   
-    const image = req.files.image.data; // 获取上传的文件数据
+    let sql = 'INSERT INTO snack (brand_name, name, price, flavor_name, snack_size,image_path) VALUES (?, ?, ?, ?, ?,?)';
+    let insertData = [brand, name, price, flavor, size, imagePath]; // 獲取上傳的文件數據
   
-    // 将饮料数据插入到 beverages 表中
-    db.query(
-      'INSERT INTO snack (brand_name, name, price, flavor_name, snack_size , image) VALUES (?, ?, ?, ?, ?, ?)',
-      [brand, name, price, flavor, size, image],
+    // 將飲料數據插入到 beverage 表中
+    db.query(sql,insertData,
       (err, results) => {
         if (err) {
           console.error('Error adding beverage:', err);
           return res.status(500).send('Error adding beverage');
         }
-        res.send({ success: true, message: 'Beverage added successfully', beverageId: results.insertId });
+  
+        res.send({ success: true, message: 'Beverage added successfully' });
       }
     );
   });
+  
 
 app.put('/update_snack', upload.single('image'), (req, res) => {
     const { id, name, price } = req.body;

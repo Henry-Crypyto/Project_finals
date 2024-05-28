@@ -186,7 +186,7 @@
 
 <script>
 import axios from 'axios';
-import { getFullApiUrl } from '../../config.js';
+import {getFullApiUrl } from '../../config.js';
 import { mapMutations, mapState } from 'vuex';
 
 export default {

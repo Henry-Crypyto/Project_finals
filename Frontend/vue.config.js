@@ -13,7 +13,7 @@ module.exports = {
       }
     },
     client: {
-      webSocketURL: process.env.NGROK_URL ? `${process.env.NGROK_URL}/ws` : 'ws://localhost:8080/ws',
+      webSocketURL: process.env.NGROK_URL ? `${process.env.NGROK_URL}/ws` : 'wss://localhost:8080/wss',
     }
   },
 

@@ -5,28 +5,47 @@
         <b-col>
           <h1 class="text-center" style="color: ivory; text-align: center;">主菜選單</h1>
           <div v-if="userDeveloper === 'addOrDeleteItem'" class="mb-4">
-            <b-form @submit.prevent="handleAddCourse">
-              <b-form-group label="品牌">
-                <b-form-select v-model="newCourse.brand" :options="brandOptions.map(brand => ({ value: brand.brand_name, text: brand.brand_name }))" required></b-form-select>
-              </b-form-group>
-              <b-form-group label="品項名稱">
-                <b-form-input v-model="newCourse.name" required></b-form-input>
-              </b-form-group>
-              <b-form-group label="單價">
-                <b-form-input type="number" v-model="newCourse.price" required></b-form-input>
-              </b-form-group>
-              <b-form-group label="口味">
-                <b-form-select v-model="newCourse.flavor" :options="flavorOptions" required></b-form-select>
-              </b-form-group>
-              <b-form-group label="肉類">
-                <b-form-checkbox-group v-model="newCourse.meatTypes" :options="meatSubmitOptions"></b-form-checkbox-group>
-              </b-form-group>
-              <b-form-group label="上傳圖片">
-                <input type="file" @change="handleImageUpload" accept="image/png" ref="fileInput" required>
-              </b-form-group>
-              <b-button type="submit" variant="success">新增品項</b-button>
-            </b-form>
-          </div>
+  <b-form @submit.prevent="handleAddCourse">
+    <b-form-group label-for="course-brand">
+      <template #label>
+        <span style="color: white;">品牌</span>
+      </template>
+      <b-form-select v-model="newCourse.brand" :options="brandOptions.map(brand => ({ value: brand.brand_name, text: brand.brand_name }))" required></b-form-select>
+    </b-form-group>
+    <b-form-group label-for="course-name">
+      <template #label>
+        <span style="color: white;">品項名稱</span>
+      </template>
+      <b-form-input id="course-name" v-model="newCourse.name" required></b-form-input>
+    </b-form-group>
+    <b-form-group label-for="course-price">
+      <template #label>
+        <span style="color: white;">單價</span>
+      </template>
+      <b-form-input type="number" id="course-price" v-model="newCourse.price" required></b-form-input>
+    </b-form-group>
+    <b-form-group label-for="course-flavor">
+      <template #label>
+        <span style="color: white;">口味</span>
+      </template>
+      <b-form-select id="course-flavor" v-model="newCourse.flavor" :options="flavorOptions" required></b-form-select>
+    </b-form-group>
+    <b-form-group label-for="course-meat">
+      <template #label>
+        <span style="color: white;">肉類</span>
+      </template>
+      <b-form-checkbox-group id="course-meat" v-model="newCourse.meatTypes" :options="meatSubmitOptions"></b-form-checkbox-group>
+    </b-form-group>
+    <b-form-group label-for="course-image">
+      <template #label>
+        <span style="color: white;">上傳圖片</span>
+      </template>
+      <input type="file" id="course-image" @change="handleImageUpload" accept="image/png" ref="fileInput" required>
+    </b-form-group>
+    <b-button type="submit" variant="success">新增品項</b-button>
+  </b-form>
+</div>
+
           <div class="mb-4">
             <div class="col-md-2 mb-3 mx-auto">
               <div class="form-group">
@@ -147,12 +166,14 @@ export default {
   created() {    
     this.$store.dispatch('fetchMainCourses');
     this.$store.dispatch('fetchBrandOptions');
+    this.fetchNextMainCourseId();
   },
   data() {
     return {
       localBrandSelect: '', // 本地品牌选择
       localMeatSelect: [],  // 本地不吃的肉类选择数组
       newCourse: {
+        id:null,
         brand: '',
         name: '',
         price: '',
@@ -175,11 +196,11 @@ export default {
       { text: '🚫 🐑', value: '羊'}
     ],
       meatSubmitOptions: [
-        { text: '牛', value: '牛' },
-        { text: '豬', value: '豬' },
-        { text: '雞', value: '雞' },
-        { text: '海鮮', value: '海鮮' },
-        { text: '羊', value: '羊' }
+        { text: '🐄', value: '牛' },
+        { text: '🐖', value: '豬' },
+        { text: '🐔', value: '雞' },
+        { text: '🐟', value: '海鮮' },
+        { text: '🐑', value: '羊' }
       ],
       currentPage: 1, // 当前页数
       itemsPerPage: 12 // 每页显示的项目数
@@ -227,6 +248,18 @@ export default {
     return require('@/assets/image/default.png'); // 预设图片路径
     }
   return `${baseUrl}${imagePath}`;  
+    },
+    fetchNextMainCourseId() {
+        const url = getFullApiUrl('/next_main_course_id');
+        axios.get(url)
+          .then(response => {
+            // 假设响应是一个数组，并且我们需要第一个元素的 next_coupon_id
+            const nextMainCourseId = response.data[0].next_main_course_id; 
+            this.newCourse.id=nextMainCourseId;
+          })
+          .catch(error => {
+            console.error('Error fetching next coupon ID:', error);
+          });
     },
     handleAddLoveToCart(course) {
       if (this.cartItems.some(item => item.id === course.id && item.preference === 0 && item.productType === this.$store.state.productType[0])) {
@@ -291,7 +324,7 @@ export default {
       formData.append('name', this.newCourse.name);
       formData.append('price', this.newCourse.price);
       formData.append('flavor', this.newCourse.flavor);
-
+      
       // Convert meat types to numerical IDs
       const meatTypeIds = this.newCourse.meatTypes.map(type => {
         switch (type) {
@@ -311,9 +344,21 @@ export default {
       }).filter(id => id !== null);
 
       formData.append('meatTypes', meatTypeIds.join(',')); // 将数组转换为逗号分隔的字符串
-      formData.append('image', this.newCourse.image);
+      let url = getFullApiUrl('/add_main_course');
+      const category = encodeURIComponent('main_course');
 
-      axios.post(getFullApiUrl('/add_main_course'), formData)
+      if(this.newCourse.image){
+        const customFilename = `${category}_${this.newCourse.id}.png`;
+        formData.append('image', this.newCourse.image,customFilename);
+        const brand = encodeURIComponent(this.newCourse.brand);
+        url += `?brand=${brand}&category=${category}&filename=${encodeURIComponent(customFilename)}`;  // Include category and encoded filename in URL parameters
+
+
+        axios.post(url, formData,{
+          headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
         .then(() => {
           this.$store.dispatch('fetchMainCourses');
           alert('Course added successfully');
@@ -328,11 +373,40 @@ export default {
           };
           // Reset the file input
           this.$refs.fileInput.value = '';
+          this.fetchNextMainCourseId();
         })
         .catch(error => {
           console.error('Error adding course:', error);
           alert('Failed to add course: ' + error.message);
         });
+      }else{
+        url += `?brand=${encodeURIComponent(this.newCourse.brand)}&category=${category}`;  // Add category to URL
+        axios.post(url, formData,{
+          headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
+        .then(() => {
+          this.$store.dispatch('fetchMainCourses');
+          alert('Course added successfully');
+          // Reset the newCourse object to clear the input fields
+          this.newCourse = {
+            brand: '',
+            name: '',
+            price: '',
+            flavor: '',
+            meatTypes: [],
+            image_path: null
+          };
+          // Reset the file input
+          this.$refs.fileInput.value = '';
+          this.fetchNextMainCourseId();
+        })
+        .catch(error => {
+          console.error('Error adding course:', error);
+          alert('Failed to add course: ' + error.message);
+        });
+      }
     },
     handleImageUpload(event) {
       const file = event.target.files[0];
@@ -388,7 +462,7 @@ export default {
             alert('Failed to update item: ' + error.message);
         });
     }
-},
+    },
     handleEditImageUpload(event) {
       const file = event.target.files[0];
       this.editingCourse.image = file;
@@ -453,7 +527,8 @@ export default {
 }
 .page-container {
   border: 3px solid black;
-  background-image: linear-gradient(to top, #fcc5e4 0%, #fda34b 15%, #ff7882 35%, #c8699e 52%, #7046aa 71%, #0c1db8 87%, #020f75 100%);   min-height: 100vh; /* 确保背景覆盖整个页面 */
+  background-image: linear-gradient(to top, #fcc5e4 0%, #fda34b 15%, #ff7882 35%, #c8699e 52%, #7046aa 71%, #0c1db8 87%, #020f75 100%);   
+  min-height: 100vh; /* 确保背景覆盖整个页面 */
   margin-top: 20px;
   margin-bottom: 20px;
   border-radius: 67px;
