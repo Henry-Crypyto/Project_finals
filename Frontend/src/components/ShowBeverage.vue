@@ -172,6 +172,7 @@ export default {
     this.$store.dispatch('fetchBrandOptions');
     this.fetchBeverageSize();
     this.fetchNextBeverageId();
+    this.fetchIcedHotOptions();
   },
   data() {
     return {
@@ -188,10 +189,7 @@ export default {
         image_path: null
       },
       editingBeverage: null, // 用於編輯的飲料對象
-      icedHotOptions: [
-        { value: '冰', text: '冰' },
-        { value: '熱', text: '熱' }
-      ],
+      icedHotOptions: [],
       sizeOptions: [], // Initialize as empty array
       currentPage: 1, // Current page number
       itemsPerPage: 12 // Number of items per page
@@ -446,7 +444,23 @@ export default {
         .catch(error => {
           console.error('Error fetching beverage sizes:', error);
         });
-    }
+    },
+    fetchIcedHotOptions() {
+        let url = getFullApiUrl('/all_iced_hot');
+        axios.get(url)
+          .then(response => {
+            this.icedHotOptions = response.data.map(icedHot => {
+                return {
+                    text: icedHot.iced_hot_name,
+                    value: icedHot.iced_hot_name
+                };
+            });
+          })
+          .catch(error => {
+            console.error('Error fetching iced/hot options:', error);
+          });
+      }
+
   }
 }
 </script>

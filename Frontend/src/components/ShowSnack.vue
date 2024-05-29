@@ -173,6 +173,7 @@ export default {
     this.$store.dispatch('fetchBrandOptions');
     this.fetchSnackSize();
     this.fetchNextSnackId();
+    this.fetchFlavors();
   },
   data() {
     return {
@@ -189,13 +190,7 @@ export default {
         image_path: null
       },
       editingSnack: null, // 用於編輯的小吃對象
-      flavorOptions: [
-        { value: '酸', text: '酸' },
-        { value: '甜', text: '甜' },
-        { value: '苦', text: '苦' },
-        { value: '辣', text: '辣' },
-        { value: '鹹', text: '鹹' }
-      ],
+      flavorOptions: [],
       sizeOptions: [], // Initialize as empty array
       currentPage: 1, // Current page number
       itemsPerPage: 12 // Number of items per page
@@ -448,7 +443,18 @@ export default {
         .catch(error => {
           console.error('Error fetching snack sizes:', error);
         });
-    }
+    },
+    fetchFlavors() {
+        let url = getFullApiUrl('/all_flavor');
+        axios.get(url)
+          .then(response => {
+            this.flavorOptions = response.data.map(flavor => ({ value: flavor.flavor_name, text: flavor.flavor_name }));
+          })
+          .catch(error => {
+            console.error('Error fetching flavors:', error);
+          });
+      },
+
   }
 }
 </script>

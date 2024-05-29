@@ -34,7 +34,7 @@
       <template #label>
         <span style="color: white;">肉類</span>
       </template>
-      <b-form-checkbox-group id="course-meat" v-model="newCourse.meatTypes" :options="meatSubmitOptions"></b-form-checkbox-group>
+     <b-form-checkbox-group id="course-meat" v-model="newCourse.meatTypes" :options="meatSubmitOptions" class="white-text-options"></b-form-checkbox-group>
     </b-form-group>
     <b-form-group label-for="course-image">
       <template #label>
@@ -167,6 +167,7 @@ export default {
     this.$store.dispatch('fetchMainCourses');
     this.$store.dispatch('fetchBrandOptions');
     this.fetchNextMainCourseId();
+    this.fetchMeatTypes();
   },
   data() {
     return {
@@ -188,20 +189,8 @@ export default {
         { value: '鹹', text: '鹹' },
         { value: '酸', text: '酸' }
       ],
-      meatOptions: [
-      { text: '🚫 🐄', value: '牛'},
-      { text: '🚫 🐖', value: '豬'},
-      { text: '🚫 🐔', value: '雞'},
-      { text: '🚫 🐟', value: '海鮮'},
-      { text: '🚫 🐑', value: '羊'}
-    ],
-      meatSubmitOptions: [
-        { text: '🐄', value: '牛' },
-        { text: '🐖', value: '豬' },
-        { text: '🐔', value: '雞' },
-        { text: '🐟', value: '海鮮' },
-        { text: '🐑', value: '羊' }
-      ],
+      meatOptions: [],
+      meatSubmitOptions: [],
       currentPage: 1, // 当前页数
       itemsPerPage: 12 // 每页显示的项目数
     };
@@ -241,6 +230,27 @@ export default {
       } else {
         this.localMeatSelect.push(meat); // 如果未选中，则添加到数组中
       }
+    },
+    fetchMeatTypes() {
+    let url = getFullApiUrl('/all_meat_type');
+    axios.get(url)
+        .then(response => {
+            this.meatSubmitOptions = response.data.map(meat => {
+                return {
+                    text: meat.meat_type_name,
+                    value: meat.meat_type_name
+                };
+            });
+            this.meatOptions = response.data.map(meat => {
+                return {
+                    text: `🚫 ${meat.meat_type_name}`,
+                    value: meat.meat_type_name
+                };
+            });
+        })
+        .catch(error => {
+            console.error('Error fetching meat types:', error);
+        });
     },
     getMainCourseImage(imagePath) {
       const baseUrl=this.apiUrl;
@@ -479,6 +489,10 @@ export default {
 
 
 <style scoped>
+.white-text-options .custom-control-label {
+    color: white !important;
+}
+
 .custom-hate-button {
   background-image: linear-gradient(to right, #ff416c, #ff4b2b); /* 漸變背景色 */
   color: white; /* 文字顏色 */
@@ -525,14 +539,7 @@ export default {
 .custom-love-button:focus {
   box-shadow: 0 0 0 2px rgba(255, 105, 135, 0.5); /* 焦點時的外框陰影 */
 }
-.page-container {
-  border: 3px solid black;
-  background-image: linear-gradient(to top, #fcc5e4 0%, #fda34b 15%, #ff7882 35%, #c8699e 52%, #7046aa 71%, #0c1db8 87%, #020f75 100%);   
-  min-height: 100vh; /* 确保背景覆盖整个页面 */
-  margin-top: 20px;
-  margin-bottom: 20px;
-  border-radius: 67px;
-}
+
 
 .main-course-container {
   padding-bottom: 20px;
