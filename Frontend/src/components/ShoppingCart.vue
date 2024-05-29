@@ -32,33 +32,31 @@
         </b-form>
       </b-col>
     </b-row>
-    <b-list-group v-if="cartItems.length > 0">
-      <b-list-group-item v-for="item in cartItems" :key="item.id">
-        <b-row>
-          <b-col>
-            <h3>
+    <b-row class="mt-4" v-if="cartItems.length > 0">
+      <b-col v-for="item in cartItems" :key="item.id" cols="12" md="6" lg="4" class="mb-4">
+        <b-card class="cart-item-card" >
+          <b-card-body>
+            <b-card-title>
               {{ item.name }}
-              <img v-if="item.preference === 1" :src="getIconImage('icon/heart.png')" alt="Heart Icon" />
-              <img v-if="item.preference === 0" :src="getIconImage('icon/angry.png')" alt="angry Icon" />
-            </h3>
-            <p>數量: {{ item.quantity }}</p>
-            <p>單價: ${{ item.price }}</p>
-            <p>小計: ${{ item.quantity * item.price }}</p>
-          </b-col>
-          <b-col cols="auto">
-            <b-button-group>
+              <img v-if="item.preference === 1" :src="getIconImage('icon/heart.png')" alt="Heart Icon" class="icon" />
+              <img v-if="item.preference === 0" :src="getIconImage('icon/angry.png')" alt="Angry Icon" class="icon" />
+            </b-card-title>
+            <b-card-text>
+              <p>數量: {{ item.quantity }}</p>
+              <p>單價: ${{ item.price }}</p>
+              <p>小計: ${{ item.quantity * item.price }}</p>
+            </b-card-text>
+            <b-button-group class="w-100 tight-group">              
               <b-button variant="success" @click.prevent="increaseQuantity(item)" v-if="userDeveloper !== 'user'">+</b-button>
               <b-button variant="info" @click.prevent="decreaseQuantity(item)" v-if="userDeveloper !== 'user'">-</b-button>
               <b-button variant="danger" @click.prevent="removeFromCart(item)">移除</b-button>
             </b-button-group>
-          </b-col>
-        </b-row>
-      </b-list-group-item>
-    </b-list-group>
+          </b-card-body>
+        </b-card>
+      </b-col>
+    </b-row>
   </b-container>
 </template>
-
-
 
 <script>
 import { mapState, mapMutations } from 'vuex';
@@ -70,7 +68,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(['cartItems', 'brandSelect', 'newCoupon', 'nextCouponId', 'userDeveloper', 'currentView','allCoupons','newCoupon']),
+    ...mapState(['cartItems', 'brandSelect', 'newCoupon', 'nextCouponId', 'userDeveloper', 'currentView', 'allCoupons', 'newCoupon']),
     totalPrice() {
       return this.cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
     },
@@ -88,7 +86,7 @@ export default {
       } else if (this.userDeveloper === 'update') {
         return 'btn btn-primary';
       } else if (this.userDeveloper === 'user') {
-        return 'btn btn-info'; // You can choose any appropriate class
+        return 'btn btn-info';
       }
       return '';
     }
@@ -107,9 +105,17 @@ export default {
         productType: item.productType
       });
     },
-    getIconImage(imagePath) {
+    getItemImage(imagePath) {
+      const baseUrl = this.apiUrl;
+      console.log(imagePath);
       if (!imagePath) {
         return require('@/assets/image/default.png'); // 预设图片路径
+      }
+      return `${baseUrl}${imagePath}`;
+    },
+    getIconImage(imagePath) {
+      if (!imagePath) {
+        return require('@/assets/image/default.png');
       }
       return require(`@/assets/image/${imagePath}`);
     },
@@ -123,8 +129,8 @@ export default {
       if (this.userDeveloper === 'add') {
         const isDuplicate = this.allCoupons.some(coupon => coupon.coupon_name === this.newCoupon.coupon_name);
         if (isDuplicate) {
-        alert('折扣券名稱已存在，請使用其他名稱。');
-        return;
+          alert('折扣券名稱已存在，請使用其他名稱。');
+          return;
         }
         this.submitCoupon();
       } else if (this.userDeveloper === 'update') {
@@ -140,7 +146,6 @@ export default {
       }
     }
   },
- 
   watch: {
     userDeveloper(newValue) {
       if (newValue === 'update') {
@@ -159,43 +164,13 @@ export default {
 }
 </script>
 
-
-
-
-  
-
-  
 <style scoped>
-.select-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 20px; /* 为按钮和选择框添加间隙 */
-  margin: 20px 0;
+.shopping-cart-container {
+  padding: 20px;
 }
 
-select {
-  width: 200px;
-  padding: 10px 15px;
-  border: 2px solid #aaa;
-  border-radius: 8px;
-  background-color: #fff;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  font-size: 16px;
-  color: #333;
-  cursor: pointer;
-  outline: none; /* 移除焦点时的轮廓 */
-  appearance: none; /* 移除默认样式 */
-  position: relative;
-  background-image: linear-gradient(45deg, transparent 50%, gray 50%), linear-gradient(135deg, gray 50%, transparent 50%);
-  background-position: calc(100% - 20px) calc(1em + 2px), calc(100% - 15px) calc(1em + 2px);
-  background-size: 5px 5px, 5px 5px;
-  background-repeat: no-repeat;
-}
-
-select:focus {
-  border-color: #0056b3;
-  box-shadow: 0 0 8px rgba(0,86,179,0.8);
+.text-center {
+  text-align: center;
 }
 
 .btn-warning {
@@ -214,53 +189,89 @@ select:focus {
   background-color: #e0a800;
 }
 
-.shopping-cart-container {
-  width: 80%;
-  margin: 20px auto;
-  background-color: #fff;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-}
-
-.text-center {
-  text-align: center;
-}
-
 .cart-items-list {
-  list-style: none;
-  padding: 0;
+  margin-top: 20px;
 }
 
-.cart-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 10px;
-  border-bottom: 1px solid #ccc;
-  padding-bottom: 10px;
+.cart-item-card {
+  border-radius: 60px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.cart-item-card:hover {
+  transform: translateY(-5px);
+}
+
+.cart-item-card img {
+  border-top-left-radius: 60px;
+  border-top-right-radius: 60px;
+}
+
+.icon {
+  width: 20px;
+  height: 20px;
+  margin-left: 10px;
 }
 
 .item-details h3 {
   margin: 0;
-  font-size: 1.2rem;
+  font-size: 1.4rem;
   color: #333;
+}
+
+.item-details p {
+  margin: 5px 0;
+  color: #666;
+}
+
+.btn-group .btn {
+  margin-right: 5px;
+}
+
+.btn-success {
+  background-color: #28a745;
+}
+
+.btn-success:hover {
+  background-color: #218838;
+}
+
+.btn-info {
+  background-color: #17a2b8;
+}
+
+.btn-info:hover {
+  background-color: #138496;
+}
+
+.btn-danger {
+  background-color: #dc3545;
+}
+
+.btn-danger:hover {
+  background-color: #c82333;
 }
 
 .empty-cart p {
   text-align: center;
   color: #666;
 }
-
+.tight-group .btn {
+    margin-right: -1px;  
+}
 .form-title {
   margin-top: 20px;
 }
+
 .form-row {
   display: flex;
   justify-content: space-between;
   margin-bottom: 15px;
-  gap: 10px; /* 确保表单元素之间有适当的间隙 */
+  gap: 10px;
 }
+
 .coupon-form .form-row {
   display: flex;
   justify-content: space-between;
@@ -288,48 +299,40 @@ select:focus {
   color: white;
 }
 
-.btn-danger {
-  background-color: #e53935;
-}
-
-.btn-success {
-  background-color: #4caf50;
-}
 .quantity-btn {
   font-weight: bold;
   color: white;
-  width: 36px; /* Fixed width for alignment */
-  height: 36px; /* Fixed height for alignment */
-  padding: 0; /* Remove padding to make button square */
+  width: 36px;
+  height: 36px;
+  padding: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px; /* Increase font size for visibility */
+  font-size: 20px;
 }
 
 .btn-success {
-  background-color: #28a745; /* Bootstrap default green */
+  background-color: #28a745;
 }
 
 .btn-success:hover {
-  background-color: #218838; /* Darken on hover */
+  background-color: #218838;
 }
 
 .btn-info {
-  background-color: #17a2b8; /* Bootstrap default blue */
+  background-color: #17a2b8;
 }
 
 .btn-info:hover {
-  background-color: #e50f3d; /* Darken on hover */
+  background-color: #138496;
 }
 
 .btn-warning {
-  background-color: #ffc107; /* Bootstrap default yellow */
-  color: black; /* Change text color for better contrast */
+  background-color: #ffc107;
+  color: black;
 }
 
 .btn-warning:hover {
-  background-color: #e0a800; /* Darken on hover */
+  background-color: #e0a800;
 }
-
 </style>

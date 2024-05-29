@@ -29,7 +29,7 @@
             <span class="divider-line"></span>
             <span class="divider-decoration"></span>
           </div>
-          <b-nav-item href="#" class="nav-link" @click="emitChange('developer')">管理者頁面</b-nav-item>
+          <b-nav-item v-if="userDeveloper === 'developerPage'" href="#" class="nav-link" @click="emitChange('developer')">管理者頁面</b-nav-item>
         </b-navbar-nav>
       </b-collapse>
     </b-container>
@@ -46,7 +46,7 @@ export default {
     }
   },
   computed: {
-    ...mapState(['cartItems']),
+    ...mapState(['cartItems','userDeveloper']),
     shoppingCartLabel() {
       return this.cartItems.length > 0 ? `🛒 購物車-${this.cartItems.length}項` : '🛒 購物車';
     }

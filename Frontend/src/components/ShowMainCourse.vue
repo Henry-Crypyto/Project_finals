@@ -3,49 +3,48 @@
     <b-container class="main-course-container">
       <b-row>
         <b-col>
-          <h1 class="text-center" style="color: ivory; text-align: center;">主菜選單</h1>
+          <h1 class="text-center" style=" text-align: center;">主菜選單</h1>
           <div v-if="userDeveloper === 'addOrDeleteItem'" class="mb-4">
-  <b-form @submit.prevent="handleAddCourse">
-    <b-form-group label-for="course-brand">
-      <template #label>
-        <span style="color: white;">品牌</span>
-      </template>
-      <b-form-select v-model="newCourse.brand" :options="brandOptions.map(brand => ({ value: brand.brand_name, text: brand.brand_name }))" required></b-form-select>
-    </b-form-group>
-    <b-form-group label-for="course-name">
-      <template #label>
-        <span style="color: white;">品項名稱</span>
-      </template>
-      <b-form-input id="course-name" v-model="newCourse.name" required></b-form-input>
-    </b-form-group>
-    <b-form-group label-for="course-price">
-      <template #label>
-        <span style="color: white;">單價</span>
-      </template>
-      <b-form-input type="number" id="course-price" v-model="newCourse.price" required></b-form-input>
-    </b-form-group>
-    <b-form-group label-for="course-flavor">
-      <template #label>
-        <span style="color: white;">口味</span>
-      </template>
-      <b-form-select id="course-flavor" v-model="newCourse.flavor" :options="flavorOptions" required></b-form-select>
-    </b-form-group>
-    <b-form-group label-for="course-meat">
-      <template #label>
-        <span style="color: white;">肉類</span>
-      </template>
-     <b-form-checkbox-group id="course-meat" v-model="newCourse.meatTypes" :options="meatSubmitOptions" class="white-text-options"></b-form-checkbox-group>
-    </b-form-group>
-    <b-form-group label-for="course-image">
-      <template #label>
-        <span style="color: white;">上傳圖片</span>
-      </template>
-      <input type="file" id="course-image" @change="handleImageUpload" accept="image/png" ref="fileInput" required>
-    </b-form-group>
-    <b-button type="submit" variant="success">新增品項</b-button>
-  </b-form>
-</div>
-
+            <b-form @submit.prevent="handleAddCourse">
+              <b-form-group label-for="course-brand">
+                <template #label>
+                  <span style="color: white;">品牌</span>
+                </template>
+                <b-form-select v-model="newCourse.brand" :options="brandOptions.map(brand => ({ value: brand.brand_name, text: brand.brand_name }))" required></b-form-select>
+              </b-form-group>
+              <b-form-group label-for="course-name">
+                <template #label>
+                  <span style="color: white;">品項名稱</span>
+                </template>
+                <b-form-input id="course-name" v-model="newCourse.name" required></b-form-input>
+              </b-form-group>
+              <b-form-group label-for="course-price">
+                <template #label>
+                  <span style="color: white;">單價</span>
+                </template>
+                <b-form-input type="number" id="course-price" v-model="newCourse.price" required></b-form-input>
+              </b-form-group>
+              <b-form-group label-for="course-flavor">
+                <template #label>
+                  <span style="color: white;">口味</span>
+                </template>
+                <b-form-select id="course-flavor" v-model="newCourse.flavor" :options="flavorOptions" required></b-form-select>
+              </b-form-group>
+              <b-form-group label-for="course-meat">
+                <template #label>
+                  <span style="color: white;">肉類</span>
+                </template>
+                <b-form-checkbox-group id="course-meat" v-model="newCourse.meatTypes" :options="meatSubmitOptions" class="white-text-options"></b-form-checkbox-group>
+              </b-form-group>
+              <b-form-group label-for="course-image">
+                <template #label>
+                  <span style="color: white;">上傳圖片</span>
+                </template>
+                <input type="file" id="course-image" @change="handleImageUpload" accept="image/png" ref="fileInput" required>
+              </b-form-group>
+              <b-button type="submit" variant="success">新增品項</b-button>
+            </b-form>
+          </div>
           <div class="mb-4">
             <div class="col-md-2 mb-3 mx-auto">
               <div class="form-group">
@@ -57,7 +56,15 @@
                 </select>
               </div>
             </div>
-            <div class="col-md-2 mb-3 mx-auto">
+          </div>
+          <!-- 新增的篩選下拉選單 -->
+          <div class="col-md-2 mb-3 mx-auto" >
+            <b-form-group label-for="filter-type">
+              <b-form-select class="form-control custom-select" id="filter-type" v-model="meatFilterType" :options="meatFilterOptions" @change="handleMeatFilterChange"></b-form-select>
+            </b-form-group>
+
+            <!-- 篩選條件 -->
+            <div >
               <div class="form-group d-flex justify-content-center">
                 <div class="d-flex flex-row flex-wrap">
                   <div v-for="option in meatOptions" :key="option.value" class="mx-3 my-2">
@@ -73,6 +80,8 @@
               </div>
             </div>
           </div>
+
+         
         </b-col>
       </b-row>
       <b-row v-if="paginatedMainCourses.length > 0">
@@ -174,7 +183,7 @@ export default {
       localBrandSelect: '', // 本地品牌选择
       localMeatSelect: [],  // 本地不吃的肉类选择数组
       newCourse: {
-        id:null,
+        id: null,
         brand: '',
         name: '',
         price: '',
@@ -192,7 +201,12 @@ export default {
       meatOptions: [],
       meatSubmitOptions: [],
       currentPage: 1, // 当前页数
-      itemsPerPage: 12 // 每页显示的项目数
+      itemsPerPage: 12, // 每页显示的项目数
+      meatFilterType: 'include', // 預設為篩選"我要吃的肉類"
+      meatFilterOptions: [
+        { value: 'include', text: '我要吃的肉類' },
+        { value: 'exclude', text: '我不要吃的肉類' }
+      ]
     };
   },
   computed: {
@@ -200,7 +214,12 @@ export default {
     filteredMainCourses() {
       return this.mainCourses.filter(course => {
         const brandMatch = this.localBrandSelect === '' || this.localBrandSelect === 'all' || course.brand_name === this.localBrandSelect;
-        const meatMatch = this.localMeatSelect.every(meat => !(course.meat_type && course.meat_type.includes(meat)));
+        
+        // 根據篩選類型篩選肉類
+        const meatMatch = this.meatFilterType === 'include'
+          ? this.localMeatSelect.every(meat => course.meat_type && course.meat_type.includes(meat))
+          : this.localMeatSelect.every(meat => !(course.meat_type && course.meat_type.includes(meat)));
+        
         return brandMatch && meatMatch;
       });
     },
@@ -215,6 +234,9 @@ export default {
       this.currentPage = 1;
     },
     localMeatSelect() {
+      this.currentPage = 1;
+    },
+    meatFilterType() {
       this.currentPage = 1;
     },
     brandSelect(newBrandSelect) {
@@ -232,44 +254,44 @@ export default {
       }
     },
     fetchMeatTypes() {
-    let url = getFullApiUrl('/all_meat_type');
-    axios.get(url)
+      let url = getFullApiUrl('/all_meat_type');
+      axios.get(url)
         .then(response => {
-            this.meatSubmitOptions = response.data.map(meat => {
-                return {
-                    text: meat.meat_type_name,
-                    value: meat.meat_type_name
-                };
-            });
-            this.meatOptions = response.data.map(meat => {
-                return {
-                    text: `🚫 ${meat.meat_type_name}`,
-                    value: meat.meat_type_name
-                };
-            });
+          this.meatSubmitOptions = response.data.map(meat => {
+            return {
+              text: meat.meat_type_name,
+              value: meat.meat_type_name
+            };
+          });
+          this.meatOptions = response.data.map(meat => {
+            return {
+              text: `${meat.meat_type_name}`,
+              value: meat.meat_type_name
+            };
+          });
         })
         .catch(error => {
-            console.error('Error fetching meat types:', error);
+          console.error('Error fetching meat types:', error);
         });
     },
     getMainCourseImage(imagePath) {
-      const baseUrl=this.apiUrl;
+      const baseUrl = this.apiUrl;
       if (!imagePath) {
-    return require('@/assets/image/default.png'); // 预设图片路径
-    }
-  return `${baseUrl}${imagePath}`;  
+        return require('@/assets/image/default.png'); // 预设图片路径
+      }
+      return `${baseUrl}${imagePath}`;
     },
     fetchNextMainCourseId() {
-        const url = getFullApiUrl('/next_main_course_id');
-        axios.get(url)
-          .then(response => {
-            // 假设响应是一个数组，并且我们需要第一个元素的 next_coupon_id
-            const nextMainCourseId = response.data[0].next_main_course_id; 
-            this.newCourse.id=nextMainCourseId;
-          })
-          .catch(error => {
-            console.error('Error fetching next coupon ID:', error);
-          });
+      const url = getFullApiUrl('/next_main_course_id');
+      axios.get(url)
+        .then(response => {
+          // 假设响应是一个数组，并且我们需要第一个元素的 next_coupon_id
+          const nextMainCourseId = response.data[0].next_main_course_id;
+          this.newCourse.id = nextMainCourseId;
+        })
+        .catch(error => {
+          console.error('Error fetching next coupon ID:', error);
+        });
     },
     handleAddLoveToCart(course) {
       if (this.cartItems.some(item => item.id === course.id && item.preference === 0 && item.productType === this.$store.state.productType[0])) {
@@ -286,7 +308,7 @@ export default {
           productType: this.$store.state.productType[0] // 假设你正在使用数组中的第一个产品类型
         });
       } else {
-        alert('品牌不匹配，无法添加到购物车。');
+        alert('品牌不一樣，不能這麼花心!!');
       }
     },
     handleAddHateToCart(course) {
@@ -304,7 +326,7 @@ export default {
           productType: this.$store.state.productType[0] // 假设你正在使用数组中的第一个产品类型
         });
       } else {
-        alert('品牌不匹配，无法添加到购物车。');
+        alert('品牌不一樣，不能這麼花心!!');
       }
     },
     handleDeleteCourse(course) {
@@ -352,8 +374,12 @@ export default {
             return null;
         }
       }).filter(id => id !== null);
-
-      formData.append('meatTypes', meatTypeIds.join(',')); // 将数组转换为逗号分隔的字符串
+      if(this.newCourse.meatTypes){
+        formData.append('meatTypes', meatTypeIds.join(',')); 
+      }else{
+        formData.append('meatTypes',null); 
+      }
+      // 将数组转换为逗号分隔的字符串
       let url = getFullApiUrl('/add_main_course');
       const category = encodeURIComponent('main_course');
 
@@ -476,6 +502,9 @@ export default {
     handleEditImageUpload(event) {
       const file = event.target.files[0];
       this.editingCourse.image = file;
+    },
+    handleMeatFilterChange() {
+      this.localMeatSelect = []; // 當篩選類型改變時，清空已選中的肉類選項
     }
   }
 }
@@ -488,7 +517,11 @@ export default {
 
 
 
+
+
+
 <style scoped>
+
 .white-text-options .custom-control-label {
     color: white !important;
 }

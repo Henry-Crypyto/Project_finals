@@ -3,7 +3,7 @@
     <b-container class="beverage-container">
       <b-row>
         <b-col>
-          <h1 class="text-center" style="color: ivory; text-align: center;">飲料選單</h1>
+          <h1 class="text-center" style=" text-align: center;">飲料選單</h1>
           <div v-if="userDeveloper === 'addOrDeleteItem'" class="mb-4">
   <b-form @submit.prevent="handleAddBeverage">
     <b-form-group label-for="beverage-brand">
@@ -515,14 +515,7 @@ export default {
 .custom-love-button:focus {
   box-shadow: 0 0 0 2px rgba(255, 105, 135, 0.5); /* 焦點時的外框陰影 */
 }
-.page-container {
-  border: 3px solid black; /* Bold rectangular border around the page */
-  padding: 20px;
-  margin-top: 20px;
-  margin-bottom: 20px;
-  border-radius: 67px; /* Optional: Adds rounded corners */
-  background-image: linear-gradient(to top, #fcc5e4 0%, #fda34b 15%, #ff7882 35%, #c8699e 52%, #7046aa 71%, #0c1db8 87%, #020f75 100%);   min-height: 100vh; /* 确保背景覆盖整个页面 */
-}
+
 
 .beverage-container {
   padding-top: 20px;

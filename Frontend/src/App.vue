@@ -12,14 +12,16 @@
           <option value="update">更新折價券</option>
           <option value="addOrDeleteItem">新增或刪除品項</option>
           <option value="updateItem">更新品項</option>
+          <option value="developerPage">管理者頁面</option>
         </select>
       </div>
     </b-container>
 
     <!-- 主内容区域 -->
     <b-container class="my-3">
-      <UploadImage/>
-      <component :is="currentView" @add-to-cart="addToCart" />
+      <keep-alive>
+        <component :is="currentView" @add-to-cart="addToCart" />
+      </keep-alive>
     </b-container>
 
     <!-- 底部 -->
@@ -109,6 +111,7 @@ export default {
 <style scoped>
 /* Add your styles here */
 .app-container {
+  min-height: 100vh;
   background-image: linear-gradient(-225deg, #FFE29F 0%, #FFA99F 48%, #FF719A 100%);
 }
 

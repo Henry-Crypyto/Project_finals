@@ -513,69 +513,77 @@ app.delete('/delete_main_course/:itemId', (req, res) => {
 });
 
 app.post('/add_main_course', upload.single('image'), (req, res) => {
-  const { brand, name, price, flavor, meatTypes } = req.body;
-
-  let imagePath = req.file ? req.file.path : null; // 获取上传文件的路径
+    const { brand, name, price, flavor, meatTypes } = req.body;
+  
+    let imagePath = req.file ? req.file.path : null; // 获取上传文件的路径
     if (imagePath) {
-        imagePath = path.relative(__dirname, imagePath);
-        console.log("Relative imagePath:", imagePath);  // 打印相对路径以调试
+      imagePath = path.relative(__dirname, imagePath);
+      console.log("Relative imagePath:", imagePath);  // 打印相对路径以调试
     }
-
+  
     let sql = 'INSERT INTO main_course (brand_name, name, price, flavor_name, image_path) VALUES (?, ?, ?, ?, ?)';
     let insertData = [brand, name, price, flavor, imagePath];
-
-  db.beginTransaction(err => {
-    if (err) {
-      console.error('Error starting transaction:', err);
-      return res.status(500).send('Error starting transaction');
-    }
-
-    // 将主菜数据插入到 main_course 表中
-    db.query(sql,insertData,
-      (err, results) => {
+  
+    db.beginTransaction(err => {
+      if (err) {
+        console.error('Error starting transaction:', err);
+        return res.status(500).send('Error starting transaction');
+      }
+  
+      db.query(sql, insertData, (err, results) => {
         if (err) {
           console.error('Error adding main course:', err);
           return db.rollback(() => {
             res.status(500).send('Error adding main course');
           });
         }
-
+  
         const mainCourseId = results.insertId;
-
-        // 准备肉类类型数据
-        const meatTypeArray = meatTypes.split(',').map(meatTypeId => parseInt(meatTypeId, 10));
-
-        // 将数据插入到 main_course_meat_type 表中
-        const meatTypeValues = meatTypeArray.map(meatTypeId => [mainCourseId, meatTypeId]);
-
-        db.query(
-          'INSERT INTO main_course_meat_type (main_course_id, meat_type_id) VALUES ?',
-          [meatTypeValues],
-          (err) => {
-            if (err) {
-              console.error('Error adding meat types:', err);
-              return db.rollback(() => {
-                res.status(500).send('Error adding meat types');
-              });
-            }
-
-            // 提交事务
-            db.commit(err => {
+  
+        // 检查 meatTypes 是否为 null
+        if (meatTypes) {
+          const meatTypeArray = meatTypes.split(',').map(meatTypeId => parseInt(meatTypeId, 10));
+          const meatTypeValues = meatTypeArray.map(meatTypeId => [mainCourseId, meatTypeId]);
+  
+          db.query(
+            'INSERT INTO main_course_meat_type (main_course_id, meat_type_id) VALUES ?',
+            [meatTypeValues],
+            (err) => {
               if (err) {
-                console.error('Error committing transaction:', err);
+                console.error('Error adding meat types:', err);
                 return db.rollback(() => {
-                  res.status(500).send('Error committing transaction');
+                  res.status(500).send('Error adding meat types');
                 });
               }
-
-              res.send({ success: true, message: 'Main course added successfully' });
-            });
-          }
-        );
-      }
-    );
+              // 提交事务
+              db.commit(err => {
+                if (err) {
+                  console.error('Error committing transaction:', err);
+                  return db.rollback(() => {
+                    res.status(500).send('Error committing transaction');
+                  });
+                }
+  
+                res.send({ success: true, message: 'Main course added successfully' });
+              });
+            }
+          );
+        } else {
+          // 没有 meatTypes, 直接提交事务
+          db.commit(err => {
+            if (err) {
+              console.error('Error committing transaction:', err);
+              return db.rollback(() => {
+                res.status(500).send('Error committing transaction');
+              });
+            }
+            res.send({ success: true, message: 'Main course added successfully' });
+          });
+        }
+      });
+    });
   });
-});
+  
 
 app.put('/update_main_course', upload.single('image'), (req, res) => {
     const { id, name, price } = req.body;

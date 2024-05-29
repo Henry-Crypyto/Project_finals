@@ -1,6 +1,5 @@
 <template>
     <div class="container">
-      <h1>Hello, World!</h1>
       <select class="dropdown" v-model="selectedOption" @change="handleSelectChange">
         <option value="all">請選擇</option>
         <option value="brand">品牌</option>
