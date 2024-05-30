@@ -1,9 +1,14 @@
 <template>
     <div>
-      <div class="add-beverage-size">
-        <input v-model="newBeverageSize" class="input-field" placeholder="新增飲料容量選項" />
-        <button class="add-button" @click="confirmAdd">新增</button>
-      </div>
+        <div class="add-beverage-size">
+            <input
+           type="number"
+           v-model.number="rawBeverageSize"
+           class="input-field"
+           placeholder="新增飲料容量選項"
+             />  
+<button class="add-button" @click="confirmAdd">新增</button>
+</div>
   
       <ul class="beverage-size-list">
         <li v-for="beverageSize in beverageSizes" :key="beverageSize.id" class="beverage-size-item">
@@ -35,11 +40,18 @@
     data() {
       return {
         beverageSizes: [],
-        newBeverageSize: '',
+        newBeverageSize:'',
         editingBeverageSizeId: null,
-        editingBeverageSizeName: ''
+        editingBeverageSizeName: '',
+        rawBeverageSize: ''
       };
     },
+    computed: {
+        formattedBeverageSize() {
+
+    return this.rawBeverageSize ? `${this.rawBeverageSize}ml` : '';
+  }
+  },
     watch: {
       selectedOption(newVal) {
         if (newVal === 'beverage_size') {
@@ -75,6 +87,9 @@
           this.addBeverageSize();
         }
       },
+      updateBeverageSize() {
+    this.newBeverageSize = this.rawBeverageSize ? `${this.rawBeverageSize}ml` : '';
+      },
       confirmSaveEdit(beverageSizeId) {
         if (this.checkDuplicateBeverageSizeName(this.editingBeverageSizeName, beverageSizeId)) {
           alert('選項名稱已存在');
@@ -95,15 +110,16 @@
           });
       },
       addBeverageSize() {
-        if (this.newBeverageSize.trim() === '') {
-          alert('選項名稱不能為空');
+        this.updateBeverageSize();
+        if (this.newBeverageSize.trim() === ''||this.rawBeverageSize<1) {
+          alert('選項名稱不能為空, 或是你輸入到小於1的值了');
           return;
         }
         let url = getFullApiUrl('/add_beverage_size');
         axios.post(url, { name: this.newBeverageSize })
           .then(() => {
             this.fetchBeverageSizes();
-            this.newBeverageSize = '';
+            this.rawBeverageSize = '';
           })
           .catch(error => {
             console.error('Error adding beverage size:', error);
