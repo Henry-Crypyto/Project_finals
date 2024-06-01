@@ -47,8 +47,8 @@
               <p>小計: ${{ item.quantity * item.price }}</p>
             </b-card-text>
             <b-button-group class="w-100 tight-group">              
-              <b-button variant="success" @click.prevent="increaseQuantity(item)" v-if="userDeveloper !== 'user'">+</b-button>
-              <b-button variant="info" @click.prevent="decreaseQuantity(item)" v-if="userDeveloper !== 'user'">-</b-button>
+              <b-button variant="success" @click.prevent="increaseQuantity(item)" >+</b-button>
+              <b-button variant="info" @click.prevent="decreaseQuantity(item)">-</b-button>
               <b-button variant="danger" @click.prevent="removeFromCart(item)">移除</b-button>
             </b-button-group>
           </b-card-body>

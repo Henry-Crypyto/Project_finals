@@ -20,7 +20,7 @@
 
       <!-- Price Filter Menu -->
       <b-col md="2" class="mb-3">
-        <b-form-group  label-for="price-select" class="custom-form-group">
+        <b-form-group label-for="price-select" class="custom-form-group">
           <template #label>
             <span style="color: white;">
               <font-awesome-icon :icon="['fas', 'dollar-sign']" />價格
@@ -56,7 +56,7 @@
       </b-col>
       
       <b-col md="3" class="mb-3">
-        <b-form-group  label-for="endDate" class="custom-form-group">
+        <b-form-group label-for="endDate" class="custom-form-group">
           <template #label>
             <span style="color: white;">            
             <font-awesome-icon :icon="['fas', 'calendar-days']" /> 結束日期
@@ -71,12 +71,15 @@
         </b-form-group>
       </b-col>
 
-      <!-- Search Button -->
+      <!-- Toggle Match Quantity Button -->
       <b-col md="2" class="mb-3 align-self-end">
+        <b-button @click="toggleMatchQuantity" variant="outline-primary" class="mb-2">
+          {{ matchQuantity ? '匹配数量' : '不匹配数量' }}
+        </b-button>
         <button class="search-button" @click="handleFetchCoupons">
-       <font-awesome-icon :icon="['fas', 'search']" /> 搜尋
-         </button>   
-       </b-col>
+          <font-awesome-icon :icon="['fas', 'search']" /> 搜尋
+        </button>
+      </b-col>
     </b-row>
 
     <!-- Display Coupons Information for Selected Brand, Price, and Date Range -->
@@ -186,7 +189,7 @@
 
 <script>
 import axios from 'axios';
-import {getFullApiUrl } from '../../config.js';
+import { getFullApiUrl } from '../../config.js';
 import { mapMutations, mapState } from 'vuex';
 
 export default {
@@ -200,7 +203,8 @@ export default {
     currentPage: 1,
     pageSize: 8,
     pageCount: 0,
-    brandLogo:['21century.png','Burger_King.png','KFC_logo.png','McDonalds_logo.png','頂呱呱照片.png'],
+    brandLogo: ['21century.png', 'Burger_King.png', 'KFC_logo.png', 'McDonalds_logo.png', '頂呱呱照片.png'],
+    matchQuantity: true, // New data property
   }),
   created() {
     this.handleFetchCoupons();
@@ -208,39 +212,41 @@ export default {
   methods: {
     ...mapMutations(['setBrandOptions', 'dulplicateInfoToNewCoupon', 'setUserDeveloper']),
 
+    toggleMatchQuantity() {
+      this.matchQuantity = !this.matchQuantity; // Toggle the matchQuantity state
+    },
+    
     getImageById(itemId, itemType) {
-  let item;
-  if (itemType === 'mainCourse') {
-    item = this.mainCourses.find(mc => mc.id === itemId);
-  } else if (itemType === 'beverage') {
-    item = this.beverages.find(b => b.id === itemId);
-  } else if (itemType === 'snack') {
-    item = this.snacks.find(s => s.id === itemId);
-  }
+      let item;
+      if (itemType === 'mainCourse') {
+        item = this.mainCourses.find(mc => mc.id === itemId);
+      } else if (itemType === 'beverage') {
+        item = this.beverages.find(b => b.id === itemId);
+      } else if (itemType === 'snack') {
+        item = this.snacks.find(s => s.id === itemId);
+      }
 
-  if (item && item.image_path) {
-    return `${this.apiUrl}/${item.image_path}`;
-  }
-  return null;
-},
+      if (item && item.image_path) {
+        return `${this.apiUrl}/${item.image_path}`;
+      }
+      return null;
+    },
     async handleFetchCoupons() {
       await this.$store.dispatch('fetchCoupons');
       this.selectedCoupons = this.filterCoupons(this.allCoupons);
       this.pageCount = Math.ceil(this.selectedCoupons.length / this.pageSize);
+      this.currentPage = 1; // Reset to the first page whenever coupons are fetched
     },
     deleteCoupon(couponId) {
-      // 提示用户确认删除
       if (confirm("确定要删除此折扣券吗？")) {
         const url = getFullApiUrl(`/delete_coupon/${couponId}`);
         axios.delete(url)
           .then(() => {
-            // 删除成功后重新获取折扣券信息
             this.handleFetchCoupons();
             alert("折扣券删除成功！");
           })
           .catch(error => {
             console.error('Error deleting coupon:', error);
-            // 处理删除失败的情况
             alert("折扣券删除失败：" + error.message);
           });
       }
@@ -262,15 +268,15 @@ export default {
       });
     },
     getBrandImage(brandName) {
-    const brandMapping = {
-      '21風味館': '21century.png',
-      '漢堡王': 'Burger_King.png',
-      '肯德基': 'KFC_logo.png',
-      '麥當勞': 'McDonalds_logo.png',
-      '頂呱呱': '頂呱呱照片.png'
-    };
-    return brandMapping[brandName] ? require(`@/assets/image/icon/品牌/${brandMapping[brandName]}`) : null;
-  },
+      const brandMapping = {
+        '21風味館': '21century.png',
+        '漢堡王': 'Burger_King.png',
+        '肯德基': 'KFC_logo.png',
+        '麥當勞': 'McDonalds_logo.png',
+        '頂呱呱': '頂呱呱照片.png'
+      };
+      return brandMapping[brandName] ? require(`@/assets/image/icon/品牌/${brandMapping[brandName]}`) : null;
+    },
     editCoupon(coupon) {
       this.$store.commit('dulplicateInfoToNewCoupon', coupon);
       this.$store.dispatch('fetchCouponMainCourseRelation', coupon.coupon_id);
@@ -302,34 +308,41 @@ export default {
     matchesCartItems(coupon) {
       return this.cartItems.every(cartItem => {
         if (cartItem.preference === 1) {
-          // 确保折价券中包含该品项
-          return coupon.items.some(couponItem => 
-            couponItem.ItemName === cartItem.name && couponItem.brand_name === cartItem.brand_name && couponItem.ItemType === cartItem.productType
-          );
+          if (this.matchQuantity) {
+            return coupon.items.some(couponItem =>
+              couponItem.ItemName === cartItem.name && couponItem.brand_name === cartItem.brand_name 
+              && couponItem.ItemType === cartItem.productType && couponItem.Quantity === cartItem.quantity);
+          } else {
+            return coupon.items.some(couponItem =>
+              couponItem.ItemName === cartItem.name && couponItem.brand_name === cartItem.brand_name 
+              && couponItem.ItemType === cartItem.productType);
+          }
         } else if (cartItem.preference === 0) {
-          // 确保折价券中不包含该品项
-          return !coupon.items.some(couponItem => 
-            couponItem.ItemName === cartItem.name && couponItem.brand_name === cartItem.brand_name && couponItem.ItemType === cartItem.productType
-          );
+          return !coupon.items.some(couponItem =>
+            couponItem.ItemName === cartItem.name && couponItem.brand_name === cartItem.brand_name 
+            && couponItem.ItemType === cartItem.productType);
         }
-        return true; // 对于其他情况，不影响匹配
+        return true;
       });
     }
   },
   computed: {
-    ...mapState(['brandOptions', 'newCoupon', 'nextCouponId', 'userDeveloper', 'cartItems', 'mainCourses', 'beverages', 'snacks','allCoupons','apiUrl']),
+    ...mapState(['brandOptions', 'newCoupon', 'nextCouponId', 'userDeveloper', 'cartItems', 'mainCourses', 'beverages', 'snacks', 'allCoupons', 'apiUrl']),
     paginatedCoupons() {
-    const start = (this.currentPage - 1) * this.pageSize;
-    const end = start + this.pageSize;
-    return this.selectedCoupons.slice(start, end);
-  }
+      const start = (this.currentPage - 1) * this.pageSize;
+      const end = start + this.pageSize;
+      return this.selectedCoupons.slice(start, end);
+    }
   },
   watch: {
+    selectedCoupons() {
+      this.currentPage = 1; // Reset to the first page whenever the selected coupons change
+    },
     startDate(newVal) {
       if (newVal) {
-        this.minEndDate = newVal;  // 设置最小结束日期为新的开始日期
+        this.minEndDate = newVal;
         if (this.endDate && new Date(this.endDate) < new Date(newVal)) {
-          this.endDate = '';  // 如果当前结束日期小于新的开始日期，则清空结束日期
+          this.endDate = '';
         }
       }
     }

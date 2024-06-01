@@ -112,7 +112,7 @@ export default {
 /* Add your styles here */
 .app-container {
   min-height: 100vh;
-  background-image: linear-gradient(-225deg, #FFE29F 0%, #FFA99F 48%, #FF719A 100%);
+  background-image: linear-gradient(to top, #fff1eb 0%, #ace0f9 100%);
 }
 
 .custom-select {
