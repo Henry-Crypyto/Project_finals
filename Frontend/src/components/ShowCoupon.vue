@@ -84,7 +84,7 @@
       <b-col v-if="selectedCoupons.length > 0">
         <b-card v-for="coupon in paginatedCoupons" :key="coupon.coupon_ID" class="mb-3 coupon-card" @click="coupon.expanded = !coupon.expanded">
           <b-card-body class="d-flex justify-content-between align-items-center">
-               <img :src="require('@/assets/image/icon/龍貓.png')" alt="Totoro" class="totoro-image">
+            <img :src="getBrandImage(coupon.brand_name)" alt="Brand Logo" class="brand-image">
             <div class="card-title-container">
               <h5 class="card-title">
                 <span class="discount-price">$ {{ coupon.discount_price }}</span> {{ coupon.coupon_name }}
@@ -199,7 +199,8 @@ export default {
     minEndDate: '',
     currentPage: 1,
     pageSize: 8,
-    pageCount: 0 // 用于存储最小结束日期
+    pageCount: 0,
+    brandLogo:['21century.png','Burger_King.png','KFC_logo.png','McDonalds_logo.png','頂呱呱照片.png'],
   }),
   created() {
     this.handleFetchCoupons();
@@ -260,6 +261,16 @@ export default {
         return matchesBrand && matchesPrice && matchesDate && matchesCartItems;
       });
     },
+    getBrandImage(brandName) {
+    const brandMapping = {
+      '21風味館': '21century.png',
+      '漢堡王': 'Burger_King.png',
+      '肯德基': 'KFC_logo.png',
+      '麥當勞': 'McDonalds_logo.png',
+      '頂呱呱': '頂呱呱照片.png'
+    };
+    return brandMapping[brandName] ? require(`@/assets/image/icon/品牌/${brandMapping[brandName]}`) : null;
+  },
     editCoupon(coupon) {
       this.$store.commit('dulplicateInfoToNewCoupon', coupon);
       this.$store.dispatch('fetchCouponMainCourseRelation', coupon.coupon_id);
