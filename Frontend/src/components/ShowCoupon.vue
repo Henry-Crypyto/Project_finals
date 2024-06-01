@@ -238,7 +238,7 @@ export default {
       this.currentPage = 1; // Reset to the first page whenever coupons are fetched
     },
     deleteCoupon(couponId) {
-      if (confirm("确定要删除此折扣券吗？")) {
+      if (confirm("確定要刪除此折價券吗？")) {
         const url = getFullApiUrl(`/delete_coupon/${couponId}`);
         axios.delete(url)
           .then(() => {
@@ -247,7 +247,7 @@ export default {
           })
           .catch(error => {
             console.error('Error deleting coupon:', error);
-            alert("折扣券删除失败：" + error.message);
+            alert("折扣券删除失敗：" + error.message);
           });
       }
     },

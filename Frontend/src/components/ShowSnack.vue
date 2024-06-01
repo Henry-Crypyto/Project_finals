@@ -282,81 +282,81 @@ export default {
           productType: this.$store.state.productType[2]
         });
       } else {
-        alert('品牌不匹配，无法添加到购物车。');
+        alert('品牌不相同，無法加入購物車');
       }
     },
     handleAddSnack() {
-      const formData = new FormData();
-      formData.append('brand', this.newSnack.brand);
-      formData.append('name', this.newSnack.name);
-      formData.append('price', this.newSnack.price);
-      formData.append('flavor', this.newSnack.flavor);
-      formData.append('size', this.newSnack.size);
-      
+  if (confirm('確定要添加這個點心嗎')) {
+    const formData = new FormData();
+    formData.append('brand', this.newSnack.brand);
+    formData.append('name', this.newSnack.name);
+    formData.append('price', this.newSnack.price);
+    formData.append('flavor', this.newSnack.flavor);
+    formData.append('size', this.newSnack.size);
 
+    let url = getFullApiUrl('/add_snack');
+    const category = encodeURIComponent('snack');
 
-      let url = getFullApiUrl('/add_snack');
-      const category = encodeURIComponent('snack');
+    if (this.newSnack.image) {
+      const customFilename = `${category}_${this.newSnack.id}.png`;
+      formData.append('image', this.newSnack.image, customFilename);
+      const brand = encodeURIComponent(this.newSnack.brand);
+      url += `?brand=${brand}&category=${category}&filename=${encodeURIComponent(customFilename)}`; // Include category and encoded filename in URL parameters
 
-      if(this.newSnack.image){
-        const customFilename = `${category}_${this.newSnack.id}.png`;
-        formData.append('image', this.newSnack.image,customFilename);
-        const brand = encodeURIComponent(this.newSnack.brand);
-        url += `?brand=${brand}&category=${category}&filename=${encodeURIComponent(customFilename)}`;  // Include category and encoded filename in URL parameters
-
-        axios.post(url, formData,{
-          headers: {
-                'Content-Type': 'multipart/form-data'
-            }
-        })
-        .then(() => {
-          this.$store.dispatch('fetchSnacks');
-          alert('Snackadded successfully');
-          // Reset the newSnack object to clear the input fields
-          this.newSnack = {
-            brand: '',
-        name: '',
-        price: '',
-        flavor: '',
-        size: '',
-        image_path: null
-          };
-          // Reset the file input
-          this.$refs.fileInput.value = '';
-          this.fetchNextSnackId();
-        })
-        .catch(error => {
-          console.error('Error adding Snack:', error);
-          alert('Failed to add Snack: ' + error.message);
-        });
-      }else{
-        url += `?brand=${encodeURIComponent(this.newSnack.brand)}&category=${category}`;  // Add category to URL
-        axios.post(url, formData,{
-          headers: {
-                'Content-Type': 'multipart/form-data'
-            }
-        })
-        .then(() => {
-          this.$store.dispatch('fetchSnacks');
-          alert('Course added successfully');
-          // Reset the newSnack object to clear the input fields
-          this.newSnack = {
-            brand: '',
-        name: '',
-        price: '',
-        flavor: '',
-        size: '',
-        image_path: null
-          };
-          // Reset the file input
-          this.$refs.fileInput.value = '';
-          this.fetchNextSnackId();
-        })
-        .catch(error => {
-          console.error('Error adding Snack:', error);
-          alert('Failed to add Snack: ' + error.message);
-        });
-      }
+      axios.post(url, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      })
+      .then(() => {
+        this.$store.dispatch('fetchSnacks');
+        alert('Snack added successfully');
+        // Reset the newSnack object to clear the input fields
+        this.newSnack = {
+          brand: '',
+          name: '',
+          price: '',
+          flavor: '',
+          size: '',
+          image: null
+        };
+        // Reset the file input
+        this.$refs.fileInput.value = '';
+        this.fetchNextSnackId();
+      })
+      .catch(error => {
+        console.error('Error adding snack:', error);
+        alert('Failed to add snack: ' + error.message);
+      });
+    } else {
+      url += `?brand=${encodeURIComponent(this.newSnack.brand)}&category=${category}`; // Add category to URL
+      axios.post(url, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      })
+      .then(() => {
+        this.$store.dispatch('fetchSnacks');
+        alert('Snack added successfully');
+        // Reset the newSnack object to clear the input fields
+        this.newSnack = {
+          brand: '',
+          name: '',
+          price: '',
+          flavor: '',
+          size: '',
+          image: null
+        };
+        // Reset the file input
+        this.$refs.fileInput.value = '';
+        this.fetchNextSnackId();
+      })
+      .catch(error => {
+        console.error('Error adding snack:', error);
+        alert('Failed to add snack: ' + error.message);
+      });
+    }
+  }
     },
     handleImageUpload(event) {
       const file = event.target.files[0];

@@ -262,7 +262,7 @@ export default {
           productType: this.$store.state.productType[1]  // 假设你正在使用数组中的第一个产品类型
         });
       } else {
-        alert('品牌不匹配，无法添加到购物车。');
+        alert('品牌不匹配，無法添加到購物車。');
       }
     },
     handleAddHateToCart(beverage) {
@@ -280,84 +280,83 @@ export default {
           productType: this.$store.state.productType[1]  // 假设你正在使用数组中的第一个产品类型
         });
       } else {
-        alert('品牌不匹配，无法添加到购物车。');
+        alert('品牌不匹配，無法添加到購物車。');
       }
     },
     handleAddBeverage() {
-      const formData = new FormData();
-      formData.append('brand', this.newBeverage.brand);
-      formData.append('name', this.newBeverage.name);
-      formData.append('price', this.newBeverage.price);
-      formData.append('iced_hot', this.newBeverage.iced_hot);
-      formData.append('size', this.newBeverage.size);
+  if (confirm('確定要添加這個飲料？')) {
+    const formData = new FormData();
+    formData.append('brand', this.newBeverage.brand);
+    formData.append('name', this.newBeverage.name);
+    formData.append('price', this.newBeverage.price);
+    formData.append('iced_hot', this.newBeverage.iced_hot);
+    formData.append('size', this.newBeverage.size);
 
-      let url = getFullApiUrl('/add_beverage');
-      const category = encodeURIComponent('beverage');
-      
-      
- 
+    let url = getFullApiUrl('/add_beverage');
+    const category = encodeURIComponent('beverage');
 
-      if(this.newBeverage.image){
-        const customFilename = `${category}_${this.newBeverage.id}.png`;
-        formData.append('image', this.newBeverage.image,customFilename);
-        const brand = encodeURIComponent(this.newBeverage.brand);
-        url += `?brand=${brand}&category=${category}&filename=${encodeURIComponent(customFilename)}`;  // Include category and encoded filename in URL parameters
+    if (this.newBeverage.image) {
+      const customFilename = `${category}_${this.newBeverage.id}.png`;
+      formData.append('image', this.newBeverage.image, customFilename);
+      const brand = encodeURIComponent(this.newBeverage.brand);
+      url += `?brand=${brand}&category=${category}&filename=${encodeURIComponent(customFilename)}`; // Include category and encoded filename in URL parameters
 
-        axios.post(url, formData,{
-          headers: {
-                'Content-Type': 'multipart/form-data'
-            }
-        })
-        .then(() => {
-          this.$store.dispatch('fetchBeverages');
-          alert('Beverage added successfully');
-          // Reset the newBeverage object to clear the input fields
-          this.newBeverage = {
-            id:null,
-        brand: '',
-        name: '',
-        price: '',
-        iced_hot: '',
-        size: '',
-        image_path: null
-          };
-          // Reset the file input
-          this.$refs.fileInput.value = '';
-          this.fetchNextBeverageId();
-        })
-        .catch(error => {
-          console.error('Error adding beverage:', error);
-          alert('Failed to add beverage: ' + error.message);
-        });
-      }else{
-        url += `?brand=${encodeURIComponent(this.newBeverage.brand)}&category=${category}`;  // Add category to URL
-        axios.post(url, formData,{
-          headers: {
-                'Content-Type': 'multipart/form-data'
-            }
-        })
-        .then(() => {
-          this.$store.dispatch('fetchBeverages');
-          alert('Course added successfully');
-          // Reset the newBeverage object to clear the input fields
-          this.newBeverage = {
-            id:null,
-        brand: '',
-        name: '',
-        price: '',
-        iced_hot: '',
-        size: '',
-        image_path: null
-          };
-          // Reset the file input
-          this.$refs.fileInput.value = '';
-          this.fetchNextBeverageId();
-        })
-        .catch(error => {
-          console.error('Error adding beverage:', error);
-          alert('Failed to add beverage: ' + error.message);
-        });
-      }
+      axios.post(url, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      })
+      .then(() => {
+        this.$store.dispatch('fetchBeverages');
+        alert('Beverage added successfully');
+        // Reset the newBeverage object to clear the input fields
+        this.newBeverage = {
+          id: null,
+          brand: '',
+          name: '',
+          price: '',
+          iced_hot: '',
+          size: '',
+          image: null
+        };
+        // Reset the file input
+        this.$refs.fileInput.value = '';
+        this.fetchNextBeverageId();
+      })
+      .catch(error => {
+        console.error('Error adding beverage:', error);
+        alert('Failed to add beverage: ' + error.message);
+      });
+    } else {
+      url += `?brand=${encodeURIComponent(this.newBeverage.brand)}&category=${category}`; // Add category to URL
+      axios.post(url, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      })
+      .then(() => {
+        this.$store.dispatch('fetchBeverages');
+        alert('Beverage added successfully');
+        // Reset the newBeverage object to clear the input fields
+        this.newBeverage = {
+          id: null,
+          brand: '',
+          name: '',
+          price: '',
+          iced_hot: '',
+          size: '',
+          image: null
+        };
+        // Reset the file input
+        this.$refs.fileInput.value = '';
+        this.fetchNextBeverageId();
+      })
+      .catch(error => {
+        console.error('Error adding beverage:', error);
+        alert('Failed to add beverage: ' + error.message);
+      });
+    }
+  }
     },
     handleImageUpload(event) {
       const file = event.target.files[0];

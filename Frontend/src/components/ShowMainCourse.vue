@@ -177,6 +177,7 @@ export default {
     this.$store.dispatch('fetchBrandOptions');
     this.fetchNextMainCourseId();
     this.fetchMeatTypes();
+    this.fetchFlavors();
   },
   data() {
     return {
@@ -192,12 +193,7 @@ export default {
         image_path: null
       },
       editingCourse: null, // 用于编辑的课程对象
-      flavorOptions: [
-        { value: '辣', text: '辣' },
-        { value: '甜', text: '甜' },
-        { value: '鹹', text: '鹹' },
-        { value: '酸', text: '酸' }
-      ],
+      flavorOptions: [],
       meatOptions: [],
       meatSubmitOptions: [],
       currentPage: 1, // 当前页数
@@ -351,98 +347,101 @@ export default {
         });
     },
     handleAddCourse() {
-      const formData = new FormData();
-      formData.append('brand', this.newCourse.brand);
-      formData.append('name', this.newCourse.name);
-      formData.append('price', this.newCourse.price);
-      formData.append('flavor', this.newCourse.flavor);
-      
-      // Convert meat types to numerical IDs
-      const meatTypeIds = this.newCourse.meatTypes.map(type => {
-        switch (type) {
-          case '牛':
-            return 1;
-          case '羊':
-            return 2;
-          case '豬':
-            return 3;
-          case '雞':
-            return 4;
-          case '海鮮':
-            return 5;
-          default:
-            return null;
+  if (confirm('确定要新增嗎？')) {
+    const formData = new FormData();
+    formData.append('brand', this.newCourse.brand);
+    formData.append('name', this.newCourse.name);
+    formData.append('price', this.newCourse.price);
+    formData.append('flavor', this.newCourse.flavor);
+    
+    // Convert meat types to numerical IDs
+    const meatTypeIds = this.newCourse.meatTypes.map(type => {
+      switch (type) {
+        case '牛':
+          return 1;
+        case '羊':
+          return 2;
+        case '豬':
+          return 3;
+        case '雞':
+          return 4;
+        case '海鮮':
+          return 5;
+        default:
+          return null;
+      }
+    }).filter(id => id !== null);
+
+    if (this.newCourse.meatTypes) {
+      formData.append('meatTypes', meatTypeIds.join(',')); 
+    } else {
+      formData.append('meatTypes', null); 
+    }
+
+    // 将数组转换为逗号分隔的字符串
+    let url = getFullApiUrl('/add_main_course');
+    const category = encodeURIComponent('main_course');
+
+    if (this.newCourse.image) {
+      const customFilename = `${category}_${this.newCourse.id}.png`;
+      formData.append('image', this.newCourse.image, customFilename);
+      const brand = encodeURIComponent(this.newCourse.brand);
+      url += `?brand=${brand}&category=${category}&filename=${encodeURIComponent(customFilename)}`;  // Include category and encoded filename in URL parameters
+
+      axios.post(url, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
         }
-      }).filter(id => id !== null);
-      if(this.newCourse.meatTypes){
-        formData.append('meatTypes', meatTypeIds.join(',')); 
-      }else{
-        formData.append('meatTypes',null); 
-      }
-      // 将数组转换为逗号分隔的字符串
-      let url = getFullApiUrl('/add_main_course');
-      const category = encodeURIComponent('main_course');
-
-      if(this.newCourse.image){
-        const customFilename = `${category}_${this.newCourse.id}.png`;
-        formData.append('image', this.newCourse.image,customFilename);
-        const brand = encodeURIComponent(this.newCourse.brand);
-        url += `?brand=${brand}&category=${category}&filename=${encodeURIComponent(customFilename)}`;  // Include category and encoded filename in URL parameters
-
-
-        axios.post(url, formData,{
-          headers: {
-                'Content-Type': 'multipart/form-data'
-            }
-        })
-        .then(() => {
-          this.$store.dispatch('fetchMainCourses');
-          alert('Course added successfully');
-          // Reset the newCourse object to clear the input fields
-          this.newCourse = {
-            brand: '',
-            name: '',
-            price: '',
-            flavor: '',
-            meatTypes: [],
-            image: null
-          };
-          // Reset the file input
-          this.$refs.fileInput.value = '';
-          this.fetchNextMainCourseId();
-        })
-        .catch(error => {
-          console.error('Error adding course:', error);
-          alert('Failed to add course: ' + error.message);
-        });
-      }else{
-        url += `?brand=${encodeURIComponent(this.newCourse.brand)}&category=${category}`;  // Add category to URL
-        axios.post(url, formData,{
-          headers: {
-                'Content-Type': 'multipart/form-data'
-            }
-        })
-        .then(() => {
-          this.$store.dispatch('fetchMainCourses');
-          alert('Course added successfully');
-          // Reset the newCourse object to clear the input fields
-          this.newCourse = {
-            brand: '',
-            name: '',
-            price: '',
-            flavor: '',
-            meatTypes: [],
-            image_path: null
-          };
-          // Reset the file input
-          this.$refs.fileInput.value = '';
-          this.fetchNextMainCourseId();
-        })
-        .catch(error => {
-          console.error('Error adding course:', error);
-          alert('Failed to add course: ' + error.message);
-        });
-      }
+      })
+      .then(() => {
+        this.$store.dispatch('fetchMainCourses');
+        alert('Course added successfully');
+        // Reset the newCourse object to clear the input fields
+        this.newCourse = {
+          brand: '',
+          name: '',
+          price: '',
+          flavor: '',
+          meatTypes: [],
+          image: null
+        };
+        // Reset the file input
+        this.$refs.fileInput.value = '';
+        this.fetchNextMainCourseId();
+      })
+      .catch(error => {
+        console.error('Error adding course:', error);
+        alert('Failed to add course: ' + error.message);
+      });
+    } else {
+      url += `?brand=${encodeURIComponent(this.newCourse.brand)}&category=${category}`;  // Add category to URL
+      axios.post(url, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      })
+      .then(() => {
+        this.$store.dispatch('fetchMainCourses');
+        alert('Course added successfully');
+        // Reset the newCourse object to clear the input fields
+        this.newCourse = {
+          brand: '',
+          name: '',
+          price: '',
+          flavor: '',
+          meatTypes: [],
+          image_path: null
+        };
+        // Reset the file input
+        this.$refs.fileInput.value = '';
+        this.fetchNextMainCourseId();
+      })
+      .catch(error => {
+        console.error('Error adding course:', error);
+        alert('Failed to add course: ' + error.message);
+      });
+    }
+  }
     },
     handleImageUpload(event) {
       const file = event.target.files[0];
@@ -505,7 +504,17 @@ export default {
     },
     handleMeatFilterChange() {
       this.localMeatSelect = []; // 當篩選類型改變時，清空已選中的肉類選項
-    }
+    },
+    fetchFlavors() {
+        let url = getFullApiUrl('/all_flavor');
+        axios.get(url)
+          .then(response => {
+            this.flavorOptions = response.data.map(flavor => ({ value: flavor.flavor_name, text: flavor.flavor_name }));
+          })
+          .catch(error => {
+            console.error('Error fetching flavors:', error);
+          });
+    },
   }
 }
 </script>
