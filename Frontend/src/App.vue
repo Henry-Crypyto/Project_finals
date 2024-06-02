@@ -1,12 +1,22 @@
 <template>
- <div class="app-container">
-      <!-- 标题栏 -->
+  <div class="app-container">
+    <!-- 标题栏 -->
     <NavBar @change-section="handleSectionChange" />
+    <!-- <div class="footer">
+      <img :src="footerLogo" alt="月底超人 Logo" class="footer-logo" />
+    </div> -->
+    <!-- 密码验证区域 -->
+    <b-container class="my-3">
+      <div class="form-group password-container">
+        <input v-model="password" type="password" class="form-control custom-input" placeholder="請輸入密碼" />
+        <button class="password-button" @click="validatePassword">登入</button>
+      </div>
+    </b-container>
 
     <!-- 下拉式選單 -->
     <b-container class="my-3">
       <div class="form-group select-container">
-        <select v-model="localUserDeveloper" @change="updateUserDeveloper" class="form-control custom-select">
+        <select v-model="localUserDeveloper" @change="updateUserDeveloper" class="form-control custom-select" :disabled="!isPasswordValidated">
           <option value="user">使用者模式</option>
           <option value="add">新增和刪除折價券</option>
           <option value="update">更新折價券</option>
@@ -51,12 +61,13 @@ export default {
   },
   data() {
     return {
-      localUserDeveloper: this.userDeveloper // Bind the local data to Vuex state
+      localUserDeveloper: this.userDeveloper, // Bind the local data to Vuex state
+      password: '',
+      isPasswordValidated: false
     };
   },
   computed: {
     ...mapState(['userDeveloper']),
-
     cartItems() {
       return this.$store.state.cartItems;
     },
@@ -78,7 +89,7 @@ export default {
         'snack': 'ShowSnack',
         'coupon': 'ShowCoupon',
         'shoppingCart': 'ShoppingCart',
-        'developer':'DeveloperPage'
+        'developer': 'DeveloperPage'
       };
       this.$store.commit('setView', viewMap[section] || 'ShowCoupon');
     },
@@ -89,30 +100,66 @@ export default {
       this.$store.commit('setUserDeveloper', this.localUserDeveloper);
       this.$store.commit('clearCartItems');
     },
+    validatePassword() {
+      const correctPassword = '24988008'; // Replace with your actual password
+      if (this.password === correctPassword) {
+        this.isPasswordValidated = true;
+        alert('密碼驗證成功');
+      } else {
+        alert('密碼錯誤');
+      }
+    },
     async initializeData() {
-    try {
-      await this.$store.dispatch('fetchCoupons');
-    } catch (error) {
-      console.error('Error initializing data:', error);
+      try {
+        await this.$store.dispatch('fetchCoupons');
+      } catch (error) {
+        console.error('Error initializing data:', error);
+      }
     }
-  }
   },
   created() {
     this.initializeData();
     this.$store.dispatch('fetchNextCouponId');
-      this.$store.dispatch('fetchBrandOptions');
-      this.$store.dispatch('fetchMainCourses');
-      this.$store.dispatch('fetchBeverages');
-      this.$store.dispatch('fetchSnacks');
+    this.$store.dispatch('fetchBrandOptions');
+    this.$store.dispatch('fetchMainCourses');
+    this.$store.dispatch('fetchBeverages');
+    this.$store.dispatch('fetchSnacks');
   }
 }
 </script>
 
 <style scoped>
-/* Add your styles here */
 .app-container {
   min-height: 100vh;
   background-image: linear-gradient(to top, #fff1eb 0%, #ace0f9 100%);
+}
+
+.password-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 15px;
+}
+
+.custom-input {
+  width: 200px;
+  padding: 10px 15px;
+  border: 2px solid #aaa;
+  border-radius: 8px;
+  margin-right: 10px;
+}
+
+.password-button {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.password-button:hover {
+  background-color: #2980b9;
 }
 
 .custom-select {
@@ -137,5 +184,10 @@ export default {
 .custom-select:focus {
   border-color: #0056b3;
   box-shadow: 0 0 8px rgba(0,86,179,0.8);
+}
+
+.custom-select:disabled {
+  background-color: #e9ecef;
+  cursor: not-allowed;
 }
 </style>
