@@ -157,13 +157,15 @@ export default createStore({
         brandOptions.forEach(brandOption => {
           state.brandOptions.push({
             brand_id: brandOption.brand_id,
-            brand_name: brandOption.brand_name
+            brand_name: brandOption.brand_name,
+            image_path: brandOption.image_path
           });
         });
       } else {
         state.brandOptions.push({
           brand_id: brandOptions.brand_id,
-          brand_name: brandOptions.brand_name
+          brand_name: brandOptions.brand_name,
+          image_path: brandOptions.image_path
         });
       }
     },

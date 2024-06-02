@@ -42,8 +42,26 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 
+const storageBrand = multer.diskStorage({
+    destination: (req, file, cb) => {
+        const dir = path.join(__dirname, 'image', '品牌logo');
+        fs.mkdir(dir, { recursive: true }, error => cb(error, dir)); // 確保目錄存在
+    },
+    filename: (req, file, cb) => {
+      const brandId = req.body.id; // 從請求中獲取品牌名稱
+      const extension = path.extname(file.originalname); // 獲取檔案擴展名
+      const newFileName = `${brandId}${extension}`; // 新檔名
+      cb(null, newFileName);
+    }
+  });
+
+const upload_brand = multer({ storage: storageBrand });
+
   
   
+
+
+
 
 const db = mysql.createConnection({
     host: '127.0.0.1',
@@ -772,6 +790,19 @@ app.put('/update_all_coupon_original_price', (req, res) => {
 });
 
 //Developer----------------------------------------------------------------
+
+app.get('/next_brand_id', (req, res) => {
+    db.query(`SELECT MAX(id) + 1 AS next_brand_id FROM ${brandTableName}`, (err, results) => {
+        if (err) {
+            console.error('Error fetching data: ', err);
+            res.status(500).send('Error fetching data');
+            return;
+        }
+        console.log('Data retrieved from the database: ', results);
+        res.json(results);
+    });
+});
+
 app.get('/all_brand', (req, res) => {
     db.query(`SELECT * FROM ${brandTableName}`, (err, results) => {
         if (err) {
@@ -783,7 +814,6 @@ app.get('/all_brand', (req, res) => {
         res.json(results);
     });
 });
-
 app.delete('/delete_brand/:brand_id', (req, res) => {
     const brandId = req.params.brand_id;
     const query = `DELETE FROM ${brandTableName} WHERE brand_id = ?`;
@@ -803,47 +833,111 @@ app.delete('/delete_brand/:brand_id', (req, res) => {
     });
 });
 
-app.post('/add_brand', (req, res) => {
+app.post('/add_brand', upload_brand.single('image'), (req, res) => {
     const { brand_name } = req.body;
-
+  
     if (!brand_name) {
-        return res.status(400).send('Brand name is required');
+      return res.status(400).send('Brand name is required');
     }
-
-    const query = `INSERT INTO ${brandTableName} (brand_name) VALUES (?)`;
-    db.query(query, [brand_name], (err, results) => {
-        if (err) {
-            console.error('Error adding brand: ', err);
-            res.status(500).send('Error adding brand');
-            return;
-        }
+  
+    // 插入品牌并获取插入后的ID
+    const insertQuery = `INSERT INTO ${brandTableName} (brand_name) VALUES (?)`;
+    db.query(insertQuery, [brand_name], (insertErr, insertResults) => {
+      if (insertErr) {
+        console.error('Error adding brand: ', insertErr);
+        return res.status(500).send('Error adding brand');
+      }
+  
+      const brandId = insertResults.insertId;
+  
+      // 更新图片路径为品牌ID命名
+      let imagePath = req.file ? req.file.path : null;
+      console.log(imagePath);
+      if (imagePath) {
+        const newImagePath = path.join(path.dirname(imagePath), `${brandId}${path.extname(imagePath)}`);
+        fs.rename(imagePath, newImagePath, (renameErr) => {
+          if (renameErr) {
+            console.error('Error renaming image: ', renameErr);
+            return res.status(500).send('Error processing image');
+          }
+  
+          // 更新数据库中的图片路径
+          const relativeImagePath = path.relative(__dirname, newImagePath);
+          const updateQuery = `UPDATE ${brandTableName} SET image_path = ? WHERE brand_id = ?`;
+          db.query(updateQuery, [relativeImagePath, brandId], (updateErr) => {
+            if (updateErr) {
+              console.error('Error updating image path: ', updateErr);
+              return res.status(500).send('Error updating brand');
+            }
+  
+            res.status(201).send('Brand added successfully');
+          });
+        });
+      } else {
         res.status(201).send('Brand added successfully');
+      }
     });
-});
+  });
 
-app.put('/update_brand/:brand_id', (req, res) => {
+  app.put('/update_brand/:brand_id', upload_brand.single('image'), (req, res) => {
     const brandId = req.params.brand_id;
     const { brand_name } = req.body;
-
+  
     if (!brand_name) {
-        return res.status(400).send('Brand name is required');
+      return res.status(400).send('Brand name is required');
     }
-
-    const query = `UPDATE ${brandTableName} SET brand_name = ? WHERE brand_id = ?`;
-    db.query(query, [brand_name, brandId], (err, results) => {
-        if (err) {
+  
+    let query;
+    let queryParams;
+  
+    if (req.file) {
+      // 更新品牌名称和图片路径
+      const imagePath = req.file.path;
+      const newImagePath = path.join(path.dirname(imagePath), `${brandId}${path.extname(imagePath)}`);
+      fs.rename(imagePath, newImagePath, (renameErr) => {
+        if (renameErr) {
+          console.error('Error renaming image: ', renameErr);
+          return res.status(500).send('Error processing image');
+        }
+  
+        const relativeImagePath = path.relative(__dirname, newImagePath);
+        query = `UPDATE ${brandTableName} SET brand_name = ?, image_path = ? WHERE brand_id = ?`;
+        queryParams = [brand_name, relativeImagePath, brandId];
+  
+        db.query(query, queryParams, (err, results) => {
+          if (err) {
             console.error('Error updating brand: ', err);
             res.status(500).send('Error updating brand');
             return;
-        }
-
-        if (results.affectedRows === 0) {
+          }
+  
+          if (results.affectedRows === 0) {
             res.status(404).send('Brand not found');
-        } else {
+          } else {
             res.send('Brand updated successfully');
+          }
+        });
+      });
+    } else {
+      // 仅更新品牌名称
+      query = `UPDATE ${brandTableName} SET brand_name = ? WHERE brand_id = ?`;
+      queryParams = [brand_name, brandId];
+  
+      db.query(query, queryParams, (err, results) => {
+        if (err) {
+          console.error('Error updating brand: ', err);
+          res.status(500).send('Error updating brand');
+          return;
         }
-    });
-});
+  
+        if (results.affectedRows === 0) {
+          res.status(404).send('Brand not found');
+        } else {
+          res.send('Brand updated successfully');
+        }
+      });
+    }
+  });
 
 
 

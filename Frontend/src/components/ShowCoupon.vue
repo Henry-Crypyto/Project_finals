@@ -227,7 +227,7 @@ export default {
       }
 
       if (item && item.image_path) {
-        return `${this.apiUrl}/${item.image_path}`;
+        return `${this.apiUrl}${item.image_path}`;
       }
       return null;
     },
@@ -268,14 +268,9 @@ export default {
       });
     },
     getBrandImage(brandName) {
-      const brandMapping = {
-        '21風味館': '21century.png',
-        '漢堡王': 'Burger_King.png',
-        '肯德基': 'KFC_logo.png',
-        '麥當勞': 'McDonalds_logo.png',
-        '頂呱呱': '頂呱呱照片.png'
-      };
-      return brandMapping[brandName] ? require(`@/assets/image/icon/品牌/${brandMapping[brandName]}`) : null;
+      const baseUrl = this.apiUrl;
+      const brand = this.brandOptions.find(option => option.brand_name === brandName);
+      return `${baseUrl}/${brand.image_path}`;
     },
     editCoupon(coupon) {
       this.$store.commit('dulplicateInfoToNewCoupon', coupon);
