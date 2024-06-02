@@ -94,6 +94,8 @@
                 <input type="file" @change="handleEditImageUpload" accept="image/png" ref="editFileInput">
               </b-form-group>
               <b-button variant="success" @click="handleSaveEdit">保存編輯</b-button>
+              <b-button variant="danger" @click="cancelEdit">取消編輯</b-button>
+
             </div>
             <div v-else>
               <b-button v-if="userDeveloper === 'addOrDeleteItem'" variant="danger" class="position-absolute top-0 end-0 mt-2 me-2" @click="handleDeleteSnack(snack)">
@@ -241,6 +243,10 @@ export default {
             console.error('Error fetching next snack ID:', error);
           });
     },
+    cancelEdit() {
+    this.editingSnack = null;
+    this.editingSnack = null;
+    },
     getSnackImage(imagePath) {
       const baseUrl=this.apiUrl;
       if (!imagePath) {
@@ -286,6 +292,10 @@ export default {
       }
     },
     handleAddSnack() {
+      if (this.newCourse.price<1) {
+      alert('品項名稱不能為空或是你價錢太少了');
+      return;
+    }
   if (confirm('確定要添加這個點心嗎')) {
     const formData = new FormData();
     formData.append('brand', this.newSnack.brand);
@@ -366,6 +376,10 @@ export default {
       this.editingSnack = { ...snack };
     },
     handleSaveEdit() {
+      if (!this.editingSnack.name.trim()||this.editingSnack.price<1) {
+      alert('品項名稱不能為空或是你價錢太少了');
+      return;
+    }
       const formData = new FormData();
     formData.append('id', this.editingSnack.id);
     formData.append('name', this.editingSnack.name);

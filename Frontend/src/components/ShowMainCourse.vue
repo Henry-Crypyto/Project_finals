@@ -3,7 +3,7 @@
     <b-container class="main-course-container">
       <b-row>
         <b-col>
-          <h1 class="text-center" style=" text-align: center;">主菜選單</h1>
+          <h1 class="text-center" style="text-align: center;">主菜選單</h1>
           <div v-if="userDeveloper === 'addOrDeleteItem'" class="mb-4">
             <b-form @submit.prevent="handleAddCourse">
               <b-form-group label-for="course-brand">
@@ -22,7 +22,7 @@
                 <template #label>
                   <span style="color: white;">單價</span>
                 </template>
-                <b-form-input type="number" id="course-price" v-model="newCourse.price" required></b-form-input>
+                <b-form-input type="number" id="course-price" v-model="newCourse.price" :min="1" required></b-form-input>
               </b-form-group>
               <b-form-group label-for="course-flavor">
                 <template #label>
@@ -58,13 +58,13 @@
             </div>
           </div>
           <!-- 新增的篩選下拉選單 -->
-          <div class="col-md-2 mb-3 mx-auto" >
+          <div class="col-md-2 mb-3 mx-auto">
             <b-form-group label-for="filter-type">
               <b-form-select class="form-control custom-select" id="filter-type" v-model="meatFilterType" :options="meatFilterOptions" @change="handleMeatFilterChange"></b-form-select>
             </b-form-group>
 
             <!-- 篩選條件 -->
-            <div >
+            <div>
               <div class="form-group d-flex justify-content-center">
                 <div class="d-flex flex-row flex-wrap">
                   <div v-for="option in meatOptions" :key="option.value" class="mx-3 my-2">
@@ -80,8 +80,6 @@
               </div>
             </div>
           </div>
-
-         
         </b-col>
       </b-row>
       <b-row v-if="paginatedMainCourses.length > 0">
@@ -92,12 +90,13 @@
                 <b-form-input v-model="editingCourse.name" required></b-form-input>
               </b-form-group>
               <b-form-group label="單價">
-                <b-form-input type="number" v-model="editingCourse.price" required></b-form-input>
+                <b-form-input type="number" v-model="editingCourse.price" :min="1" required></b-form-input>
               </b-form-group>
               <b-form-group label="上傳圖片">
                 <input type="file" @change="handleEditImageUpload" accept="image/png" ref="editFileInput">
               </b-form-group>
               <b-button variant="success" @click="handleSaveEdit">保存編輯</b-button>
+              <b-button variant="danger" @click="cancelEdit">取消編輯</b-button>
             </div>
             <div v-else>
               <b-button v-if="userDeveloper === 'addOrDeleteItem'" variant="danger" class="position-absolute top-0 end-0 mt-2 me-2" @click="handleDeleteCourse(course)">
@@ -124,22 +123,22 @@
               <b-row>
                 <b-col class="d-flex justify-content-center mt-2">
                   <b-button 
-                      class="custom-love-button" 
-                      variant="primary" 
-                      @click="handleAddLoveToCart(course)" 
-                      v-if="userDeveloper !== 'updateItem'">
-                      😍喜歡
-                   </b-button>
+                    class="custom-love-button" 
+                    variant="primary" 
+                    @click="handleAddLoveToCart(course)" 
+                    v-if="userDeveloper !== 'updateItem'">
+                    😍喜歡
+                  </b-button>
                 </b-col>
               </b-row>
               <b-row>
                 <b-col class="d-flex justify-content-center mt-2">
                   <b-button 
-                     class="custom-hate-button" 
-                     @click="handleAddHateToCart(course)" 
-                     v-if="userDeveloper === 'user'">
-                     🤮討厭
-                   </b-button>                
+                    class="custom-hate-button" 
+                    @click="handleAddHateToCart(course)" 
+                    v-if="userDeveloper === 'user'">
+                    🤮討厭
+                  </b-button>                
                 </b-col>
               </b-row>
             </div>
@@ -249,6 +248,10 @@ export default {
         this.localMeatSelect.push(meat); // 如果未选中，则添加到数组中
       }
     },
+    cancelEdit() {
+    this.editingCourse = null;
+    this.editingCourseImage = null;
+    },
     fetchMeatTypes() {
       let url = getFullApiUrl('/all_meat_type');
       axios.get(url)
@@ -347,6 +350,10 @@ export default {
         });
     },
     handleAddCourse() {
+      if (this.newCourse.price<1) {
+      alert('品項名稱不能為空或是你價錢太少了');
+      return;
+    }
   if (confirm('确定要新增嗎？')) {
     const formData = new FormData();
     formData.append('brand', this.newCourse.brand);
@@ -451,6 +458,10 @@ export default {
       this.editingCourse = { ...course };
     },
     handleSaveEdit() {
+      if (!this.editingCourse.name.trim()||this.editingCourse.price<1) {
+      alert('品項名稱不能為空或是你價錢太少了');
+      return;
+    }
     const formData = new FormData();
     formData.append('id', this.editingCourse.id);
     formData.append('name', this.editingCourse.name);

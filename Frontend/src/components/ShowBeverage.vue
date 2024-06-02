@@ -93,6 +93,8 @@
                 <input type="file" @change="handleEditImageUpload" accept="image/png" ref="editFileInput">
               </b-form-group>
               <b-button variant="success" @click="handleSaveEdit">保存編輯</b-button>
+              <b-button variant="danger" @click="cancelEdit">取消編輯</b-button>
+
             </div>
             <div v-else>
               <b-button v-if="userDeveloper === 'addOrDeleteItem'" variant="danger" class="position-absolute top-0 end-0 mt-2 me-2" @click="handleDeleteBeverage(beverage)">
@@ -240,6 +242,10 @@ export default {
             console.error('Error fetching next coupon ID:', error);
           });
     },
+    cancelEdit() {
+    this.editingBeverage = null;
+    this.editingBeverage = null;
+    },
     getBeverageImage(imagePath) {
       const baseUrl=this.apiUrl;
       if (!imagePath) {
@@ -284,6 +290,10 @@ export default {
       }
     },
     handleAddBeverage() {
+      if (this.newCourse.price<1) {
+      alert('品項名稱不能為空或是你價錢太少了');
+      return;
+    }
   if (confirm('確定要添加這個飲料？')) {
     const formData = new FormData();
     formData.append('brand', this.newBeverage.brand);
@@ -366,6 +376,10 @@ export default {
       this.editingBeverage = { ...beverage };
     },
     handleSaveEdit() {
+      if (!this.editingBeverage.name.trim()||this.editingBeverage.price<1) {
+      alert('品項名稱不能為空或是你價錢太少了');
+      return;
+    }
       const formData = new FormData();
       formData.append('id', this.editingBeverage.id);
       formData.append('name', this.editingBeverage.name);
