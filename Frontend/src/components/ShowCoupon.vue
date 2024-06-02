@@ -203,7 +203,6 @@ export default {
     currentPage: 1,
     pageSize: 8,
     pageCount: 0,
-    brandLogo: ['21century.png', 'Burger_King.png', 'KFC_logo.png', 'McDonalds_logo.png', '頂呱呱照片.png'],
     matchQuantity: true, // New data property
   }),
   created() {
@@ -468,7 +467,7 @@ export default {
 }
 
 .card-title-container {
-  text-align: center; /* 标题居中 */
+  text-align: baseline; /* 标题居中 */
   flex-grow: 1; /* 使容器占用可用空间 */
 }
 
@@ -554,5 +553,46 @@ export default {
 .collapse.show {
   height: auto; /* Adjust this depending on your content */
   transition: height 0.6s ease;
+}
+@media (max-width: 400.98px) {
+  .coupon-card {
+    border-radius: 20px; /* 调整圆角 */
+  }
+
+  .card-body {
+    flex-direction: column; /* 改为垂直方向布局 */
+  }
+
+  .card-title-container {
+    order: -1; /* 使标题在最上面 */
+  }
+
+  .coupon-title {
+    text-align: center;
+  }
+
+  .discount-price {
+    display: block;
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem; /* 在小屏幕上添加底部间距 */
+  }
+
+  .card-title {
+    font-size: 1rem; /* 调整标题字体大小 */
+  }
+
+  .coupon-item-image {
+    max-width: 50px; /* 调整图像最大宽度 */
+    max-height: 50px; /* 调整图像最大高度 */
+  }
+
+  .item-type-title {
+    font-size: 1rem; /* 调整标题字体大小 */
+    padding: 3px 6px; /* 调整内边距 */
+  }
+
+  .card-body {
+    padding: 0.75rem; /* 调整卡片内边距 */
+  }
 }
 </style>
