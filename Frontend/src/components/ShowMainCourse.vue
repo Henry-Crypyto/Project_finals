@@ -49,7 +49,7 @@
             <div class="col-md-2 mb-3 mx-auto">
               <div class="form-group">
                 <select id="brand-select" class="form-control custom-select" v-model="localBrandSelect">
-                  <option value="">所有品牌</option>
+                  <option value="all">所有品牌</option>
                   <option v-for="brand in brandOptions" :key="brand.brand_id" :value="brand.brand_name">
                     {{ brand.brand_name }}
                   </option>

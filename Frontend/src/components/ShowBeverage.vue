@@ -50,7 +50,7 @@
             <div class="col-md-2 mb-3">
               <div class="form-group">
                 <select id="brand-select" class="form-control custom-select" v-model="localBrandSelect">
-                  <option value="">所有品牌</option>
+                  <option value="all">所有品牌</option>
                   <option v-for="brand in brandOptions" :key="brand.brand_id" :value="brand.brand_name">
                     {{ brand.brand_name }}
                   </option>
@@ -199,7 +199,7 @@ export default {
     ...mapState(['beverages', 'brandOptions', 'brandSelect', 'cartItems', 'userDeveloper','apiUrl']),
     filteredBeverages() {
       return this.beverages.filter(beverage => {
-        const brandMatch = this.localBrandSelect === '' || beverage.brand_name === this.localBrandSelect;
+        const brandMatch = this.localBrandSelect === ''|| this.localBrandSelect === 'all' || beverage.brand_name === this.localBrandSelect;
         const icedHotMatch = this.localIcedHotSelect === '' || beverage.iced_hot_name === this.localIcedHotSelect;
         const sizeMatch = this.localSizeSelect === '' || beverage.beverage_size === this.localSizeSelect;
         return brandMatch && icedHotMatch && sizeMatch;
