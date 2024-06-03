@@ -110,15 +110,6 @@
               <b-card-text><strong>大小:</strong> {{ snack.snack_size || '無' }}</b-card-text>
               <b-card-text><strong>口味:</strong> {{ snack.flavor_name }}</b-card-text>
               <b-card-text><strong>品牌:</strong> {{ snack.brand_name }}</b-card-text>
-              <b-form-group label="數量" label-for="quantity-input-{{ snack.id }}">
-                <b-form-input
-                  id="quantity-input-{{ snack.id }}"
-                  type="number"
-                  v-model="snack.quantity"
-                  min="1"
-                  placeholder="數量"
-                ></b-form-input>
-              </b-form-group>
               <b-row>
                 <b-col class="d-flex justify-content-center mt-2">
                   <b-button 
@@ -367,6 +358,14 @@ export default {
       });
     }
   }
+    },
+    validateQuantity(course) {
+      if (!Number.isInteger(course.quantity)) {
+        course.quantity = Math.floor(course.quantity);
+      }
+      if (course.quantity < 1) {
+        course.quantity = 1;
+      }
     },
     handleImageUpload(event) {
       const file = event.target.files[0];

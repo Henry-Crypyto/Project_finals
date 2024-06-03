@@ -14,7 +14,7 @@
     </b-container>
 
     <!-- 下拉式選單 -->
-    <b-container class="my-3">
+    <b-container class="my-3" v-if="isPasswordValidated">
       <div class="form-group select-container">
         <select v-model="localUserDeveloper" @change="updateUserDeveloper" class="form-control custom-select" :disabled="!isPasswordValidated">
           <option value="user">使用者模式</option>

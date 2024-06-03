@@ -109,15 +109,6 @@
               <b-card-text><strong>容量:</strong> {{ beverage.beverage_size }}</b-card-text>
               <b-card-text><strong>類型:</strong> {{ beverage.iced_hot_name }}</b-card-text>
               <b-card-text><strong>品牌:</strong> {{ beverage.brand_name }}</b-card-text>
-              <b-form-group label="數量" label-for="quantity-input-{{ beverage.id }}">
-                <b-form-input
-                  id="quantity-input-{{ beverage.id }}"
-                  type="number"
-                  v-model="beverage.quantity"
-                  min="1"
-                  placeholder="數量"
-                ></b-form-input>
-              </b-form-group>
               <b-row>
                 <b-col class="d-flex justify-content-center mt-2">
                   <b-button 
@@ -371,6 +362,14 @@ export default {
     handleImageUpload(event) {
       const file = event.target.files[0];
       this.newBeverage.image = file;
+    },
+    validateQuantity(course) {
+      if (!Number.isInteger(course.quantity)) {
+        course.quantity = Math.floor(course.quantity);
+      }
+      if (course.quantity < 1) {
+        course.quantity = 1;
+      }
     },
     handleEditBeverage(beverage) {
       this.editingBeverage = { ...beverage };

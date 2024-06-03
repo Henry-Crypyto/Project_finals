@@ -111,15 +111,6 @@
               <b-card-text><strong>肉類類型:</strong> {{ course.meat_type || '無' }}</b-card-text>
               <b-card-text><strong>口味:</strong> {{ course.flavor_name || '無' }}</b-card-text>
               <b-card-text><strong>品牌:</strong> {{ course.brand_name }}</b-card-text>
-              <b-form-group label="數量" label-for="quantity-input-{{ course.id }}">
-                <b-form-input
-                  id="quantity-input-{{ course.id }}"
-                  type="number"
-                  v-model="course.quantity"
-                  min="1"
-                  placeholder="數量"
-                ></b-form-input>
-              </b-form-group>
               <b-row>
                 <b-col class="d-flex justify-content-center mt-2">
                   <b-button 
@@ -211,9 +202,11 @@ export default {
         const brandMatch = this.localBrandSelect === '' || this.localBrandSelect === 'all' || course.brand_name === this.localBrandSelect;
         
         // 根據篩選類型篩選肉類
-        const meatMatch = this.meatFilterType === 'include'
-          ? this.localMeatSelect.every(meat => course.meat_type && course.meat_type.includes(meat))
-          : this.localMeatSelect.every(meat => !(course.meat_type && course.meat_type.includes(meat)));
+        const meatMatch = this.localMeatSelect.length === 0 
+        ? true // 当没有选中任何肉类时显示所有项目
+        : this.meatFilterType === 'include'
+        ? this.localMeatSelect.some(meat => course.meat_type && course.meat_type.includes(meat))
+        : this.localMeatSelect.every(meat => !(course.meat_type && course.meat_type.includes(meat)));
         
         return brandMatch && meatMatch;
       });

@@ -57,10 +57,21 @@ export default createStore({
     addToCart(state, payload) {
         const { product, productType,preference } = payload;
         const item = state.cartItems.find(item => item.id === product.id 
-          && item.productType === productType);        
+          && item.productType === productType);
+          
           if (item) {
-          item.quantity += product.quantity;
-        } else {
+            if(product.quantity<1){
+              alert('你壞壞, 輸入負數或0!!!!')
+              return;
+            } else{
+              item.quantity+=product.quantity; 
+            }
+            
+          } else {
+            if(product.quantity<1){
+              alert('你壞壞, 輸入負數或0!!!!')
+              return;
+            }
           state.cartItems.push({
             nextCouponId:state.nextCouponId,
             id: product.id,
@@ -246,7 +257,7 @@ export default createStore({
         .then(response => {
           commit('setMainCourses', response.data.map(course => ({
             ...course,
-            quantity: 1  // 初始化数量为 1
+            quantity: Number(1)          
           })));
         })
           .catch(error => {
@@ -271,7 +282,7 @@ export default createStore({
           .then(response => {
             commit('setBeverages', response.data.map(beverage => ({
               ...beverage,
-              quantity: 1  // 初始化数量为 1
+              quantity: Number(1)  // 初始化数量为 1
             })));
           })
           .catch(error => {
@@ -284,7 +295,7 @@ export default createStore({
           .then(response => {
             commit('setSnacks', response.data.map(snack => ({
               ...snack,
-              quantity: 1  // 初始化数量为 1
+              quantity: Number(1)  // 初始化数量为 1
             })));
           })
           .catch(error => {
