@@ -9,7 +9,7 @@
                  <font-awesome-icon :icon="['fas', 'tag']" />品牌
               </span>
           </template>
-          <b-form-select id="brand-select" v-model="selectedBrand" class="custom-select" :disabled="isCartNotEmpty">
+          <b-form-select id="brand-select" v-model="selectedBrand" class="custom-select">
             <b-form-select-option value="">所有品牌</b-form-select-option>
             <b-form-select-option v-for="brand in brandOptions" :key="brand.brand_id" :value="brand.brand_name">
               {{ brand.brand_name }}
