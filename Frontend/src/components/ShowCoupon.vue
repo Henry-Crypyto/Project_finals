@@ -193,28 +193,28 @@ import { getFullApiUrl } from '../../config.js';
 import { mapMutations, mapState } from 'vuex';
 
 export default {
-  data: () => ({
-    selectedBrand: '',
-    selectedCoupons: [],
-    selectedPrice: '',
-    startDate: '',
-    endDate: '',
-    minEndDate: '',
-    currentPage: 1,
-    pageSize: 8,
-    pageCount: 0,
-    matchQuantity: true, // New data property
-  }),
+  data() {
+    return {
+      selectedBrand: '',
+      selectedCoupons: [],
+      selectedPrice: '',
+      startDate: '',
+      endDate: '',
+      minEndDate: '',
+      currentPage: 1,
+      pageSize: 8,
+      pageCount: 0,
+      matchQuantity: true // New data property
+    };
+  },
   created() {
     this.handleFetchCoupons();
   },
   methods: {
     ...mapMutations(['setBrandOptions', 'dulplicateInfoToNewCoupon', 'setUserDeveloper']),
-
     toggleMatchQuantity() {
       this.matchQuantity = !this.matchQuantity; // Toggle the matchQuantity state
     },
-    
     getImageById(itemId, itemType) {
       let item;
       if (itemType === 'mainCourse') {
@@ -224,7 +224,6 @@ export default {
       } else if (itemType === 'snack') {
         item = this.snacks.find(s => s.id === itemId);
       }
-
       if (item && item.image_path) {
         return `${this.apiUrl}${item.image_path}`;
       }
@@ -232,9 +231,7 @@ export default {
     },
     async handleFetchCoupons() {
       await this.$store.dispatch('fetchCoupons');
-      this.selectedCoupons = this.filterCoupons(this.allCoupons);
-      this.pageCount = Math.ceil(this.selectedCoupons.length / this.pageSize);
-      this.currentPage = 1; // Reset to the first page whenever coupons are fetched
+      this.updateFilteredCoupons();
     },
     deleteCoupon(couponId) {
       if (confirm("確定要刪除此折價券吗？")) {
@@ -265,6 +262,11 @@ export default {
         const matchesCartItems = this.matchesCartItems(coupon);
         return matchesBrand && matchesPrice && matchesDate && matchesCartItems;
       });
+    },
+    updateFilteredCoupons() {
+      this.selectedCoupons = this.filterCoupons(this.allCoupons);
+      this.pageCount = Math.ceil(this.selectedCoupons.length / this.pageSize);
+      this.currentPage = 1; // Reset to the first page whenever the coupons are filtered
     },
     getBrandImage(brandName) {
       const baseUrl = this.apiUrl;
@@ -329,6 +331,9 @@ export default {
     }
   },
   watch: {
+    selectedBrand: 'updateFilteredCoupons',
+    selectedPrice: 'updateFilteredCoupons',
+    endDate: 'updateFilteredCoupons',
     selectedCoupons() {
       this.currentPage = 1; // Reset to the first page whenever the selected coupons change
     },
@@ -338,11 +343,15 @@ export default {
         if (this.endDate && new Date(this.endDate) < new Date(newVal)) {
           this.endDate = '';
         }
+      } else {
+        this.minEndDate = '';
       }
+      this.updateFilteredCoupons();
     }
   }
 }
 </script>
+
 
 <style scoped>
 .custom-form-group {
