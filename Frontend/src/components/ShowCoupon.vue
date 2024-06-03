@@ -9,7 +9,7 @@
                  <font-awesome-icon :icon="['fas', 'tag']" />品牌
               </span>
           </template>
-          <b-form-select id="brand-select" v-model="selectedBrand" class="custom-select">
+          <b-form-select id="brand-select" v-model="selectedBrand" class="custom-select" :disabled="isCartNotEmpty">
             <b-form-select-option value="">所有品牌</b-form-select-option>
             <b-form-select-option v-for="brand in brandOptions" :key="brand.brand_id" :value="brand.brand_name">
               {{ brand.brand_name }}
@@ -76,7 +76,7 @@
         <b-button @click="toggleMatchQuantity" variant="outline-primary" class="mb-2">
           {{ matchQuantity ? '匹配数量' : '不匹配数量' }}
         </b-button>
-        <button class="search-button" @click="handleFetchCoupons">
+        <button class="search-button" @click="updateFilteredCoupons">
           <font-awesome-icon :icon="['fas', 'search']" /> 搜尋
         </button>
       </b-col>
@@ -328,6 +328,9 @@ export default {
       const start = (this.currentPage - 1) * this.pageSize;
       const end = start + this.pageSize;
       return this.selectedCoupons.slice(start, end);
+    },
+    isCartNotEmpty() {
+      return this.cartItems.length > 0;
     }
   },
   watch: {
