@@ -125,6 +125,9 @@ export default {
     updateCoupon() {
       this.$store.dispatch('updateCoupon');
     },
+    async handleFetchCoupons() {
+      await this.$store.dispatch('fetchCoupons');
+    },
     handleSubmit() {
       if (this.userDeveloper === 'add') {
         const isDuplicate = this.allCoupons.some(coupon => coupon.coupon_name === this.newCoupon.coupon_name);

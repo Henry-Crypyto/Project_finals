@@ -284,7 +284,7 @@ export default {
       }
     },
     handleAddBeverage() {
-      if (this.newCourse.price<1||this.isDuplicateCourseName(this.newBeverage.name)) {
+      if (this.newBeverage.price<1||this.isDuplicateCourseName(this.newBeverage.name)) {
       alert('品項名稱不能為空或是你價錢太少了');
       return;
     }
