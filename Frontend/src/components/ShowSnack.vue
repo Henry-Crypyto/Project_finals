@@ -283,7 +283,7 @@ export default {
       }
     },
     handleAddSnack() {
-      if (this.newCourse.price<1) {
+      if (this.newSnack.price<1||this.isDuplicateCourseName(this.newSnack.name)) {
       alert('品項名稱不能為空或是你價錢太少了');
       return;
     }
@@ -359,6 +359,9 @@ export default {
     }
   }
     },
+    isDuplicateCourseName(name, excludeId) {
+    return this.snacks.some(course => course.name.toLowerCase() === name.toLowerCase() && course.id !== excludeId);
+    },
     validateQuantity(course) {
       if (!Number.isInteger(course.quantity)) {
         course.quantity = Math.floor(course.quantity);
@@ -375,8 +378,8 @@ export default {
       this.editingSnack = { ...snack };
     },
     handleSaveEdit() {
-      if (!this.editingSnack.name.trim()||this.editingSnack.price<1) {
-      alert('品項名稱不能為空或是你價錢太少了');
+      if (!this.editingSnack.name.trim()||this.editingSnack.price<1||this.isDuplicateCourseName(this.editingSnack.name,this.editingSnack.id)) {
+      alert('品項名稱不能為空或是你價錢太少了或是你品項重複');
       return;
     }
       const formData = new FormData();

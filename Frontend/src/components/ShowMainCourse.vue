@@ -241,6 +241,9 @@ export default {
         this.localMeatSelect.push(meat); // 如果未选中，则添加到数组中
       }
     },
+    isDuplicateCourseName(name, excludeId) {
+     return this.mainCourses.some(course => course.name.toLowerCase() === name.toLowerCase() && course.id !== excludeId);
+    },
     cancelEdit() {
     this.editingCourse = null;
     this.editingCourseImage = null;
@@ -343,10 +346,10 @@ export default {
         });
     },
     handleAddCourse() {
-      if (this.newCourse.price<1) {
-      alert('品項名稱不能為空或是你價錢太少了');
+      if (this.newCourse.price<1||this.isDuplicateCourseName(this.newCourse.name)) {
+      alert('品項名稱重複或是你價錢太少了');
       return;
-    }
+      }
   if (confirm('确定要新增嗎？')) {
     const formData = new FormData();
     formData.append('brand', this.newCourse.brand);
@@ -451,8 +454,8 @@ export default {
       this.editingCourse = { ...course };
     },
     handleSaveEdit() {
-      if (!this.editingCourse.name.trim()||this.editingCourse.price<1) {
-      alert('品項名稱不能為空或是你價錢太少了');
+      if (!this.editingCourse.name.trim()||this.editingCourse.price<1||this.isDuplicateCourseName(this.editingCourse.name, this.editingCourse.id)) {
+      alert('品項名稱不能為空或是你價錢太少了或是你品項重複');
       return;
     }
     const formData = new FormData();

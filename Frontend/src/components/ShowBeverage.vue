@@ -233,6 +233,9 @@ export default {
             console.error('Error fetching next coupon ID:', error);
           });
     },
+    isDuplicateCourseName(name, excludeId) {
+     return this.beverages.some(course => course.name.toLowerCase() === name.toLowerCase() && course.id !== excludeId);
+    },
     cancelEdit() {
     this.editingBeverage = null;
     this.editingBeverage = null;
@@ -281,7 +284,7 @@ export default {
       }
     },
     handleAddBeverage() {
-      if (this.newCourse.price<1) {
+      if (this.newCourse.price<1||this.isDuplicateCourseName(this.newBeverage.name)) {
       alert('品項名稱不能為空或是你價錢太少了');
       return;
     }
@@ -375,8 +378,8 @@ export default {
       this.editingBeverage = { ...beverage };
     },
     handleSaveEdit() {
-      if (!this.editingBeverage.name.trim()||this.editingBeverage.price<1) {
-      alert('品項名稱不能為空或是你價錢太少了');
+      if (!this.editingBeverage.name.trim()||this.editingBeverage.price<1||this.isDuplicateCourseName(this.editingBeverage.name,this.editingBeverage.id)) {
+      alert('品項名稱不能為空或是你價錢太少了或是你品項重複');
       return;
     }
       const formData = new FormData();
