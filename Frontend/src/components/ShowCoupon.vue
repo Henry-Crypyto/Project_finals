@@ -73,13 +73,21 @@
 
       <!-- Toggle Match Quantity Button -->
       <b-col md="2" class="mb-3 align-self-end">
-        <b-button @click="toggleMatchQuantity" variant="outline-primary" class="mb-2">
-          {{ matchQuantity ? '匹配数量' : '不匹配数量' }}
-        </b-button>
-        <button class="search-button" @click="updateFilteredCoupons">
-          <font-awesome-icon :icon="['fas', 'search']" /> 搜尋
-        </button>
-      </b-col>
+  <b-form-group label-for="match-quantity-select" class="custom-form-group">
+    <template #label>
+      <span style="color: white;">
+        <font-awesome-icon :icon="['fas', 'scale-balanced']" /> 匹配数量
+      </span>
+    </template>
+    <b-form-select id="match-quantity-select" v-model="matchQuantity" class="custom-select" @change="updateFilteredCoupons">
+      <b-form-select-option value="true">匹配数量</b-form-select-option>
+      <b-form-select-option value="false">不匹配数量</b-form-select-option>
+    </b-form-select>
+  </b-form-group>
+  <button class="search-button" @click="updateFilteredCoupons">
+    <font-awesome-icon :icon="['fas', 'search']" /> 搜尋
+  </button>
+</b-col>
     </b-row>
 
     <!-- Display Coupons Information for Selected Brand, Price, and Date Range -->
@@ -304,18 +312,19 @@ export default {
     matchesCartItems(coupon) {
       return this.cartItems.every(cartItem => {
         if (cartItem.preference === 1) {
-          if (this.matchQuantity) {
+          console.log(cartItem.brandName);
+          if (this.matchQuantity==='true') {
             return coupon.items.some(couponItem =>
-              couponItem.ItemName === cartItem.name && couponItem.brand_name === cartItem.brand_name 
+              couponItem.ItemName === cartItem.name && couponItem.ItemBrand === cartItem.brandName 
               && couponItem.ItemType === cartItem.productType && couponItem.Quantity === cartItem.quantity);
           } else {
             return coupon.items.some(couponItem =>
-              couponItem.ItemName === cartItem.name && couponItem.brand_name === cartItem.brand_name 
+              couponItem.ItemName === cartItem.name && couponItem.ItemBrand === cartItem.brandName 
               && couponItem.ItemType === cartItem.productType);
           }
         } else if (cartItem.preference === 0) {
           return !coupon.items.some(couponItem =>
-            couponItem.ItemName === cartItem.name && couponItem.brand_name === cartItem.brand_name 
+            couponItem.ItemName === cartItem.name && couponItem.ItemBrand === cartItem.brandName 
             && couponItem.ItemType === cartItem.productType);
         }
         return true;
